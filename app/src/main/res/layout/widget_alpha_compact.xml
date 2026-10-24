@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget when it is only one row tall: just the three buttons (the status line is kept, hidden, so the same code fills both layouts). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center_vertical"
+    android:padding="8dp" android:background="@drawable/widget_bg">
+    <TextView android:id="@+id/widget_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone" android:text="@string/widget_idle"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+        <TextView android:id="@+id/widget_ask" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
+            android:gravity="center" android:text="@string/widget_ask" android:contentDescription="@string/widget_ask_description" android:textColor="#ECEFF1" android:textSize="14sp" android:textStyle="bold"
+            android:background="@drawable/widget_btn_bg" android:drawableStart="@drawable/ic_glyph_ask" android:drawablePadding="6dp" android:paddingStart="10dp" android:paddingEnd="10dp" android:maxLines="1"/>
+        <TextView android:id="@+id/widget_talk" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:layout_marginStart="8dp"
+            android:gravity="center" android:text="@string/widget_talk" android:contentDescription="@string/widget_talk_description" android:textColor="#ECEFF1" android:textSize="14sp" android:textStyle="bold"
+            android:background="@drawable/widget_btn_bg" android:drawableStart="@drawable/ic_glyph_talk" android:drawablePadding="6dp" android:paddingStart="10dp" android:paddingEnd="10dp" android:maxLines="1"/>
+        <TextView android:id="@+id/widget_away" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:layout_marginStart="8dp"
+            android:gravity="center" android:text="@string/widget_away_off" android:contentDescription="@string/widget_away_description" android:textColor="#ECEFF1" android:textSize="14sp" android:textStyle="bold"
+            android:background="@drawable/widget_btn_bg" android:drawableStart="@drawable/ic_glyph_away" android:drawablePadding="6dp" android:paddingStart="10dp" android:paddingEnd="10dp" android:maxLines="1"/>
+    </LinearLayout>
+</LinearLayout>

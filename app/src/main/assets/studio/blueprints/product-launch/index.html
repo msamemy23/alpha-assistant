@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en" data-kind="site">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{business}} | Get more done, simply</title>
+<meta name="description" content="{{business}}: {{tagline}}. See what it does, how it works and how to get started today.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-progress>
+<a class="skip-link" href="#features">Skip to content</a>
+
+<!-- section:header -->
+<header class="site-header" data-sticky>
+  <div class="container site-header__bar">
+    <a class="brand" href="#top" data-shrink aria-label="{{business}}, back to the top">
+      <span class="brand__mark" aria-hidden="true">{{initial}}</span>
+      <span class="brand__name">{{business}}</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn btn--small" href="#get-started">Get started</a>
+  </div>
+</header>
+<!-- /section:header -->
+
+<main id="top">
+<!-- section:hero -->
+<section class="hero" id="hero" aria-labelledby="hero-title">
+  <!-- Aurora: soft blurred shapes that drift slowly behind the headline (they stop for reduced motion). -->
+  <div class="aurora" aria-hidden="true">
+    <svg class="aurora__defs" width="0" height="0" focusable="false">
+      <filter id="pl-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+      <filter id="pl-soft-warm" x="-50%" y="-50%" width="200%" height="200%"><feColorMatrix type="hueRotate" values="14"/><feGaussianBlur stdDeviation="18"/></filter>
+      <filter id="pl-soft-cool" x="-50%" y="-50%" width="200%" height="200%"><feColorMatrix type="hueRotate" values="-26"/><feGaussianBlur stdDeviation="18"/></filter>
+    </svg>
+    <svg class="aurora__blob aurora__blob--1" viewBox="0 0 200 200" focusable="false"><path filter="url(#pl-soft)" transform="translate(100 100)" d="M45.3-58.7C57.9-47.4 66.4-31.6 70.6-14.4 74.8 2.8 74.7 21.4 66.5 35.6 58.3 49.8 42 59.6 24.8 65.6 7.6 71.6-10.5 73.8-27.3 68.5-44.1 63.2-59.6 50.4-68.4 33.9-77.2 17.4-79.3-2.8-72.6-19.3-65.9-35.8-50.4-48.6-34.6-58.9-18.8-69.2-2.7-77 12.6-74.9 27.9-72.8 32.7-70 45.3-58.7Z"/></svg>
+    <svg class="aurora__blob aurora__blob--2" viewBox="0 0 200 200" focusable="false"><path filter="url(#pl-soft-warm)" transform="translate(100 100)" d="M38.9-49.4C50.1-37.8 58.6-25.2 63.4-10.2 68.2 4.8 69.3 22.2 61.6 34.5 53.9 46.8 37.4 54 20.3 60.2 3.2 66.4-14.5 71.6-30.6 67.2-46.7 62.8-61.2 48.8-67.7 32.2-74.2 15.6-72.7-3.6-65.4-19.4-58.1-35.2-45-47.6-31.1-58.6-17.2-69.6-2.5-79.2 10.4-76.6 23.3-74 27.7-61 38.9-49.4Z"/></svg>
+    <svg class="aurora__blob aurora__blob--3" viewBox="0 0 200 200" focusable="false"><path filter="url(#pl-soft-cool)" transform="translate(100 100)" d="M52.6-62.3C66.4-51.2 74.9-33.4 76.4-15.6 77.9 2.2 72.4 20 62.3 33.7 52.2 47.4 37.5 57 21.2 62.6 4.9 68.2-13 69.8-29.4 64.3-45.8 58.8-60.7 46.2-68.2 30.2-75.7 14.2-75.8-5.2-69.4-21.6-63-38-50.1-51.4-35.4-62.4-20.7-73.4-4.2-82 11.2-80.5 26.6-79 38.8-73.4 52.6-62.3Z"/></svg>
+    <svg class="aurora__blob aurora__blob--4" viewBox="0 0 200 200" focusable="false"><path filter="url(#pl-soft)" transform="translate(100 100)" d="M41.1-52.9C53.2-42.4 62.6-28.9 66.6-13.6 70.6 1.7 69.2 18.8 61.4 32.4 53.6 46 39.4 56.1 23.6 62.2 7.8 68.3-9.6 70.4-25.4 65.3-41.2 60.2-55.4 47.9-63.6 32.6-71.8 17.3-74 -1-68.7-16.6-63.4-32.2-50.6-45.1-36.6-55.4-22.6-65.7-7.4-73.4 6.6-71.9 20.6-70.4 29-63.4 41.1-52.9Z"/></svg>
+    <div class="aurora__grid"></div>
+    <div class="aurora__grain"></div>
+  </div>
+
+  <div class="container hero__inner">
+    <a class="hero__badge" href="#features">
+      <span class="hero__badge-tag">New</span>
+      <span class="hero__badge-text">Say what is new in a few words</span>
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+    <h1 class="hero__title" id="hero-title" data-words>The simpler way to get <em>more done</em> every single day.</h1>
+    <p class="hero__lead">Describe in one or two sentences what {{business}} does, who it is for, and the one thing it makes easier.</p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="{{email_href}}">Get early access
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a class="btn btn--ghost" href="#how">See how it works</a>
+    </div>
+
+    <!-- Device mockup: drawn with HTML/CSS, coloured by the style. The phone cycles through three screens. -->
+    <div class="hero__stage">
+      <div class="devices" data-tilt="4" role="img" aria-label="Illustration of the app on a laptop and a phone">
+        <div class="laptop">
+          <div class="laptop__lid">
+            <div class="laptop__screen">
+              <div class="web">
+                <div class="web__side">
+                  <span class="web__logo"></span>
+                  <span class="web__nav is-on"></span><span class="web__nav"></span><span class="web__nav"></span><span class="web__nav"></span><span class="web__nav"></span>
+                  <span class="web__side-card"></span>
+                </div>
+                <div class="web__main">
+                  <div class="web__top"><span class="sk" style="--w:22%"></span><span class="web__search"></span><span class="web__avatar"></span></div>
+                  <div class="web__kpis">
+                    <div class="web__kpi"><span class="sk sk--xs" style="--w:50%"></span><span class="sk sk--lg" style="--w:70%"></span><span class="web__delta"></span></div>
+                    <div class="web__kpi"><span class="sk sk--xs" style="--w:40%"></span><span class="sk sk--lg" style="--w:56%"></span><span class="web__delta"></span></div>
+                    <div class="web__kpi web__kpi--accent"><span class="sk sk--xs" style="--w:46%"></span><span class="sk sk--lg" style="--w:64%"></span><span class="web__delta"></span></div>
+                  </div>
+                  <div class="web__panels">
+                    <div class="web__chart">
+                      <span class="sk sk--xs" style="--w:30%"></span>
+                      <svg class="web__chart-svg" viewBox="0 0 300 110" preserveAspectRatio="none" focusable="false"><defs><linearGradient id="pl-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".38"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs><path d="M0 92C24 84 38 90 60 74S104 52 128 58 172 34 196 40 248 18 272 22 292 12 300 10V110H0Z" fill="url(#pl-area)"/><path d="M0 92C24 84 38 90 60 74S104 52 128 58 172 34 196 40 248 18 272 22 292 12 300 10" fill="none" stroke="currentColor" stroke-width="2.4" vector-effect="non-scaling-stroke"/></svg>
+                    </div>
+                    <div class="web__donut">
+                      <svg viewBox="0 0 42 42" focusable="false"><circle cx="21" cy="21" r="15.9" fill="none" stroke-width="5" class="web__donut-track"/><circle cx="21" cy="21" r="15.9" fill="none" stroke-width="5" stroke-dasharray="64 36" stroke-dashoffset="25" class="web__donut-fill"/></svg>
+                      <span class="sk sk--xs" style="--w:70%"></span><span class="sk sk--xs" style="--w:52%"></span>
+                    </div>
+                  </div>
+                  <div class="web__rows"><span class="web__row"></span><span class="web__row"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="laptop__base"></div>
+        </div>
+
+        <div class="phone phone--hero">
+          <div class="phone__frame">
+            <div class="phone__screen">
+              <div class="phone__status"><span class="sk sk--xs" style="--w:18%"></span><span class="phone__icons"></span></div>
+              <!-- screen 1: home -->
+              <div class="app app--home">
+                <div class="app__hello"><span class="app__avatar"></span><span class="app__lines"><span class="sk sk--xs" style="--w:46%"></span><span class="sk" style="--w:72%"></span></span></div>
+                <div class="app__hero-card"><span class="sk sk--on" style="--w:40%"></span><span class="sk sk--on sk--lg" style="--w:62%"></span><span class="app__bars"><i style="--h:40%"></i><i style="--h:65%"></i><i style="--h:50%"></i><i style="--h:85%"></i><i style="--h:60%"></i><i style="--h:95%"></i></span></div>
+                <div class="app__pair"><span class="app__mini"><b></b><span class="sk sk--xs" style="--w:70%"></span></span><span class="app__mini"><b></b><span class="sk sk--xs" style="--w:56%"></span></span></div>
+                <div class="app__list"><span class="app__item"><b></b><span class="sk sk--xs" style="--w:60%"></span></span><span class="app__item"><b></b><span class="sk sk--xs" style="--w:48%"></span></span><span class="app__item"><b></b><span class="sk sk--xs" style="--w:66%"></span></span></div>
+                <div class="app__progress"><span class="sk sk--xs" style="--w:44%"></span><span class="app__track"><i style="--w:68%"></i></span><span class="app__faces"><i></i><i></i><i></i></span></div>
+              </div>
+              <!-- screen 2: messages -->
+              <div class="app app--chat">
+                <div class="app__chat-head"><span class="app__avatar"></span><span class="sk" style="--w:40%"></span></div>
+                <span class="bubble bubble--in" style="--w:72%"></span>
+                <span class="bubble bubble--in bubble--short" style="--w:50%"></span>
+                <span class="bubble bubble--out" style="--w:62%"></span>
+                <span class="bubble bubble--media"></span>
+                <span class="bubble bubble--out bubble--short" style="--w:40%"></span>
+                <span class="bubble bubble--typing"><i></i><i></i><i></i></span>
+                <span class="app__input"><span class="sk sk--xs" style="--w:46%"></span><b></b></span>
+              </div>
+              <!-- screen 3: schedule -->
+              <div class="app app--plan">
+                <div class="app__month"><span class="sk" style="--w:42%"></span><span class="app__chev"></span></div>
+                <div class="app__week"><i></i><i></i><i class="is-on"></i><i></i><i></i><i></i><i></i></div>
+                <span class="slot slot--a"><span class="sk sk--xs" style="--w:58%"></span><span class="sk sk--xs" style="--w:36%"></span></span>
+                <span class="slot slot--b"><span class="sk sk--xs" style="--w:64%"></span><span class="sk sk--xs" style="--w:30%"></span></span>
+                <span class="slot slot--c"><span class="sk sk--xs" style="--w:48%"></span><span class="sk sk--xs" style="--w:40%"></span></span>
+                <span class="slot slot--b"><span class="sk sk--xs" style="--w:54%"></span><span class="sk sk--xs" style="--w:34%"></span></span>
+                <span class="app__fab"></span>
+              </div>
+              <div class="phone__tabs"><i class="is-on"></i><i></i><i></i><i></i></div>
+            </div>
+            <span class="phone__island"></span>
+          </div>
+        </div>
+
+        <div class="float-card float-card--done"><span class="float-card__check"><svg viewBox="0 0 24 24" focusable="false"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="float-card__lines"><span class="sk" style="--w:80%"></span><span class="sk sk--xs" style="--w:54%"></span></span></div>
+        <div class="float-card float-card--trend"><svg class="float-card__spark" viewBox="0 0 80 32" focusable="false"><path d="M2 26 14 20 24 23 36 12 48 16 60 6 78 4"/></svg><span class="sk sk--xs" style="--w:62%"></span></div>
+      </div>
+      <div class="hero__dots" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+  </div>
+</section>
+<!-- /section:hero -->
+
+<!-- section:glance -->
+<section class="glance" aria-label="Features at a glance">
+  <div class="marquee" data-speed="42">
+    <div class="marquee__track" style="--g:0px">
+      <span class="glance__item">Quick to set up</span>
+      <span class="glance__item glance__item--soft">Works on any screen</span>
+      <span class="glance__item">Private by default</span>
+      <span class="glance__item glance__item--soft">Plays well with your tools</span>
+      <span class="glance__item">Help when you need it</span>
+      <span class="glance__item glance__item--soft">Clear, simple plans</span>
+    </div>
+  </div>
+</section>
+<!-- /section:glance -->
+
+<!-- section:features -->
+<section class="features" id="features" aria-labelledby="features-title">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <p class="eyebrow"><span class="eyebrow__num">01</span>Features</p>
+      <h2 id="features-title">Everything it does, at a glance.</h2>
+      <p class="section-head__lead">Use these five tiles for your five strongest features. Put the most important one in the big tile.</p>
+    </div>
+
+    <div class="bento" data-spotlight data-stagger="90" data-reveal="up">
+      <article class="tile tile--lead">
+        <div class="tile__copy">
+          <span class="tile__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-7"/></svg></span>
+          <h3>Your headline feature</h3>
+          <p>Say what this feature does and why it matters, in one or two sentences. This is the biggest tile, so lead with your strongest point.</p>
+        </div>
+        <div class="tile__art tile__art--board" aria-hidden="true">
+          <div class="board">
+            <div class="board__head"><span class="sk" style="--w:34%"></span><span class="board__pill"></span></div>
+            <div class="board__bars"><i style="--h:38%"></i><i style="--h:56%"></i><i style="--h:44%"></i><i style="--h:72%"></i><i style="--h:60%"></i><i style="--h:88%"></i><i style="--h:70%"></i><i style="--h:96%"></i></div>
+            <div class="board__axis"><span></span><span></span><span></span><span></span></div>
+          </div>
+          <div class="board__toast"><span class="float-card__check"><svg viewBox="0 0 24 24" focusable="false"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="sk" style="--w:70%"></span></div>
+        </div>
+      </article>
+
+      <article class="tile tile--speed">
+        <div class="tile__art tile__art--gauge" aria-hidden="true">
+          <svg viewBox="0 0 120 120" focusable="false"><circle class="gauge__track" cx="60" cy="60" r="48"/><circle class="gauge__fill" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="72 100"/><path class="gauge__bolt" d="M64 34 46 64h14l-4 22 18-30H60z"/></svg>
+        </div>
+        <h3>Fast where it counts</h3>
+        <p>Name the task that gets quicker, and roughly how much time people get back.</p>
+      </article>
+
+      <article class="tile tile--devices">
+        <div class="tile__art tile__art--screens" aria-hidden="true">
+          <svg viewBox="0 0 160 90" focusable="false"><rect x="18" y="10" width="92" height="58" rx="5"/><path d="M8 76h112l-6 6H14z"/><rect x="104" y="30" width="34" height="56" rx="6" class="screens__phone"/><path d="M116 36h10"/><rect x="28" y="20" width="40" height="6" rx="3" class="screens__fill"/><rect x="28" y="32" width="64" height="4" rx="2"/><rect x="28" y="40" width="52" height="4" rx="2"/><rect x="110" y="44" width="22" height="16" rx="3" class="screens__fill"/></svg>
+        </div>
+        <h3>Works on every screen</h3>
+        <p>Tell people where they can use it: phone, tablet, computer, or all three.</p>
+      </article>
+
+      <article class="tile tile--private">
+        <div class="tile__art tile__art--lock" aria-hidden="true">
+          <svg viewBox="0 0 120 120" focusable="false"><circle class="lock__ring" cx="60" cy="60" r="52"/><circle class="lock__ring lock__ring--2" cx="60" cy="60" r="38"/><rect class="lock__body" x="42" y="54" width="36" height="30" rx="7"/><path class="lock__shackle" d="M48 54v-8a12 12 0 0 1 24 0v8"/><circle class="lock__dot" cx="60" cy="68" r="3.5"/></svg>
+        </div>
+        <h3>Private by default</h3>
+        <p>Explain plainly what happens to people's information and who can see it.</p>
+      </article>
+
+      <article class="tile tile--connect">
+        <div class="tile__copy">
+          <span class="tile__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8"/></svg></span>
+          <h3>Plays well with your tools</h3>
+          <p>List the apps and services it connects to, or what people can import and export.</p>
+        </div>
+        <div class="tile__art tile__art--nodes" aria-hidden="true">
+          <svg viewBox="0 0 220 150" focusable="false">
+            <g class="nodes__lines"><path d="M110 75 40 30"/><path d="M110 75 34 112"/><path d="M110 75 182 26"/><path d="M110 75 190 106"/><path d="M110 75 110 14"/><path d="M110 75 112 138"/></g>
+            <g class="nodes__sats"><circle cx="40" cy="30" r="11"/><circle cx="34" cy="112" r="13"/><circle cx="182" cy="26" r="12"/><circle cx="190" cy="106" r="10"/><circle cx="110" cy="14" r="8"/><circle cx="112" cy="138" r="8"/></g>
+            <circle class="nodes__hub" cx="110" cy="75" r="24"/>
+            <path class="nodes__hub-mark" d="M100 75h20M110 65v20"/>
+          </svg>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+<!-- /section:features -->
+
+<!-- section:how -->
+<section class="how" id="how" aria-labelledby="how-title">
+  <div class="container how__grid">
+    <div class="section-head how__head" data-reveal>
+      <p class="eyebrow"><span class="eyebrow__num">02</span>How it works</p>
+      <h2 id="how-title">From first tap to finished, in three steps.</h2>
+    </div>
+
+    <div class="how__stage">
+      <div class="phone phone--how" role="img" aria-label="Illustration of the app screen for each step">
+        <div class="phone__frame">
+          <div class="phone__screen">
+            <div class="phone__status"><span class="sk sk--xs" style="--w:18%"></span><span class="phone__icons"></span></div>
+            <!-- step 1 screen: sign up -->
+            <div class="how-screen is-active" data-screen="0">
+              <span class="signup__art"><i></i><i></i><i></i><b>{{initial}}</b></span>
+              <span class="sk sk--lg" style="--w:62%"></span>
+              <span class="sk sk--xs" style="--w:78%"></span>
+              <span class="signup__field"><span class="sk sk--xs" style="--w:40%"></span></span>
+              <span class="signup__field"><span class="sk sk--xs" style="--w:28%"></span></span>
+              <span class="signup__btn"><span class="sk sk--on sk--xs" style="--w:38%"></span></span>
+              <span class="signup__or"></span>
+              <span class="signup__alt"></span>
+              <span class="signup__fine"><span class="sk sk--xs" style="--w:80%"></span><span class="sk sk--xs" style="--w:56%"></span></span>
+            </div>
+            <!-- step 2 screen: set up -->
+            <div class="how-screen" data-screen="1">
+              <span class="sk sk--lg" style="--w:56%"></span>
+              <span class="sk sk--xs" style="--w:70%"></span>
+              <span class="setting"><b></b><span class="sk sk--xs" style="--w:50%"></span><span class="toggle is-on"></span></span>
+              <span class="setting"><b></b><span class="sk sk--xs" style="--w:42%"></span><span class="toggle"></span></span>
+              <span class="setting"><b></b><span class="sk sk--xs" style="--w:58%"></span><span class="toggle is-on"></span></span>
+              <span class="setting"><b></b><span class="sk sk--xs" style="--w:36%"></span><span class="toggle"></span></span>
+              <span class="signup__btn"><span class="sk sk--on sk--xs" style="--w:30%"></span></span>
+            </div>
+            <!-- step 3 screen: results -->
+            <div class="how-screen" data-screen="2">
+              <span class="sk sk--lg" style="--w:48%"></span>
+              <span class="result__ring"><svg viewBox="0 0 120 120" focusable="false"><circle class="gauge__track" cx="60" cy="60" r="46"/><circle class="gauge__fill" cx="60" cy="60" r="46" pathLength="100" stroke-dasharray="84 100"/><path class="result__tick" d="m44 61 11 11 22-24"/></svg></span>
+              <span class="result__stats"><i style="--h:50%"></i><i style="--h:80%"></i><i style="--h:65%"></i></span>
+              <span class="result__toast"><b></b><span class="sk sk--xs" style="--w:60%"></span></span>
+            </div>
+          </div>
+          <span class="phone__island"></span>
+        </div>
+      </div>
+    </div>
+
+    <ol class="how__steps">
+      <li class="how-step is-active" data-step="0">
+        <span class="how-step__num" aria-hidden="true">01</span>
+        <div class="how-step__body">
+          <h3>Sign up in a minute</h3>
+          <p>Explain the very first step: where people sign up or download, and what they need to have ready.</p>
+        </div>
+      </li>
+      <li class="how-step" data-step="1">
+        <span class="how-step__num" aria-hidden="true">02</span>
+        <div class="how-step__body">
+          <h3>Make it yours</h3>
+          <p>Describe the set-up: the choices people make, the things they connect, and how long it takes.</p>
+        </div>
+      </li>
+      <li class="how-step" data-step="2">
+        <span class="how-step__num" aria-hidden="true">03</span>
+        <div class="how-step__body">
+          <h3>See the results</h3>
+          <p>Say what people get at the end, and how they will know it worked.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+<!-- /section:how -->
+
+<!-- section:story -->
+<section class="story" id="story" aria-labelledby="story-title">
+  <div class="container story__grid">
+    <figure class="story__media" data-reveal="scale">
+      <img src="{{photo:about}}" alt="{{alt:about}}" width="960" height="720" loading="lazy" decoding="async">
+    </figure>
+    <div class="story__copy" data-reveal>
+      <p class="eyebrow"><span class="eyebrow__num">03</span>Why we built it</p>
+      <h2 id="story-title">The story behind {{business}}.</h2>
+      <p class="story__lead">Tell the short version: the problem you kept running into, and what you made to fix it.</p>
+      <p>Add a second, smaller paragraph about who is behind it and what you care about. Two or three sentences are plenty.</p>
+      <p class="story__sign"><span class="brand__mark" aria-hidden="true">{{initial}}</span>The {{business}} team</p>
+    </div>
+  </div>
+</section>
+<!-- /section:story -->
+
+<!-- section:pricing -->
+<section class="pricing" id="pricing" aria-labelledby="pricing-title">
+  <div class="container">
+    <div class="section-head section-head--center" data-reveal>
+      <p class="eyebrow"><span class="eyebrow__num">04</span>Pricing</p>
+      <h2 id="pricing-title">Pick the plan that fits.</h2>
+      <p class="section-head__lead">Say in one line how your plans differ, and who each one is for.</p>
+    </div>
+    <div class="plans" data-stagger="100" data-reveal="up">
+      <article class="plan">
+        <h3 class="plan__name">Starter</h3>
+        <p class="plan__for">Who this plan is for, in one line.</p>
+        <p class="plan__price"><span class="plan__amount">$&#8202;&mdash;</span><span class="plan__per">per month</span></p>
+        <ul class="plan__list">
+          <li>What is included</li>
+          <li>Another thing included</li>
+          <li>A limit, if there is one</li>
+        </ul>
+        <a class="btn btn--ghost plan__btn" href="{{email_href}}">Choose Starter</a>
+      </article>
+      <article class="plan plan--featured">
+        <p class="plan__flag">Recommended</p>
+        <h3 class="plan__name">Plus</h3>
+        <p class="plan__for">Who this plan is for, in one line.</p>
+        <p class="plan__price"><span class="plan__amount">$&#8202;&mdash;</span><span class="plan__per">per month</span></p>
+        <ul class="plan__list">
+          <li>Everything in Starter</li>
+          <li>What this plan adds</li>
+          <li>Another thing it adds</li>
+          <li>A third thing it adds</li>
+        </ul>
+        <a class="btn btn--primary plan__btn" href="{{email_href}}">Choose Plus</a>
+      </article>
+      <article class="plan">
+        <h3 class="plan__name">Team</h3>
+        <p class="plan__for">Who this plan is for, in one line.</p>
+        <p class="plan__price"><span class="plan__amount">$&#8202;&mdash;</span><span class="plan__per">per month</span></p>
+        <ul class="plan__list">
+          <li>Everything in Plus</li>
+          <li>What this plan adds</li>
+          <li>How support works</li>
+        </ul>
+        <a class="btn btn--ghost plan__btn" href="{{email_href}}">Talk to us</a>
+      </article>
+    </div>
+  </div>
+</section>
+<!-- /section:pricing -->
+
+<!-- section:faq -->
+<section class="faq" id="faq" aria-labelledby="faq-title">
+  <div class="container faq__grid">
+    <div class="section-head faq__head" data-reveal>
+      <p class="eyebrow"><span class="eyebrow__num">05</span>Questions</p>
+      <h2 id="faq-title">Good to know.</h2>
+      <p class="section-head__lead">Still wondering about something? Write to us at <a class="text-link" href="{{email_href}}">{{email}}</a>.</p>
+    </div>
+    <div class="faq__list" data-stagger="70" data-reveal="up">
+      <div class="faq__item is-open">
+        <h3 class="faq__q"><button type="button" id="faq-q1" aria-expanded="true" aria-controls="faq-a1">How do I get started?<span class="faq__icon" aria-hidden="true"></span></button></h3>
+        <div class="faq__a" id="faq-a1" role="region" aria-labelledby="faq-q1"><div><p>Explain the first steps: where to sign up, what to have ready, and how long it takes before it is useful.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3 class="faq__q"><button type="button" id="faq-q2" aria-expanded="false" aria-controls="faq-a2">Can I try it before I pay?<span class="faq__icon" aria-hidden="true"></span></button></h3>
+        <div class="faq__a" id="faq-a2" role="region" aria-labelledby="faq-q2"><div><p>Say whether there is a free version or a trial, how long it lasts, and what happens when it ends.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3 class="faq__q"><button type="button" id="faq-q3" aria-expanded="false" aria-controls="faq-a3">Which devices does it work on?<span class="faq__icon" aria-hidden="true"></span></button></h3>
+        <div class="faq__a" id="faq-a3" role="region" aria-labelledby="faq-q3"><div><p>List the phones, computers or browsers it supports, and anything people need to install.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3 class="faq__q"><button type="button" id="faq-q4" aria-expanded="false" aria-controls="faq-a4">What happens to my information?<span class="faq__icon" aria-hidden="true"></span></button></h3>
+        <div class="faq__a" id="faq-a4" role="region" aria-labelledby="faq-q4"><div><p>Explain in plain words what you store, where it is kept, and how people can delete it.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <h3 class="faq__q"><button type="button" id="faq-q5" aria-expanded="false" aria-controls="faq-a5">How do I get help?<span class="faq__icon" aria-hidden="true"></span></button></h3>
+        <div class="faq__a" id="faq-a5" role="region" aria-labelledby="faq-q5"><div><p>Tell people how to reach you, for example by email at {{email}}, and when they can expect an answer.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- /section:faq -->
+
+<!-- section:cta -->
+<section class="cta" id="get-started" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta__panel" data-reveal="scale">
+      <div class="cta__mark" aria-hidden="true">
+        <svg class="cta__rings" viewBox="0 0 600 600" focusable="false"><circle cx="300" cy="300" r="150"/><circle cx="300" cy="300" r="200"/><circle cx="300" cy="300" r="250"/><circle cx="300" cy="300" r="299"/></svg>
+        <span class="cta__initial">{{initial}}</span>
+      </div>
+      <div class="cta__copy">
+        <p class="cta__eyebrow">Get started</p>
+        <h2 id="cta-title">Ready when you are.</h2>
+        <p class="cta__lead">One line that tells people what happens after they get in touch with {{business}}.</p>
+        <div class="cta__actions">
+          <a class="btn btn--invert" href="{{email_href}}">Get early access
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn--outline-invert" href="{{phone_href}}">Call {{phone}}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- /section:cta -->
+</main>
+
+<!-- section:footer -->
+<footer class="site-footer">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <a class="brand" href="#top" aria-label="{{business}}, back to the top"><span class="brand__mark" aria-hidden="true">{{initial}}</span><span class="brand__name">{{business}}</span></a>
+      <p>{{tagline}}</p>
+    </div>
+    <nav class="site-footer__nav" aria-label="Footer">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="site-footer__contact">
+      <a href="{{email_href}}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>{{email}}</a>
+      <a href="{{phone_href}}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>{{phone}}</a>
+    </div>
+  </div>
+  <div class="container site-footer__base">
+    <p>&copy; {{year}} {{business}}</p>
+    <a class="site-footer__top" href="#top">Back to top</a>
+  </div>
+</footer>
+<!-- /section:footer -->
+
+<script src="app.js" defer></script>
+</body>
+</html>

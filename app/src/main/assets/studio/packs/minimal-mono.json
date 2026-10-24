@@ -1,0 +1,80 @@
+{
+  "id": "minimal-mono",
+  "name": "Minimal Mono",
+  "signature": "Concrete grey page, lowercase mono headings, almost no decoration, one cobalt link color.",
+  "mood": ["quiet", "technical", "direct", "understated"],
+  "bestFor": [
+    "freelance and mobile mechanics",
+    "inspectors",
+    "consultants",
+    "one-person shops",
+    "plumbers with a simple offer",
+    "anyone with a phone number and few words"
+  ],
+  "fonts": "mono-grotesk",
+  "colors": {
+    "bg": "#E9E9E6",
+    "surface": "#F7F7F5",
+    "ink": "#151515",
+    "muted": "#4F4F4F",
+    "accent": "#1D3FBB",
+    "onAccent": "#FFFFFF"
+  },
+  "contrast": {
+    "ink/bg": 15.01,
+    "ink/surface": 17.02,
+    "muted/bg": 6.73,
+    "muted/surface": 7.63,
+    "onAccent/accent": 8.46,
+    "accent/bg": 6.95,
+    "accent/surface": 7.89,
+    "accentAsText": true,
+    "note": "Light theme. Cobalt is safe as link text on both backgrounds. White on cobalt passes AA for the one button."
+  },
+  "radius": {"sm": 0, "md": 0, "lg": 0, "button": 0},
+  "shadow": {"card": "none", "pop": "none"},
+  "space": {"scale": [8, 16, 24, 32, 48, 64, 96, 128, 160], "sectionY": 128, "gutter": 24, "maxWidth": 960},
+  "type": {
+    "scaleRatio": 1.25,
+    "basePx": 17,
+    "bodyLeading": 1.7,
+    "h1": "clamp(2rem,6vw,3.5rem)",
+    "h2": "clamp(1.25rem,3vw,1.75rem)",
+    "h3": "1.125rem",
+    "headingCase": "lowercase",
+    "headingWeight": 700,
+    "headingLeading": 1.15,
+    "headingTracking": "-0.02em",
+    "eyebrow": "none; use a plain lowercase label in muted color"
+  },
+  "motion": {
+    "rule": "Nearly still: elements fade in over 400ms with no movement and no stagger, and the header gains a hairline when you scroll.",
+    "reveal": "fade",
+    "staggerMs": 0,
+    "durationMs": 400,
+    "ease": "ease-out",
+    "use": ["data-reveal fade only", "data-sticky"],
+    "avoid": ["data-stagger", "data-count-to", "marquee", "data-tilt", "data-magnetic", "data-parallax"]
+  },
+  "hero": {
+    "treatment": "type-only",
+    "layout": "No photo above the fold: one lowercase mono sentence stating what the business does and where, followed by the phone number as a very large link. A single photo appears below, in grayscale, with 960px max width.",
+    "photo": "Optional: one real photo below the fold; grayscale by CSS filter."
+  },
+  "background": "Flat concrete grey, no textures. 1px ink hairlines at 20% opacity between sections. Whitespace does the work; the spacing scale is wider than every other pack.",
+  "button": {
+    "shape": "Rectangle, 0 radius, 48px tall; or a plain underlined text link.",
+    "fill": "One accent-filled button per page with a white label; everything else is an underlined link.",
+    "label": "Mono, weight 700, lowercase.",
+    "hover": "Underline thickens from 1px to 3px; fill does not change.",
+    "minHeightPx": 48
+  },
+  "banned": [
+    "gradients",
+    "shadows",
+    "more than two type sizes in a section",
+    "more than one icon per section",
+    "color other than accent for links and the single button",
+    "emoji"
+  ]
+}

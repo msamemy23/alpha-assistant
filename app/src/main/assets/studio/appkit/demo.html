@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="shop-desk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Shop Desk | jobs, invoices and customers</title>
+<meta name="description" content="Shop Desk keeps jobs, invoices and customers in one place, right on a phone. A sample app built with the Alpha Studio appkit.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<link rel="stylesheet" href="appkit.css">
+<style>
+/* demo-only layout (everything else comes from appkit.css) */
+.dash{display:grid;gap:16px}
+@media (min-width:1000px){.dash{grid-template-columns:1.55fr 1fr;align-items:start}}
+.goal{display:flex;align-items:center;gap:12px;margin-top:4px}
+.goal .ring{--size:58px;--w:7px;font-size:14px}
+.line-row{display:grid;grid-template-columns:72px 1fr 44px;gap:8px;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--ak-line)}
+.line-row>.item-in{grid-column:1/-1}
+@media (min-width:600px){.line-row{grid-template-columns:1fr 72px 120px 44px}.line-row>.item-in{grid-column:auto}}
+.total-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.person{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:4px 0 8px}
+</style>
+</head>
+<body>
+<noscript><p style="padding:24px">Shop Desk needs JavaScript turned on.</p></noscript>
+<script src="appkit.js"></script>
+<script>
+/* Shop Desk: a complete appkit example. All records are SAMPLE DATA (labelled in the app) so the owner can try it;
+   "Erase everything" in More starts clean. Copy the parts you need. */
+
+/* ---------- data ---------- */
+const STATUS = { waiting: { label: 'Waiting', cls: 'warn' }, progress: { label: 'In progress', cls: 'info' }, ready: { label: 'Ready', cls: 'ok' }, done: { label: 'Done', cls: '' } };
+const COLS = Object.keys(STATUS).map(id => ({ id, title: STATUS[id].label }));
+const CHECKS = ['Tire pressure and tread', 'Oil level and color', 'Battery test', 'Brake pads', 'Leaks under the car', 'Lights and signals', 'Washer fluid'];
+
+function sample() {
+  const d = AK.today, checks = done => CHECKS.map((text, i) => ({ text, done: i < done }));
+  const job = (id, title, customer, status, due, time, price, hours, icon, done) => ({ id, title, customer, status, due: d(due), time, price, hours, icon, notes: '', photos: [], checks: checks(done) });
+  const weekStart = n => { const x = new Date(); x.setDate(x.getDate() - x.getDay() - 7 * n); return AK.today(Math.round((x - new Date()) / 864e5)); };
+  return {
+    sample: true,
+    settings: { business: 'Shop Desk', phone: '', email: '', rate: 120, tax: 8.25, taxOn: true, goal: 3500, dueDays: 14, currency: 'USD', note: 'Thank you! Payment is due by the date above.', banner: true, weekStart: 'sun' },
+    customers: [
+      { id: 'c1', name: 'Maria G.', vehicle: '2016 Honda Civic', phone: '', email: '', notes: '' },
+      { id: 'c2', name: 'Dev P.', vehicle: '2012 Ford F-150', phone: '', email: '', notes: '' },
+      { id: 'c3', name: 'Sam O.', vehicle: '2019 Toyota RAV4', phone: '', email: '', notes: '' },
+      { id: 'c4', name: 'Lena K.', vehicle: '2014 Subaru Outback', phone: '', email: '', notes: '' },
+      { id: 'c5', name: 'Chris W.', vehicle: '2010 Chevy Malibu', phone: '', email: '', notes: '' },
+      { id: 'c6', name: 'Ana R.', vehicle: '2021 Kia Soul', phone: '', email: '', notes: '' }
+    ],
+    jobs: [
+      job('j1', 'Front brake pads', 'c1', 'progress', 0, '14:00', 340, 2, 'wrench', 4),
+      job('j2', 'Check engine light', 'c2', 'waiting', 0, '10:30', 120, 1, 'alert', 0),
+      job('j3', 'Oil and filter change', 'c3', 'ready', 0, '', 89.5, 0.5, 'car', 7),
+      job('j4', 'AC not cooling', 'c4', 'progress', 1, '09:00', 460, 3, 'zap', 2),
+      job('j5', 'Tire rotation and balance', 'c5', 'ready', -1, '', 75, 1, 'car', 7),
+      job('j6', 'Battery replacement', 'c6', 'waiting', 2, '', 210, 0.5, 'zap', 0),
+      job('j7', 'Coolant leak', 'c2', 'done', -3, '', 380, 2.5, 'wrench', 7),
+      job('j8', 'Pre-purchase inspection', 'c4', 'done', -5, '', 150, 1.5, 'clipboard', 7),
+      job('j9', 'Wheel alignment', 'c1', 'waiting', 3, '', 110, 1, 'car', 0)
+    ],
+    invoices: [
+      { id: 'INV-1042', customer: 'c1', date: d(-2), due: d(12), status: 'unpaid', lines: [{ item: 'Brake pads and rotors, front', qty: 1, price: 220 }, { item: 'Labor', qty: 1.5, price: 120 }] },
+      { id: 'INV-1041', customer: 'c3', date: d(-6), due: d(8), status: 'unpaid', lines: [{ item: 'Synthetic oil and filter', qty: 1, price: 62 }, { item: 'Labor', qty: 0.5, price: 120 }] },
+      { id: 'INV-1040', customer: 'c2', date: d(-9), due: d(5), status: 'paid', paidOn: d(-4), lines: [{ item: 'Radiator hose and clamps', qty: 1, price: 95 }, { item: 'Coolant flush', qty: 1, price: 110 }, { item: 'Labor', qty: 1.5, price: 120 }] },
+      { id: 'INV-1039', customer: 'c5', date: d(-16), due: d(-2), status: 'unpaid', lines: [{ item: 'Tire rotation and balance', qty: 1, price: 75 }, { item: 'Valve stems', qty: 4, price: 6 }] },
+      { id: 'INV-1038', customer: 'c4', date: d(-21), due: d(-7), status: 'paid', paidOn: d(-10), lines: [{ item: 'Pre-purchase inspection', qty: 1, price: 150 }] }
+    ],
+    history: [1840, 2120, 1960, 2480, 2210, 2650, 2390, 2180].map((paid, i) => ({ week: weekStart(7 - i), paid, jobs: Math.round(paid / 240) })),
+    checklist: CHECKS.map((text, i) => ({ id: 'k' + i, text }))
+  };
+}
+const db = AK.store('shop', sample());
+
+/* ---------- page state (declared before AK.app, which renders the first tab right away) ---------- */
+let loaded = false, chartType = 'bar', jobQ = '', jobF = 'open', jobView = 'list', custQ = '', pad = null;
+
+/* ---------- helpers ---------- */
+const S = () => db.get();
+const cust = id => db.find('customers', id) || { name: 'No customer', vehicle: '' };
+const money = n => AK.fmt.money(n, S().settings.currency);
+const money0 = n => AK.fmt.money(n, S().settings.currency, 0);
+const sum = (a, f) => a.reduce((t, x) => t + (f ? f(x) : x), 0);
+const subTotal = inv => sum(inv.lines, l => (+l.qty || 0) * (+l.price || 0));
+const taxOf = inv => S().settings.taxOn ? subTotal(inv) * (S().settings.tax || 0) / 100 : 0;
+const invTotal = inv => subTotal(inv) + taxOf(inv);
+const invStatus = inv => inv.status === 'paid' ? { label: 'Paid', cls: 'ok' } : inv.due < AK.today() ? { label: 'Overdue', cls: 'bad' } : { label: 'Sent', cls: '' };
+const pill = s => AK.html`<span class="pill ${s.cls}">${s.label}</span>`;
+
+const jobItem = j => {
+  const c = cust(j.customer);
+  return AK.html`<li><button type="button" class="item" data-act="open-job" data-id="${j.id}">
+    <span class="lead">${AK.icon(j.icon || 'car')}</span>
+    <span class="body"><span class="title">${j.title}</span><span class="sub">${c.name} · ${c.vehicle}</span></span>
+    <span class="trail">${pill(STATUS[j.status])}<span class="sub">${j.time && j.due === AK.today() ? AK.fmt.time(j.time) : AK.fmt.day(j.due)}</span></span>
+  </button></li>`;
+};
+
+/* ---------- the app shell: 5 tabs, hash routes (#/jobs, #/invoices/INV-1042), back button, last tab remembered ---------- */
+const app = AK.app({
+  title: 'Shop Desk', icon: 'wrench',
+  actions: [{ icon: 'help', label: 'Quick tips', act: 'tips' }],
+  fab: { icon: 'plus', label: 'New job', act: 'new-job' },
+  tabs: [
+    { id: 'today', label: 'Today', icon: 'home', render: renderToday },
+    { id: 'jobs', label: 'Jobs', icon: 'clipboard', render: renderJobs },
+    { id: 'invoices', label: 'Invoices', icon: 'receipt', render: renderInvoices, fab: { icon: 'plus', label: 'New invoice', act: 'new-invoice' } },
+    { id: 'customers', label: 'Customers', icon: 'users', render: renderCustomers, fab: { icon: 'plus', label: 'New customer', act: 'new-customer' } },
+    { id: 'more', label: 'More', icon: 'settings', render: renderMore, fab: false }
+  ]
+});
+const badges = () => app.badge('jobs', S().jobs.filter(j => j.status === 'ready').length);
+db.subscribe(() => { app.refresh(); badges(); });
+badges();
+AK.pwa({ name: 'Shop Desk', short_name: 'Shop Desk' });
+
+/* ---------- Today: big numbers first, then what needs doing ---------- */
+function renderToday(page) {
+  const s = S(), today = AK.today();
+  const head = AK.html`<header class="page-head"><div><p class="eyebrow">${AK.fmt.date(new Date(), 'long')}</p><h1>Today</h1>`;
+  if (!loaded) { /* skeleton while "loading" (real apps: while reading files) */
+    page.innerHTML = AK.html`${head}</div></header>${AK.skeleton(4, 'stats')}${AK.skeleton(3)}`;
+    setTimeout(() => { loaded = true; if (app.route().tab === 'today') app.refresh(); }, AK.still() ? 0 : 450);
+    return;
+  }
+  const due = s.jobs.filter(j => j.due === today && j.status !== 'done');
+  const open = s.jobs.filter(j => j.status !== 'done'), ready = s.jobs.filter(j => j.status === 'ready');
+  const unpaid = s.invoices.filter(i => i.status !== 'paid'), h = s.history;
+  const thisWeek = h.length ? h[h.length - 1].paid : 0, lastWeek = h.length > 1 ? h[h.length - 2].paid : 0;
+  const change = lastWeek ? (thisWeek - lastWeek) / lastWeek : 0, pct = s.settings.goal ? Math.min(100, Math.round(thisWeek / s.settings.goal * 100)) : 0;
+  page.innerHTML = AK.html`${head}<p class="sub">${due.length} due today · ${ready.length} ready for pickup</p></div></header>
+    ${s.sample && s.settings.banner ? AK.html`<div class="note">${AK.icon('info')}<div><strong>This is sample data.</strong> The jobs, people and amounts are made up so you can try things. Erase them in More when you are ready.</div></div>` : ''}
+    <div class="stats">
+      <button type="button" class="stat accent" data-act="go" data-to="/invoices"><span class="label">${AK.icon('receipt')} Unpaid</span><span class="value">${money0(sum(unpaid, invTotal))}</span><span class="meta">${unpaid.length} invoices</span></button>
+      <button type="button" class="stat" data-act="go" data-to="/jobs"><span class="label">${AK.icon('clipboard')} Open jobs</span><span class="value">${open.length}</span><span class="meta">${due.length} due today</span></button>
+      <div class="stat"><span class="label">Paid this week</span><span class="value">${money0(thisWeek)}</span>
+        <span class="delta ${change >= 0 ? 'up' : 'down'}">${AK.icon(change >= 0 ? 'trend-up' : 'trend-down')} ${AK.fmt.percent(Math.abs(change))} vs last week</span><div class="spark" id="spark"></div></div>
+      <div class="stat"><span class="label">Weekly goal</span><div class="goal"><div class="ring" style="--value:${pct}"><span>${pct}%</span></div><span class="meta">${money0(thisWeek)}<br>of ${money0(s.settings.goal)}</span></div></div>
+    </div>
+    <div class="dash">
+      <section class="card"><div class="card-head"><h2>Paid by week</h2>
+        <div class="seg" role="radiogroup" aria-label="Chart style"><label><input type="radio" name="ct" value="bar" ${chartType === 'bar' ? 'checked' : ''}><span>Bars</span></label><label><input type="radio" name="ct" value="area" ${chartType === 'area' ? 'checked' : ''}><span>Line</span></label></div></div>
+        <div id="paid"></div></section>
+      <section class="card"><div class="card-head"><h2>Jobs by status</h2></div><div id="mix"></div></section>
+    </div>
+    <section class="section"><div class="sec-head"><h2>Due today</h2><button type="button" class="btn ghost sm" data-act="go" data-to="/jobs">All jobs ${AK.icon('chevron-right')}</button></div>
+      ${due.length ? AK.html`<ul class="list">${due.map(jobItem)}</ul>` : AK.html`<div class="card">${AK.empty({ art: 'list', title: 'Nothing due today', text: 'Jobs with today’s date show up here.', action: { label: 'New job', icon: 'plus', act: 'new-job' } })}</div>`}
+    </section>`;
+  const opts = { labels: h.map(w => AK.fmt.date(w.week, 'day')), series: [{ name: 'Paid', values: h.map(w => w.paid) }], format: 'money', title: 'Paid by week' };
+  const paidEl = page.querySelector('#paid');
+  AK.chart[chartType](paidEl, opts);
+  page.querySelector('.seg').addEventListener('change', e => { chartType = e.target.value; AK.chart[chartType](paidEl, opts); });
+  AK.chart.spark(page.querySelector('#spark'), h.map(w => w.paid));
+  AK.chart.donut(page.querySelector('#mix'), { labels: COLS.map(c => c.title), values: COLS.map(c => s.jobs.filter(j => j.status === c.id).length), center: 'jobs', title: 'Jobs by status' });
+}
+
+/* ---------- Jobs: search + filter chips + list or kanban board ---------- */
+function renderJobs(page) {
+  const s = S(), n = id => s.jobs.filter(j => id === 'open' ? j.status !== 'done' : id === 'all' || j.status === id).length;
+  const filters = [['open', 'Open'], ['waiting', 'Waiting'], ['progress', 'In progress'], ['ready', 'Ready'], ['done', 'Done'], ['all', 'All']];
+  page.innerHTML = AK.html`<header class="page-head"><div><h1>Jobs</h1><p class="sub">${n('open')} open · ${n('ready')} ready for pickup</p></div>
+    <div class="actions"><div class="seg" role="radiogroup" aria-label="View">
+      <label><input type="radio" name="jv" value="list" ${jobView === 'list' ? 'checked' : ''}><span>${AK.icon('list')} List</span></label>
+      <label><input type="radio" name="jv" value="board" ${jobView === 'board' ? 'checked' : ''}><span>${AK.icon('grid')} Board</span></label></div></div></header>
+    <div class="toolbar sticky"><div class="search"><input type="search" id="jobSearch" placeholder="Search jobs, people, cars" aria-label="Search jobs" value="${jobQ}"></div></div>
+    <div class="chips" data-single role="group" aria-label="Filter jobs" ${jobView === 'board' ? 'hidden' : ''}>${filters.map(f => AK.html`<button type="button" class="chip" data-f="${f[0]}" aria-pressed="${jobF === f[0]}">${f[1]} <span class="n">${n(f[0])}</span></button>`)}</div>
+    <div id="jobsOut"></div>`;
+  const out = page.querySelector('#jobsOut'), chips = page.querySelector('.chips');
+  const draw = () => {
+    const q = jobQ.toLowerCase();
+    const list = s.jobs.filter(j => (jobView === 'board' || jobF === 'all' || (jobF === 'open' ? j.status !== 'done' : j.status === jobF)) &&
+      (!q || [j.title, cust(j.customer).name, cust(j.customer).vehicle].join(' ').toLowerCase().includes(q)))
+      .sort((a, b) => a.due.localeCompare(b.due) || (a.time || '').localeCompare(b.time || ''));
+    if (jobView === 'board') {
+      if (!out.querySelector('.kanban')) out.innerHTML = '<div class="kanban"></div>';
+      AK.kanban(out.firstChild, { columns: COLS, cards: list.map(j => ({ id: j.id, col: j.status, title: j.title, j })), emptyText: 'No jobs',
+        card: c => AK.html`<p class="kt">${c.j.title}</p><p class="ks">${cust(c.j.customer).name} · ${cust(c.j.customer).vehicle}</p><div class="kmeta"><span class="muted">${AK.fmt.day(c.j.due)}</span><strong class="num">${money0(c.j.price)}</strong></div>`,
+        onMove: (c, col) => { db.update('jobs', c.id, { status: col }); AK.toast('Moved to ' + STATUS[col].label, { undo: () => db.undo() }); },
+        onOpen: c => editJob(c.id) });
+      return;
+    }
+    if (!list.length) { AK.render(out, AK.html`<div class="card">${AK.empty({ art: q ? 'search' : 'list', title: q ? 'No jobs match' : 'No jobs here', text: q ? 'Try a shorter word, or another filter.' : 'Add a job and it will show up here.', action: q ? null : { label: 'New job', icon: 'plus', act: 'new-job' } })}</div>`); return; }
+    let ul = out.querySelector('ul.list');
+    if (!ul) { out.innerHTML = '<ul class="list" aria-label="Jobs"></ul>'; ul = out.firstChild; }
+    AK.list(ul, list, jobItem);
+  };
+  page.querySelector('#jobSearch').addEventListener('input', e => { jobQ = e.target.value; draw(); });
+  AK.on(chips, 'click', '.chip', (e, chip) => { jobF = chip.dataset.f; draw(); });
+  page.querySelector('.page-head .seg').addEventListener('change', e => { jobView = e.target.value; chips.hidden = jobView === 'board'; out.innerHTML = ''; draw(); });
+  draw();
+}
+
+/* job sheet: tabs (details / checklist / photos), validation, delete with confirm + undo */
+function editJob(id) {
+  const s = S(), j = id ? db.find('jobs', id) : { title: '', customer: '', status: 'waiting', due: AK.today(), time: '', price: '', hours: 1, notes: '', icon: 'car', photos: [], checks: s.checklist.map(c => ({ text: c.text, done: false })) };
+  const checks = j.checks.map(c => ({ ...c })), photos = j.photos.slice();
+  const L = AK.sheet({ title: id ? 'Edit job' : 'New job', body: AK.html`<div class="tabs">
+    <div class="tablist"><button>Details</button><button>Checklist <span class="badge" id="ckBadge"></span></button><button>Photos</button></div>
+    <div class="panel"><form class="form" id="jobForm" novalidate>
+      <div class="field"><label for="f-title">What needs doing</label><input id="f-title" name="title" required placeholder="For example: front brake pads"></div>
+      <div class="field"><label for="f-cust">Customer</label><select id="f-cust" name="customer" required><option value="">Choose a customer</option>${s.customers.map(c => AK.html`<option value="${c.id}">${c.name} · ${c.vehicle}</option>`)}</select></div>
+      <div class="cols" style="--min:140px"><div class="field"><label for="f-due">Due date</label><input id="f-due" name="due" type="date" required></div><div class="field"><label for="f-time">Time</label><input id="f-time" name="time" type="time"></div></div>
+      <div class="cols" style="--min:140px"><div class="field"><label for="f-price">Price</label><div class="affix"><span>$</span><input id="f-price" name="price" data-money inputmode="decimal" placeholder="0.00"></div></div>
+        <div class="field"><label for="f-hours">Hours</label><div class="stepper"><input id="f-hours" name="hours" type="number" min="0" max="40" step="0.5"></div></div></div>
+      <div class="field"><label for="f-status">Status</label><select id="f-status" name="status">${COLS.map(c => AK.html`<option value="${c.id}">${c.title}</option>`)}</select></div>
+      <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" name="notes" placeholder="Anything the next person should know"></textarea><p class="help">Only people using this phone see notes.</p></div>
+    </form></div>
+    <div class="panel"><div class="stack" style="--gap:10px"><div class="progress" id="ckBar"></div><p class="small muted" id="ckText"></p>
+      <div class="checks">${checks.map((c, i) => AK.html`<label class="check"><input type="checkbox" data-ci="${i}" ${c.done ? 'checked' : ''}><span>${c.text}</span></label>`)}</div></div></div>
+    <div class="panel"><div class="stack"><div class="thumbs" id="thumbs"></div><button type="button" class="btn block" id="addPhoto">${AK.icon('camera')} Add a photo</button><p class="help">Photos are made smaller so they fit on this phone.</p></div></div>
+  </div>`,
+    actions: [
+      id ? { label: 'Delete', icon: 'trash', ghost: true, onClick: l => { AK.confirm('Delete this job?', { text: 'You can undo right after.', ok: 'Delete', danger: true }).then(ok => { if (ok) { db.remove('jobs', id); l.close(); AK.toast('Job deleted', { undo: () => db.undo() }); } }); return false; } } : null,
+      { label: id ? 'Save' : 'Add job', primary: true, onClick: l => {
+        tabs.select(0);
+        const r = AK.validate(l.body.querySelector('#jobForm'), { price: { min: 0, message: 'Enter a price, or 0' } });
+        if (!r.ok) { AK.toast('Check the highlighted fields', 'bad'); return false; }
+        const data = { ...r.values, price: r.values.price || 0, checks, photos };
+        if (id) db.update('jobs', id, data); else db.add('jobs', { ...data, icon: 'car' }, { first: true });
+        AK.toast(id ? 'Job saved' : 'Job added', 'ok');
+      } }
+    ].filter(Boolean)
+  });
+  const b = L.body, tabs = AK.tabs(b.querySelector('.tabs'));
+  AK.fill(b.querySelector('#jobForm'), j);
+  const progress = () => { const done = checks.filter(c => c.done).length; b.querySelector('#ckBar').style.setProperty('--value', checks.length ? done / checks.length * 100 : 0); b.querySelector('#ckText').textContent = done + ' of ' + checks.length + ' checks done'; b.querySelector('#ckBadge').textContent = done + '/' + checks.length; };
+  const thumbs = () => AK.render(b.querySelector('#thumbs'), photos.map((src, i) => AK.html`<figure><img src="${src}" alt="Job photo ${i + 1}" width="200" height="200"><button type="button" class="btn icon sm" data-rm="${i}" aria-label="Remove photo ${i + 1}">${AK.icon('x')}</button></figure>`));
+  b.addEventListener('change', e => { if (e.target.dataset.ci != null) { checks[e.target.dataset.ci].done = e.target.checked; progress(); } });
+  b.querySelector('#thumbs').addEventListener('click', e => { const x = e.target.closest('[data-rm]'); if (x) { photos.splice(+x.dataset.rm, 1); thumbs(); } });
+  b.querySelector('#addPhoto').addEventListener('click', async () => { const url = await AK.photo(); if (url) { photos.push(url); thumbs(); AK.toast('Photo added', 'ok'); } });
+  progress(); thumbs();
+}
+
+/* ---------- Invoices: stat strip + sortable, searchable table; #/invoices/ID shows the printable document ---------- */
+function renderInvoices(page, ctx) {
+  if (ctx.param) return renderInvoice(page, ctx);
+  const s = S(), unpaid = s.invoices.filter(i => i.status !== 'paid'), paid = s.invoices.filter(i => i.status === 'paid');
+  page.innerHTML = AK.html`<header class="page-head"><div><h1>Invoices</h1><p class="sub">${unpaid.length} unpaid · ${unpaid.filter(i => i.due < AK.today()).length} overdue</p></div>
+    <div class="actions"><button type="button" class="btn sm" data-act="csv-invoices">${AK.icon('download')} Export CSV</button></div></header>
+    <div class="stats"><div class="stat accent"><span class="label">Unpaid</span><span class="value">${money0(sum(unpaid, invTotal))}</span><span class="meta">${unpaid.length} invoices</span></div>
+      <div class="stat"><span class="label">Paid</span><span class="value">${money0(sum(paid, invTotal))}</span><span class="meta">${paid.length} invoices</span></div></div>
+    <div id="invTable"></div>`;
+  AK.table(page.querySelector('#invTable'), {
+    search: true, placeholder: 'Search invoices', caption: 'Invoices',
+    columns: [
+      { key: 'name', label: 'Customer', primary: true },
+      { key: 'id', label: 'Number' },
+      { key: 'date', label: 'Date', format: 'date' },
+      { key: 'state', label: 'Status', html: r => pill(invStatus(r)) },
+      { key: 'total', label: 'Total', format: v => money(v), num: true }
+    ],
+    rows: s.invoices.map(i => ({ ...i, name: cust(i.customer).name, total: invTotal(i), state: invStatus(i).label })),
+    sort: { key: 'date', dir: 'desc' },
+    onRow: r => ctx.go('/invoices/' + r.id),
+    empty: { art: 'inbox', title: 'No invoices yet', text: 'Tap New invoice to make your first one.' }
+  });
+}
+function invoiceDoc(inv) {
+  const s = S(), c = cust(inv.customer), st = invStatus(inv);
+  return AK.html`<article class="doc">
+    <header class="doc-head"><div><h2>${s.settings.business || 'Shop Desk'}</h2><p class="muted">${[s.settings.phone, s.settings.email].filter(Boolean).join(' · ')}</p></div>
+      <div class="right"><p class="eyebrow">Invoice</p><p class="num" style="font-size:1.25rem;font-weight:750">${inv.id}</p></div></header>
+    <dl class="doc-meta"><div><dt>Bill to</dt><dd>${c.name}<br><span class="muted">${c.vehicle}</span></dd></div><div><dt>Date</dt><dd>${AK.fmt.date(inv.date)}</dd></div><div><dt>Due</dt><dd>${AK.fmt.date(inv.due)}</dd></div><div><dt>Status</dt><dd>${st.label}</dd></div></dl>
+    <table><thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Amount</th></tr></thead>
+      <tbody>${inv.lines.map(l => AK.html`<tr><td>${l.item}</td><td class="num">${AK.fmt.number(l.qty)}</td><td class="num">${money(l.price)}</td><td class="num">${money(l.qty * l.price)}</td></tr>`)}</tbody></table>
+    <div class="doc-total"><div><span>Subtotal</span><span>${money(subTotal(inv))}</span></div>${s.settings.taxOn ? AK.html`<div><span>Tax (${s.settings.tax}%)</span><span>${money(taxOf(inv))}</span></div>` : ''}<div class="grand"><span>Total</span><span>${money(invTotal(inv))}</span></div></div>
+    <div class="doc-sign"><div>${inv.signature ? AK.html`<img class="sig-img" src="${inv.signature}" alt="Customer signature" width="300" height="95">` : AK.html`<p style="height:72px"></p>`}<p class="line">Customer signature</p></div><div><p style="height:72px"></p><p class="line">Date</p></div></div>
+    <p class="doc-foot">${s.settings.note}</p></article>`;
+}
+function renderInvoice(page, ctx) {
+  const inv = db.find('invoices', ctx.param);
+  if (!inv) { page.innerHTML = AK.html`<header class="page-head"><div><h1>Invoice not found</h1></div></header><div class="card">${AK.empty({ art: 'search', title: 'This invoice is gone', text: 'It may have been deleted.', action: { label: 'All invoices', act: 'go-invoices' } })}</div>`; return; }
+  const c = cust(inv.customer), msg = `Invoice ${inv.id} from ${S().settings.business}: ${money(invTotal(inv))}, due ${AK.fmt.date(inv.due)}.`;
+  page.innerHTML = AK.html`<header class="page-head"><div><p class="eyebrow">Invoice · ${c.name}</p><h1>${inv.id}</h1><p class="sub">${money(invTotal(inv))} · ${pill(invStatus(inv))}</p></div>
+    <div class="actions"><button type="button" class="btn sm" data-act="print">${AK.icon('printer')} Print</button><button type="button" class="btn sm" data-act="share-inv" data-id="${inv.id}">${AK.icon('share')} Share</button>
+    ${inv.status !== 'paid' ? AK.html`<button type="button" class="btn primary sm" data-act="pay" data-id="${inv.id}">${AK.icon('check')} Mark paid</button>` : ''}</div></header>
+    <div class="tabs"><div class="tablist"><button>Invoice</button><button>Signature</button><button>Send</button></div>
+      <div class="panel">${invoiceDoc(inv)}</div>
+      <div class="panel"><div class="stack"><p class="muted">Ask the customer to sign with a finger. It is added to the invoice.</p><canvas id="sig"></canvas>
+        <div class="btns"><button type="button" class="btn" data-act="sig-clear">${AK.icon('undo')} Clear</button><button type="button" class="btn primary" data-act="sig-save" data-id="${inv.id}">Save signature</button></div></div></div>
+      <div class="panel"><ul class="list">
+        <li><a class="item" href="${AK.sms(c.phone, msg)}"><span class="lead">${AK.icon('message')}</span><span class="body"><span class="title">Text it</span><span class="sub">${c.phone || 'Opens your messages app'}</span></span>${AK.icon('chevron-right', 'chev')}</a></li>
+        <li><a class="item" href="${AK.mail(c.email, 'Invoice ' + inv.id, msg)}"><span class="lead">${AK.icon('mail')}</span><span class="body"><span class="title">Email it</span><span class="sub">${c.email || 'Opens your email app'}</span></span>${AK.icon('chevron-right', 'chev')}</a></li>
+        <li><button type="button" class="item" data-copy="${msg}"><span class="lead">${AK.icon('copy')}</span><span class="body"><span class="title">Copy the message</span><span class="sub">Paste it anywhere</span></span></button></li>
+        <li><button type="button" class="item" data-act="csv-lines" data-id="${inv.id}"><span class="lead">${AK.icon('download')}</span><span class="body"><span class="title">Download the lines</span><span class="sub">A spreadsheet file (CSV)</span></span></button></li>
+      </ul></div></div>`;
+  pad = AK.signature(page.querySelector('#sig'));
+}
+function newInvoice() {
+  const s = S(), row = () => AK.html`<div class="line-row"><input class="item-in" name="item" placeholder="Part or labor" aria-label="Item"><input name="qty" type="number" min="0" step="0.5" value="1" aria-label="Quantity"><div class="affix"><span>$</span><input name="price" data-money inputmode="decimal" placeholder="0.00" aria-label="Price"></div><button type="button" class="btn icon ghost sm" data-del aria-label="Remove line">${AK.icon('trash')}</button></div>`;
+  const L = AK.sheet({ title: 'New invoice', body: AK.html`<form class="form" novalidate>
+      <div class="field"><label for="n-cust">Customer</label><select id="n-cust" name="customer" required><option value="">Choose a customer</option>${s.customers.map(c => AK.html`<option value="${c.id}">${c.name}</option>`)}</select></div>
+      <div class="field"><span class="label">Lines</span><div class="stack" id="lines" style="--gap:10px">${row()}</div>
+        <button type="button" class="btn soft sm" id="addLine" style="align-self:flex-start">${AK.icon('plus')} Add a line</button></div>
+      <div class="total-row"><span class="muted">Total${s.settings.taxOn ? ' with tax' : ''}</span><strong class="big" id="nTotal">${money(0)}</strong></div></form>`,
+    actions: [{ label: 'Cancel', value: null }, { label: 'Create invoice', primary: true, onClick: l => {
+      const r = AK.validate(l.body.querySelector('form'));
+      const lines = read().filter(x => x.item);
+      if (!lines.length) { AK.setError(l.body.querySelector('[name=item]'), 'Add at least one line'); r.ok = false; }
+      if (!r.ok) return false;
+      const num = 'INV-' + (Math.max(1000, ...S().invoices.map(i => +i.id.split('-')[1] || 0)) + 1);
+      db.add('invoices', { id: num, customer: r.values.customer, date: AK.today(), due: AK.today(s.settings.dueDays), status: 'unpaid', lines }, { first: true });
+      AK.toast('Invoice ' + num + ' created', 'ok'); app.go('/invoices/' + num);
+    } }] });
+  const b = L.body, read = () => Array.from(b.querySelectorAll('.line-row')).map(r => ({ item: r.querySelector('[name=item]').value.trim(), qty: +r.querySelector('[name=qty]').value || 0, price: AK.parseMoney(r.querySelector('[name=price]').value) }));
+  const total = () => { b.querySelector('#nTotal').textContent = money(invTotal({ lines: read() })); };
+  b.addEventListener('input', total);
+  b.querySelector('#addLine').addEventListener('click', () => { b.querySelector('#lines').insertAdjacentHTML('beforeend', String(row())); b.querySelector('.line-row:last-child [name=item]').focus(); });
+  b.addEventListener('click', e => { const d = e.target.closest('[data-del]'); if (d && b.querySelectorAll('.line-row').length > 1) { d.closest('.line-row').remove(); total(); } });
+}
+
+/* ---------- Customers: searchable list, sheet with call / text / email ---------- */
+function renderCustomers(page) {
+  const s = S();
+  page.innerHTML = AK.html`<header class="page-head"><div><h1>Customers</h1><p class="sub">${s.customers.length} people</p></div>
+    <div class="actions"><button type="button" class="btn sm" data-act="import-customers">${AK.icon('upload')} Import CSV</button></div></header>
+    <div class="toolbar"><div class="search"><input type="search" id="custSearch" placeholder="Search by name or car" aria-label="Search customers" value="${custQ}"></div></div>
+    <div id="custOut"></div>`;
+  const out = page.querySelector('#custOut');
+  const owed = c => sum(s.invoices.filter(i => i.customer === c.id && i.status !== 'paid'), invTotal);
+  const last = c => s.jobs.filter(j => j.customer === c.id && j.due <= AK.today()).map(j => j.due).sort().pop();
+  const draw = () => {
+    const q = custQ.toLowerCase(), list = s.customers.filter(c => !q || (c.name + ' ' + c.vehicle).toLowerCase().includes(q)).sort((a, b) => a.name.localeCompare(b.name));
+    if (!list.length) { AK.render(out, AK.html`<div class="card">${AK.empty(q ? { art: 'search', title: 'Nobody matches', text: 'Check the spelling or try the car instead.' } : { art: 'people', title: 'No customers yet', text: 'Add people one by one, or import a CSV file.', action: { label: 'New customer', icon: 'plus', act: 'new-customer' } })}</div>`); return; }
+    let ul = out.querySelector('ul.list');
+    if (!ul) { out.innerHTML = '<ul class="list" aria-label="Customers"></ul>'; ul = out.firstChild; }
+    AK.list(ul, list, c => AK.html`<li><button type="button" class="item" data-act="open-customer" data-id="${c.id}">${AK.avatar(c.name)}
+      <span class="body"><span class="title">${c.name}</span><span class="sub">${c.vehicle}${last(c) ? ' · last visit ' + AK.fmt.ago(last(c)) : ''}</span></span>
+      <span class="trail">${owed(c) ? AK.html`<span class="value">${money0(owed(c))}</span><span class="sub">owes</span>` : ''}</span>${AK.icon('chevron-right', 'chev')}</button></li>`);
+  };
+  page.querySelector('#custSearch').addEventListener('input', e => { custQ = e.target.value; draw(); });
+  draw();
+}
+function editCustomer(id) {
+  const c = id ? db.find('customers', id) : { name: '', vehicle: '', phone: '', email: '', notes: '' };
+  const jobs = id ? S().jobs.filter(j => j.customer === id) : [];
+  const L = AK.sheet({ title: id ? c.name : 'New customer', body: AK.html`
+    ${id ? AK.html`<div class="person">${AK.avatar(c.name, 'lg')}<p class="muted">${c.vehicle}</p></div>
+    <div class="btns fill" style="margin-bottom:20px">
+      ${c.phone ? AK.html`<a class="btn" href="${AK.tel(c.phone)}">${AK.icon('phone')} Call</a><a class="btn" href="${AK.sms(c.phone, 'Hi ' + c.name.split(' ')[0] + ', ')}">${AK.icon('message')} Text</a>` : AK.html`<button type="button" class="btn" disabled>${AK.icon('phone')} Call</button><button type="button" class="btn" disabled>${AK.icon('message')} Text</button>`}
+      ${c.email ? AK.html`<a class="btn" href="${AK.mail(c.email, 'Your car', '')}">${AK.icon('mail')} Email</a>` : ''}</div>` : ''}
+    <form class="form" novalidate>
+      <div class="field"><label for="c-name">Name</label><input id="c-name" name="name" required autocomplete="name"></div>
+      <div class="field"><label for="c-car">Car</label><input id="c-car" name="vehicle" placeholder="Year, make and model"></div>
+      <div class="cols" style="--min:180px"><div class="field"><label for="c-phone">Phone</label><input id="c-phone" name="phone" type="tel" autocomplete="tel"></div><div class="field"><label for="c-mail">Email</label><input id="c-mail" name="email" type="email" autocomplete="email"></div></div>
+      <div class="field"><label for="c-notes">Notes</label><textarea id="c-notes" name="notes"></textarea></div></form>
+    ${jobs.length ? AK.html`<h3 style="margin:24px 0 10px">Jobs</h3><ul class="list">${jobs.map(jobItem)}</ul>` : ''}`,
+    actions: [
+      id ? { label: 'Delete', icon: 'trash', ghost: true, onClick: l => { AK.confirm('Delete ' + c.name + '?', { text: 'Their jobs and invoices stay.', ok: 'Delete', danger: true }).then(ok => { if (ok) { db.remove('customers', id); l.close(); AK.toast('Customer deleted', { undo: () => db.undo() }); } }); return false; } } : null,
+      { label: id ? 'Save' : 'Add customer', primary: true, onClick: l => {
+        const r = AK.validate(l.body.querySelector('form'));
+        if (!r.ok) return false;
+        if (id) db.update('customers', id, r.values); else db.add('customers', r.values);
+        AK.toast(id ? 'Saved' : 'Customer added', 'ok');
+      } }].filter(Boolean) });
+  AK.fill(L.body.querySelector('form'), c);
+}
+
+/* ---------- More: settings form, reorderable checklist, backups, install, help ---------- */
+function renderMore(page) {
+  const s = S();
+  page.innerHTML = AK.html`<header class="page-head"><div><h1>More</h1><p class="sub">Settings, checklist, backups and help</p></div></header>
+  <section class="card"><div class="card-head"><h2>Business</h2></div>
+    <form class="form" id="setForm" novalidate>
+      <div class="field"><label for="s-biz">Business name</label><input id="s-biz" name="business" required autocomplete="organization"><p class="help">Shown at the top of every invoice.</p></div>
+      <div class="cols"><div class="field"><label for="s-phone">Phone</label><input id="s-phone" name="phone" type="tel" autocomplete="tel"></div><div class="field"><label for="s-email">Email</label><input id="s-email" name="email" type="email" autocomplete="email"></div></div>
+      <div class="cols" style="--min:150px"><div class="field"><label for="s-rate">Labor rate</label><div class="affix"><span>$</span><input id="s-rate" name="rate" data-money inputmode="decimal"><span>/hr</span></div></div>
+        <div class="field"><label for="s-tax">Sales tax</label><div class="affix"><input id="s-tax" name="tax" type="number" min="0" max="30" step="0.01"><span>%</span></div></div></div>
+      <div class="cols" style="--min:150px"><div class="field"><label for="s-goal">Weekly goal</label><div class="affix"><span>$</span><input id="s-goal" name="goal" data-money inputmode="decimal"></div></div>
+        <div class="field"><label for="s-due">Days to pay</label><div class="stepper"><input id="s-due" name="dueDays" type="number" min="0" max="90"></div></div></div>
+      <div class="field"><label for="s-cur">Currency</label><select id="s-cur" name="currency"><option value="USD">US dollar</option><option value="CAD">Canadian dollar</option><option value="EUR">Euro</option><option value="GBP">British pound</option><option value="AUD">Australian dollar</option></select></div>
+      <fieldset class="field"><legend>Week starts on</legend><div class="checks"><label class="check"><input type="radio" name="weekStart" value="sun"><span>Sunday</span></label><label class="check"><input type="radio" name="weekStart" value="mon"><span>Monday</span></label></div></fieldset>
+      <div class="field"><label for="s-note">Note at the bottom of invoices</label><textarea id="s-note" name="note"></textarea></div>
+      <div class="checks">
+        <label class="check between"><span>Add tax to invoices<span class="sub">Uses the sales tax above</span></span><input type="checkbox" class="switch" name="taxOn"></label>
+        <label class="check between"><span>Sample data notice<span class="sub">The note at the top of Today</span></span><input type="checkbox" class="switch" name="banner"></label>
+      </div>
+      <div class="btns end"><button type="submit" class="btn primary">Save settings</button></div>
+    </form></section>
+  <section class="card"><div class="card-head"><h2>Inspection checklist</h2><span class="muted small">${s.checklist.length} checks</span></div>
+    <p class="muted small" style="margin-bottom:12px">New jobs start with this list. Drag the handle to change the order.</p>
+    <ul class="list" id="ckList">${s.checklist.map(k => AK.html`<li class="item" data-id="${k.id}"><button type="button" class="handle" aria-label="Move ${k.text} (arrow keys)">${AK.icon('grip')}</button><span class="body"><span class="title wrap">${k.text}</span></span>
+      <button type="button" class="btn icon ghost sm" data-act="rename-check" data-id="${k.id}" aria-label="Rename ${k.text}">${AK.icon('edit')}</button><button type="button" class="btn icon ghost sm" data-act="del-check" data-id="${k.id}" aria-label="Remove ${k.text}">${AK.icon('trash')}</button></li>`)}</ul>
+    <form class="row" id="addCheck" style="margin-top:12px"><input name="text" placeholder="Add a check, like wipers" aria-label="New check" style="flex:1 1 180px;width:auto"><button type="submit" class="btn soft">${AK.icon('plus')} Add</button></form></section>
+  <section class="card"><div class="card-head"><h2>Your data</h2></div>
+    <p class="muted small" style="margin-bottom:12px">${db.persistent ? 'Everything is saved on this phone only. Back it up now and then.' : 'Private mode: nothing is saved after you close this page.'}</p>
+    <ul class="list">
+      <li><button type="button" class="item" data-act="backup"><span class="lead">${AK.icon('download')}</span><span class="body"><span class="title">Back up</span><span class="sub">Save one file with everything</span></span></button></li>
+      <li><button type="button" class="item" data-act="copy-backup"><span class="lead">${AK.icon('copy')}</span><span class="body"><span class="title">Copy the backup</span><span class="sub">Paste it in a note or email to yourself</span></span></button></li>
+      <li><button type="button" class="item" data-act="restore"><span class="lead">${AK.icon('upload')}</span><span class="body"><span class="title">Restore a backup</span><span class="sub">Replaces what is here now</span></span></button></li>
+      <li><button type="button" class="item" data-act="csv-jobs"><span class="lead">${AK.icon('file-text')}</span><span class="body"><span class="title">Export jobs</span><span class="sub">A spreadsheet file (CSV)</span></span></button></li>
+      <li><button type="button" class="item" data-act="reset-sample"><span class="lead">${AK.icon('refresh')}</span><span class="body"><span class="title">Load the sample data</span><span class="sub">Replaces what is here now</span></span></button></li>
+      <li><button type="button" class="item danger" data-act="erase"><span class="lead">${AK.icon('trash')}</span><span class="body"><span class="title">Erase everything</span><span class="sub">Keeps your settings and checklist</span></span></button></li>
+    </ul></section>
+  <section class="card"><div class="card-head"><h2>Put it on your home screen</h2></div>
+    <p class="muted" style="margin-bottom:14px">Once this app is published, open it in Chrome and add it to your home screen. It opens like an app, without the address bar.</p>
+    <button type="button" class="btn" data-act="install">${AK.icon('download')} Add to home screen</button></section>
+  <section class="section"><div class="sec-head"><h2>Help</h2></div>
+    <div class="accs" id="help">
+      <details class="acc"><summary>Where is my data saved?</summary><p>On this phone, inside this app's storage. Nothing is sent anywhere. Use Back up to keep a copy.</p></details>
+      <details class="acc"><summary>Does it work without internet?</summary><p>Yes. Everything works offline once the page is open.</p></details>
+      <details class="acc"><summary>I deleted something by mistake</summary><p>Tap Undo in the message at the bottom of the screen right after. Undo also works for moves and edits.</p></details>
+      <details class="acc"><summary>How do I move a job to Ready?</summary><p>Open Jobs, switch to Board, then hold a card and drag it. Or open the job and change its status.</p></details>
+    </div></section>
+  <p class="muted small center">Shop Desk is a sample app built with appkit.</p>`;
+  const form = page.querySelector('#setForm');
+  AK.fill(form, s.settings);
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const r = AK.validate(form, { tax: { min: 0, max: 30 }, goal: { min: 0 } });
+    if (!r.ok) return;
+    const btn = form.querySelector('[type=submit]');
+    btn.setAttribute('aria-busy', 'true');
+    setTimeout(() => { btn.removeAttribute('aria-busy'); db.set({ settings: { ...S().settings, ...r.values } }); AK.currency = r.values.currency; AK.toast('Settings saved', { type: 'ok', undo: () => db.undo() }); }, AK.still() ? 0 : 500);
+  });
+  AK.drag(page.querySelector('#ckList'), { handle: '.handle', onSort: ids => db.set({ checklist: ids.map(id => S().checklist.find(k => k.id === id)) }) });
+  page.querySelector('#addCheck').addEventListener('submit', e => {
+    e.preventDefault();
+    const t = e.target.text.value.trim();
+    if (t) db.add('checklist', { text: t }); else AK.setError(e.target.text, 'Type a check first');
+  });
+  AK.accordion(page.querySelector('#help'));
+}
+
+/* ---------- actions: any element with data-act="name" runs AK.act('name') (registered once, no leaks) ---------- */
+AK.act({
+  go: el => app.go(el.dataset.to),
+  'go-invoices': () => app.go('/invoices'),
+  'new-job': () => editJob(),
+  'open-job': el => editJob(el.dataset.id),
+  'new-invoice': () => newInvoice(),
+  'new-customer': () => editCustomer(),
+  'open-customer': el => editCustomer(el.dataset.id),
+  print: () => AK.print('Invoice ' + app.route().param),
+  'share-inv': el => { const i = db.find('invoices', el.dataset.id); AK.share({ title: 'Invoice ' + i.id, text: `Invoice ${i.id} from ${S().settings.business}: ${money(invTotal(i))}, due ${AK.fmt.date(i.due)}.` }); },
+  pay: el => {
+    const inv = db.find('invoices', el.dataset.id);
+    AK.modal({ title: 'Record a payment', body: AK.html`<form class="form" novalidate>
+      <div class="field"><label for="p-amt">Amount</label><div class="affix"><span>$</span><input id="p-amt" name="amount" data-money inputmode="decimal" required></div></div>
+      <div class="field"><span class="label" id="pm">Paid by</span><div class="seg block" role="radiogroup" aria-labelledby="pm"><label><input type="radio" name="method" value="cash" checked><span>Cash</span></label><label><input type="radio" name="method" value="card"><span>Card</span></label><label><input type="radio" name="method" value="check"><span>Check</span></label></div></div>
+      <div class="field"><label for="p-date">Date</label><input id="p-date" name="date" type="date" required></div></form>`,
+      onOpen: l => AK.fill(l.body.querySelector('form'), { amount: invTotal(inv), date: AK.today() }),
+      actions: [{ label: 'Cancel' }, { label: 'Save payment', primary: true, onClick: l => {
+        const r = AK.validate(l.body.querySelector('form'), { amount: { min: 0.01, message: 'Enter the amount paid' } });
+        if (!r.ok) return false;
+        db.update('invoices', inv.id, { status: 'paid', paid: r.values.amount, method: r.values.method, paidOn: r.values.date });
+        AK.toast('Marked as paid', { type: 'ok', undo: () => db.undo() });
+      } }] });
+  },
+  'sig-clear': () => pad && pad.clear(),
+  'sig-save': el => { if (!pad || pad.isEmpty()) return AK.toast('Sign in the box first', 'warn'); db.update('invoices', el.dataset.id, { signature: pad.toDataURL({ color: '#000' }) }); AK.toast('Signature added to the invoice', 'ok'); },
+  'csv-lines': el => { const i = db.find('invoices', el.dataset.id); AK.csv.export(i.lines.map(l => ({ ...l, amount: l.qty * l.price })), i.id + '.csv', [{ key: 'item', label: 'Item' }, { key: 'qty', label: 'Qty' }, { key: 'price', label: 'Price' }, { key: 'amount', label: 'Amount' }]); },
+  'csv-invoices': () => AK.csv.export(S().invoices.map(i => ({ number: i.id, customer: cust(i.customer).name, date: i.date, due: i.due, status: invStatus(i).label, total: invTotal(i).toFixed(2) })), 'invoices-' + AK.today() + '.csv'),
+  'csv-jobs': () => AK.csv.export(S().jobs.map(j => ({ title: j.title, customer: cust(j.customer).name, status: STATUS[j.status].label, due: j.due, price: j.price })), 'jobs-' + AK.today() + '.csv'),
+  'import-customers': async () => {
+    const rows = await AK.csv.import(); if (!rows) return;
+    const pick = (r, k) => { const f = Object.keys(r).find(x => x.toLowerCase().includes(k)); return f ? r[f] : ''; };
+    const add = rows.map(r => ({ id: AK.id(), name: pick(r, 'name'), vehicle: pick(r, 'car') || pick(r, 'vehicle'), phone: pick(r, 'phone'), email: pick(r, 'mail'), notes: '' })).filter(c => c.name);
+    if (!add.length) return AK.toast('No names found. The file needs a "name" column.', 'warn');
+    db.update(d => { d.customers.push(...add); });
+    AK.toast('Added ' + add.length + ' customers', { type: 'ok', undo: () => db.undo() });
+  },
+  'rename-check': async el => { const k = db.find('checklist', el.dataset.id); const t = await AK.prompt('Rename check', { value: k.text, label: 'Check' }); if (t) db.update('checklist', k.id, { text: t }); },
+  'del-check': el => { db.remove('checklist', el.dataset.id); AK.toast('Check removed', { undo: () => db.undo() }); },
+  backup: () => db.export('shop-desk-backup-' + AK.today() + '.json'),
+  'copy-backup': () => AK.copy(JSON.stringify(S()), { done: 'Backup copied' }),
+  restore: async () => { if (await AK.confirm('Restore a backup?', { text: 'It replaces everything here now. You can undo right after.', ok: 'Choose file' })) { const r = await db.import(); if (r) AK.toast('Backup restored', { type: 'ok', undo: () => db.undo() }); } },
+  'reset-sample': async () => { if (await AK.confirm('Load the sample data?', { text: 'It replaces everything here now.', ok: 'Load it', danger: true })) { db.reset(sample()); AK.toast('Sample data loaded', { undo: () => db.undo() }); } },
+  erase: async () => { if (await AK.confirm('Erase everything?', { text: 'Jobs, invoices and customers are removed from this phone. Settings stay.', ok: 'Erase', danger: true })) { db.set({ sample: false, customers: [], jobs: [], invoices: [], history: [] }); AK.toast('Everything erased', { undo: () => db.undo() }); } },
+  install: () => AK.pwa.canInstall() ? AK.pwa.install() : AK.modal({ title: 'Add to home screen', body: AK.html`<ol class="stack" style="--gap:8px;padding-left:20px"><li>Open this app in Chrome (after it is published).</li><li>Tap the menu with three dots.</li><li>Tap <strong>Add to Home screen</strong>.</li></ol>`, actions: [{ label: 'Got it', primary: true }] }),
+  tips: () => AK.modal({ title: 'Quick tips', body: AK.el('ul', { class: 'list' }, [['clipboard', 'Hold a job card on the Board to drag it to another column.'], ['undo', 'Every delete and move shows Undo for a few seconds.'], ['download', 'Back up in More, now and then.']].map(t => AK.el('li', { class: 'item' }, [AK.el('span', { class: 'lead' }, AK.icon(t[0])), AK.el('span', { class: 'body' }, AK.el('span', { class: 'sub wrap', text: t[1] }))]))), actions: [{ label: 'Got it', primary: true }] })
+});
+AK.currency = S().settings.currency;
+</script>
+</body>
+</html>

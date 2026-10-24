@@ -1,0 +1,41 @@
+{
+  "id": "booking-manager",
+  "kind": "app",
+  "name": "Bookings",
+  "summary": "Appointment book for a small business: a Today screen with a big next-up card (time in huge numerals, Call, Text reminder, Arrived/Done), booked-time ring and money; a calendar with a phone-first Day timeline (big tappable half-hour slots, blocked and closed time, a live now line, side-by-side overlaps), Week and Month views; services with duration and price; opening hours per weekday (seeded from {{hours}}), blocked time, capacity and a gap after each booking; clash detection with the next free time to tap; quick reschedule; one-tap reminder texts; search; printable day sheet; CSV export; JSON backup and restore. Works offline, data stays on the device, starts empty with a sample-data button.",
+  "best_for": ["auto repair", "mechanic", "tire shop", "detailer", "hair salon", "barber", "nail salon", "massage", "physio", "pet groomer", "tutor", "photographer", "consultant", "any business that books customers into time slots"],
+  "mood": ["calm", "precise", "calendar-first", "friendly"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "facts", "what": "Hidden div with {{business}}, {{phone}}, {{email}}, {{address}}, {{hours}} and {{year}}: they feed the header, the reminder text, the printed day sheet and the first opening hours until the owner saves their own in Settings", "edit": "Leave the tokens. {{hours}} like \"Mon-Fri 8:00-18:00, Sat 9am-1pm\" becomes the opening hours; unfilled facts ([Add your hours], Call us, Email us) are ignored"},
+    {"name": "view-today", "what": "Today: first-run welcome card (illustration, 3 numbered steps, Book an appointment + Try it with sample data), sample note, accent next-up hero, 4 stats (bookings today, booked time ring, expected today, this week), today's agenda with a now marker, free times left today, coming up", "edit": "Rewrite the welcome copy and steps for the trade; keep data-f and data-act"},
+    {"name": "view-calendar", "what": "Calendar: date title, Day/Week/Month switch, previous/next/Today, info line, print button, 7-day strip (day view); app.js draws the timeline, week rows/columns or month grid into data-f=out", "edit": "Rarely needs edits; the timeline scale (PX) and the slot length live in app.js and Settings"},
+    {"name": "view-services", "what": "Services list with drag handles, colour dot (matches the calendar), duration, bookings this month, price", "edit": "Rarely needs edits"},
+    {"name": "view-settings", "what": "Settings: opening hours per weekday, blocked time list, booking rules (slot length, gap after each booking, how many at the same time, currency, week start), reminder text with live preview, business details, CSV export, backup/restore, sample data, erase, help, footer", "edit": "Rewrite the help answers and the standard reminder text (TEMPLATE in app.js) to match the owner's tone"},
+    {"name": "sheet-appt", "what": "Booking form (bottom sheet on phones, side panel on computers): Call / Text reminder / Reschedule / Book again for existing bookings, customer with name suggestions, phone, service (fills duration and price), day, start time, free-time chips, duration, price, live clash panel with Next free button, status pills, notes", "edit": "Labels and placeholders can change; keep name= and data-f"},
+    {"name": "sheet-service", "what": "Service form: name, duration, price (empty = varies)", "edit": "Placeholder can change"},
+    {"name": "sheet-block", "what": "Blocked time form: label, every week on chosen days or one day, from, until", "edit": "Placeholder example can change"},
+    {"name": "doc-day", "what": "Printable day sheet (appkit .doc): letterhead, date and hours, table of bookings (time, customer + phone, service + notes, price, status), totals", "edit": "Reword the footer; keep tokens and data-f"}
+  ],
+  "photo_slots": [],
+  "remove_if_no_facts": [],
+  "behaviors": [
+    "Day view timeline: 50 px per half hour, every empty slot is a 50 px button that starts a booking at that time, blocked time hatched with its label, closed hours shaded, a red now line that moves every minute, overlapping bookings side by side",
+    "Week view: one row per day on phones (count, booked-time bar, bookings, Book), seven columns on computers; Month view: grid with counts on phones and names on computers, the picked day's list below",
+    "clash detection: overlaps beyond the capacity (counting the gap after each booking), outside opening hours, closed days and blocked time, shown live while booking with the next free time to tap; saving over a clash asks first",
+    "free-time chips for the chosen day and duration; a new booking starts at the next free time",
+    "next-up hero: Now / Next up with countdown, huge start time, Call, Text reminder and the next status step (Confirmed, Arrived, Done)",
+    "statuses booked, confirmed, arrived, done, no-show, cancelled (pills with words, coloured dots); cancelled and no-show free the time",
+    "one-tap reminder text (sms: link prefilled from an editable template with {name} {service} {day} {time} {business}); opening it records when",
+    "quick reschedule: next 14 days as chips, then every free time for that day as big buttons, with Undo",
+    "search by name, phone digits, service or note, split into coming up and earlier",
+    "services with duration and price fill new bookings; bookings keep the service name if it is deleted",
+    "opening hours per weekday seeded from the {{hours}} fact; weekly or one-day blocked time; slot length 15/30/60; capacity 1-20; gap 0-30 min",
+    "printable day sheet (AK.print), CSV export with a Copy instead fallback, JSON backup download/copy and restore from a file or pasted text (validated first)",
+    "every delete asks first and offers Undo; status changes and moves offer Undo",
+    "starts empty with a welcome card and Try it with sample data; samples are labelled Sample customer N and Sample service: ... and Clear sample data removes only them",
+    "keyboard on computers: N books, / searches, left/right arrows move the calendar, T jumps to today",
+    "window.Bookings exposes the store, the time helpers and the clash/free-time rules read-only for checks"
+  ],
+  "style_notes": "Built on appkit, so every style skins it (light or dark, rounded or hard-edged). The next-up hero uses --c-accent with --c-on-accent text and buttons; service colours come from appkit's chart tokens (--ak-c1..c5). Tested at 390 and 1280 with midnight-neon, clinical-clean, editorial-serif, soft-pastel, neo-brutalist, workshop-industrial, and lint-checked on every screen with high-contrast-sport, poster-bold, minimal-mono and dark-luxury too. The accent-hue lint warning on screens with status pills is expected."
+}

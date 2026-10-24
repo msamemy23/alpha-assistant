@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "title": "Acoustic guitar fingerpicking riff (Em C G D)",
+  "tempo": 100,
+  "timeSignature": [4, 4],
+  "lengthBeats": 20,
+  "humanize": 0.3,
+  "seed": 7,
+  "master": { "reverb": { "decay": 1.6, "damping": 0.5 } },
+  "tracks": [
+    { "name": "guitar", "instrument": "Acoustic Guitar (nylon)", "volume": 1, "fx": { "reverb": 0.22, "chorus": 0.15 },
+      "notes": [ ["E2",0,2,0.88],["G3",0.5,1.2,0.62],["B3",1,1.2,0.72],["G3",1.5,1.2,0.62],["B2",2,2,0.88],["G3",2.5,1.2,0.62],["E4",3,1.2,0.72],["G3",3.5,1.2,0.62],["C3",4,2,0.88],["E3",4.5,1.2,0.62],["G3",5,1.2,0.72],["E3",5.5,1.2,0.62],["G2",6,2,0.88],["E3",6.5,1.2,0.62],["C4",7,1.2,0.72],["E3",7.5,1.2,0.62],["G2",8,2,0.88],["B3",8.5,1.2,0.62],["D4",9,1.2,0.72],["B3",9.5,1.2,0.62],["D3",10,2,0.88],["B3",10.5,1.2,0.62],["G4",11,1.2,0.72],["B3",11.5,1.2,0.62],["D3",12,2,0.88],["A3",12.5,1.2,0.62],["D4",13,1.2,0.72],["A3",13.5,1.2,0.62],["F#3",14,2,0.88],["A3",14.5,1.2,0.62],["F#4",15,1.2,0.72],["A3",15.5,1.2,0.62], { "chord": "Em", "octave": 2, "start": 16, "dur": 4, "strum": 0.06, "vel": 0.9 }, { "chord": "Em", "octave": 3, "start": 16, "dur": 4, "strum": 0.06, "vel": 0.7 } ] },
+    { "name": "soft pad", "instrument": "Pad 1 (new age)", "volume": 0.35, "fx": { "reverb": 0.4 },
+      "notes": [{ "chord": "Em", "octave": 3, "start": 0, "dur": 4, "vel": 0.5 }, { "chord": "C", "octave": 3, "start": 4, "dur": 4, "vel": 0.5 }, { "chord": "G", "octave": 3, "start": 8, "dur": 4, "vel": 0.5 }, { "chord": "D", "octave": 3, "start": 12, "dur": 4, "vel": 0.5 }, { "chord": "Em", "octave": 3, "start": 16, "dur": 4, "vel": 0.5 }] }
+  ]
+}

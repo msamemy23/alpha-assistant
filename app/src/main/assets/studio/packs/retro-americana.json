@@ -1,0 +1,66 @@
+{
+  "id": "retro-americana",
+  "name": "Retro Americana",
+  "signature": "Cream paper, navy ink, signal red, thick borders, offset shadows, a stamped badge.",
+  "mood": ["nostalgic", "proud", "hand-built", "neighborly"],
+  "bestFor": ["classic garages", "hot-rod shops", "diners", "barbers", "gas stations", "tire shops", "farm stands"],
+  "fonts": "oswald-inter",
+  "colors": {
+    "bg": "#F4E8D0",
+    "surface": "#E9D7B2",
+    "ink": "#1C2541",
+    "muted": "#45506B",
+    "accent": "#B3261E",
+    "onAccent": "#FFF6E0"
+  },
+  "contrast": {
+    "ink/bg": 12.44,
+    "ink/surface": 10.66,
+    "muted/bg": 6.62,
+    "muted/surface": 5.67,
+    "onAccent/accent": 6.07,
+    "accent/bg": 5.38,
+    "accent/surface": 4.61,
+    "accentAsText": true,
+    "note": "Light theme. Red is safe as text on both backgrounds. Cream labels on red buttons pass AA."
+  },
+  "radius": {"sm": 2, "md": 4, "lg": 8, "button": 4},
+  "shadow": {"card": "6px 6px 0 #1C2541", "pop": "10px 10px 0 #1C2541"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 80, "gutter": 20, "maxWidth": 1100},
+  "type": {
+    "scaleRatio": 1.25,
+    "basePx": 17,
+    "bodyLeading": 1.6,
+    "h1": "clamp(3rem,11vw,6.5rem)",
+    "h2": "clamp(2.25rem,6.5vw,4rem)",
+    "h3": "1.625rem",
+    "headingCase": "uppercase",
+    "headingWeight": 700,
+    "headingLeading": 1,
+    "headingTracking": "0.04em",
+    "eyebrow": "0.875rem, weight 600, uppercase, 0.2em tracking, red, between two thin navy rules"
+  },
+  "motion": {
+    "rule": "Stamp: blocks scale from 0.92 to full size in 400ms with a 60ms stagger, like a rubber stamp landing.",
+    "reveal": "scale",
+    "staggerMs": 60,
+    "durationMs": 400,
+    "ease": "cubic-bezier(.3,1.2,.4,1)",
+    "use": ["data-reveal", "data-stagger", "data-press", "data-count-to for a real founding year"],
+    "avoid": ["parallax", "fades slower than 500ms"]
+  },
+  "hero": {
+    "treatment": "badge-photo",
+    "layout": "Real photo in a 6px navy border with a 10px offset navy shadow beside the headline. A round stamped badge overlaps the photo corner and shows the real founding year or a real fact. Two thin rules (navy and red) above the headline.",
+    "photo": "Real photo of the shop front, the sign, or the owner; black and white is allowed."
+  },
+  "background": "Cream paper with a 5% opacity SVG noise grain. A double rule (3px navy over 3px red) separates sections. Surface color is used for one sign-style band.",
+  "button": {
+    "shape": "Rectangle, 4px radius, 52px tall.",
+    "fill": "Accent fill, cream label, 3px navy border, 4px offset navy shadow.",
+    "label": "Uppercase, weight 700, 0.06em tracking.",
+    "hover": "Press moves the button 2px down-right using data-press; shadow stays put.",
+    "minHeightPx": 48
+  },
+  "banned": ["gradients", "glassmorphism", "pastels", "thin fonts", "rounded pills", "neon"]
+}

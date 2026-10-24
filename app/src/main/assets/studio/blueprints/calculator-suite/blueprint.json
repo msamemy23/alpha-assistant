@@ -1,0 +1,39 @@
+{
+  "id": "calculator-suite",
+  "kind": "app",
+  "name": "Calculator Suite",
+  "summary": "A calm, dense pocket toolbox (Apple Calculator meets Raycast): a searchable home with pinned favourite tiles that show their last answer, and 8 calculators with one giant answer each, Copy + Save to history, remembered inputs and a print option where it helps: loan payment with amortization chart and table, markup/margin/discount/sales tax (type any two boxes, the rest solve themselves), tip & split, percentages, unit converter (7 kinds), time card & pay with overtime, tire size compare with speedometer error, and fuel trip cost / fill-up MPG.",
+  "best_for": ["auto repair shop", "tire shop", "mechanic", "contractor", "retail shop", "restaurant", "any small business", "sales staff", "service writer", "personal toolbox"],
+  "mood": ["calm", "precise", "dense", "quick"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "facts", "what": "Hidden spans holding {{business}}, {{phone}}, {{email}}, {{address}} for the top bar and printed letterheads", "edit": "Leave as is"},
+    {"name": "view-home", "what": "Tools tab: search (Enter opens the first match), Pinned tiles with each calculator's last answer, every calculator grouped as Money / Work / Convert / Auto with a pin star", "edit": "Usually no change; the list itself comes from CALCS in app.js (section 6)"},
+    {"name": "view-calc", "what": "Shell of every calculator page: group, name, one-line blurb, Pin and Start over buttons, the calculator template, its Saved answers", "edit": "Usually no change"},
+    {"name": "calc-loan", "what": "Loan payment: amount, APR, length in years or months, optional extra per month. Answer: monthly payment, total interest, total paid, payoff time, interest saved by the extra. Stacked yearly principal/interest chart, year or month table, Print schedule", "edit": "Rename labels if needed; keep input names and data-out keys"},
+    {"name": "calc-pricing", "what": "Markup, margin & tax: three modes. Margin (cost, price, markup %, margin %, profit), Discount (original, % off, sale, saved), Sales tax (before tax, rate, tax, total). Any two boxes solve the rest; boxes are tagged typed/auto", "edit": "Keep names; the default tax rate is whatever the owner last typed"},
+    {"name": "calc-tip", "what": "Tip & split: bill, tip % with quick chips, people stepper, tax already in the bill (tip on pre-tax), round each share up. Exact split to the cent (some pay 1 cent more)", "edit": "Change the quick tip chips (data-tip) for local custom"},
+    {"name": "calc-percent", "what": "Percentages: four cards (X% of Y, what percent, percent change with increase/decrease, plus or minus a percent), each with its own answer and Copy", "edit": "Keep names"},
+    {"name": "calc-units", "what": "Unit converter: length, weight, volume, temperature, speed, area, fuel economy; value, From, swap, To; list of the value in every unit (tap one to make it the target)", "edit": "Add or remove units in UNITS in app.js (factor to the base unit)"},
+    {"name": "calc-timecard", "what": "Time card & pay: pay rate, overtime multiplier, weekly and optional daily overtime limits, start/end/break for each day (overnight shifts work), Copy Monday to weekdays, Clear the week. Answer: hours, gross pay, regular/overtime split", "edit": "Change the defaults (rate, 40 h, 1.5x) in CALCS.timecard.defaults"},
+    {"name": "calc-tire", "what": "Tire size: current and new size (225/45R17, P/LT, ZR, 225/45-17, 33x12.50R15), speedometer reading. Answer: real speed, % taller/shorter, drawing of both tires to scale, side-by-side table (width, sidewall, diameter, circumference, revs per mile), Print for a customer", "edit": "Edit the datalist of common sizes for the shop's usual sizes"},
+    {"name": "calc-fuel", "what": "Fuel & trip cost: Trip cost (distance, economy, price, round trip, split) or Fill-up MPG (odometer readings or distance, fuel added, price); miles/gallons or km/litres", "edit": "Keep names"},
+    {"name": "view-history", "what": "History tab: saved answers (newest first, search, delete with Undo, Clear); tap one to reopen its calculator with the same numbers", "edit": "Usually no change"},
+    {"name": "view-settings", "what": "Settings tab: currency symbol (+ quick picks), show cents, decimal places with a live example, US or metric units, a note that the look comes from the chosen style, backup/restore, reset every calculator", "edit": "Usually no change"},
+    {"name": "doc-loan", "what": "Printable loan schedule with the owner's letterhead", "edit": "Keep the tokens"},
+    {"name": "doc-tire", "what": "Printable tire comparison with the owner's letterhead", "edit": "Keep the tokens"}
+  ],
+  "photo_slots": [],
+  "remove_if_no_facts": [],
+  "behaviors": [
+    "answers update on every keystroke; inputs are remembered per calculator (AK.store('calculator-suite') under the {{slug}} namespace) and survive reloads",
+    "first visit shows a worked example in each calculator; Start over returns to it, with Undo",
+    "Copy puts a plain-text answer on the clipboard and saves it to History; Save keeps it without copying; the same answer is never saved twice in a row",
+    "favourite calculators are pinned to the top of Tools as tiles showing their last answer; DEFAULT_PINS in app.js chooses the starting pins",
+    "money rounds half away from zero to the cent (or whole units when cents are off); tax rounds like a receipt; tip splits add up exactly",
+    "edge cases answered in words: divide by zero, percent change from 0, margin of 100%, markup + margin without a price, rates over 100%, loans over 50 years, break longer than the shift, odometer going backwards, below absolute zero, unreadable tire sizes, over 3% tire size difference",
+    "phone: bottom tabs (Tools, History, Settings), answer first then inputs; computer: sidebar, inputs left and a sticky answer panel right",
+    "printing (loan schedule, tire comparison) uses AK.print with the owner's letterhead; works once published (Chrome)"
+  ],
+  "style_notes": "Works with every style; tested at 390 and 1280 with midnight-neon, clinical-clean, neo-brutalist, editorial-serif, soft-pastel, workshop-industrial, high-contrast-sport and minimal-mono (lint clean on every screen). The giant answers size themselves to their panel (narrow fonts like Bebas simply look a little smaller). Only kit colours are used; the accent appears on primary buttons, active chips, the pinned tile icons and the new tire in the drawing."
+}

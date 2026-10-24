@@ -1,0 +1,71 @@
+/*! motion.css 1.0 | Alpha Studio motion kit | own work, CC0 | pairs with motion.js | animates transform + opacity only */
+:where(:root){--m-dur:.7s;--m-ease:cubic-bezier(.22,.8,.24,1)}
+html{scroll-padding-top:var(--m-offset,0px)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+
+/* reveal: data-reveal="up|down|left|right|scale|fade" (hidden only while motion.js is running, so no-JS = visible) */
+[data-reveal]{--tx:0px;--ty:0px;--ts:1}
+[data-reveal=up],[data-reveal=""]{--ty:28px}
+[data-reveal=down]{--ty:-28px}
+[data-reveal=left]{--tx:-36px}
+[data-reveal=right]{--tx:36px}
+[data-reveal=scale]{--ts:.92}
+html.m-js [data-reveal]:not([data-stagger]):not(.is-in){opacity:0}
+@keyframes m-in{from{opacity:0;translate:var(--tx) var(--ty);scale:var(--ts)}}
+[data-reveal].is-in:not([data-stagger]){animation:m-in var(--dur,var(--m-dur)) var(--m-ease) var(--d,0s) backwards}
+
+/* counters: <span data-count-to="1200">1,200</span> */
+[data-count-to]{display:inline-block;min-width:var(--cw,0);text-align:inherit;font-variant-numeric:tabular-nums}
+
+/* marquee: .marquee > .marquee__track > items (motion.js clones the items for a seamless loop) */
+.marquee{overflow:hidden;--g:2rem;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.marquee__track{display:flex;align-items:center;width:max-content;gap:var(--g);animation:m-marq var(--md,40s) linear infinite}
+.marquee__track>*{flex:none}
+.marquee[data-reverse] .marquee__track{animation-direction:reverse}
+.marquee:hover .marquee__track,.marquee.m-off .marquee__track{animation-play-state:paused}
+@keyframes m-marq{to{transform:translate3d(calc(var(--mw,50%)*-1),0,0)}}
+
+/* pointer effects (desktop mouse only; touch devices ignore them) */
+@media (hover:hover) and (pointer:fine){
+[data-tilt]{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s var(--m-ease)}
+[data-magnetic]{transition:transform .3s var(--m-ease)}
+[data-lift]:hover{transform:translateY(-4px)}}
+[data-lift]{transition:transform .25s var(--m-ease)}
+[data-press]{transition:transform .15s var(--m-ease)}
+[data-press]:active{transform:scale(.97)}
+.m-clip{overflow:hidden}
+
+/* sticky header: <header data-sticky> ... <a data-shrink>logo</a></header>  (.is-stuck added after 24px of scroll) */
+[data-sticky]{position:sticky;top:calc(var(--m-shrink,0px)*-1);z-index:50;isolation:isolate}
+[data-sticky]::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--m-header-bg,Canvas);box-shadow:0 1px 0 rgba(128,128,128,.25),0 10px 24px -14px rgba(0,0,0,.35);opacity:0;transition:opacity .3s}
+[data-sticky].is-stuck::before{opacity:1}
+[data-shrink]{transform-origin:left center;transition:transform .3s var(--m-ease)}
+[data-sticky].is-stuck [data-shrink]{transform:scale(var(--m-shrink-scale,.86))}
+
+/* scroll progress bar: <body data-progress> or <div class="m-progress"></div> */
+.m-progress{position:fixed;top:0;left:0;right:0;height:var(--m-progress-h,3px);z-index:99;pointer-events:none;background:var(--m-progress,currentColor);transform-origin:0 50%;transform:scaleX(var(--p,0))}
+
+/* scroll-driven animation: only where supported (otherwise motion.js drives the same effects) */
+@supports (animation-timeline:scroll()){
+.m-progress{transform:scaleX(0);animation:m-prog linear both;animation-timeline:scroll(root)}
+@keyframes m-prog{to{transform:scaleX(1)}}
+[data-parallax]{animation:m-par linear both;animation-timeline:view()}
+@keyframes m-par{from{transform:translate3d(0,calc(var(--ps,.15)*-100px),0)}to{transform:translate3d(0,calc(var(--ps,.15)*100px),0)}}}
+
+/* screenshot mode: ?shot or html.shot shows the final state immediately */
+html.shot *,html.shot *::before,html.shot *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+html.shot [data-reveal]{opacity:1!important}
+html.shot .m-progress{display:none}
+
+/* reduced motion: content simply appears; nothing moves */
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+html.m-js [data-reveal]{opacity:1!important}
+[data-reveal]{animation:none!important}
+[data-tilt],[data-magnetic],[data-parallax],[data-lift]:hover,[data-press]:active,[data-sticky].is-stuck [data-shrink]{transform:none!important;animation:none!important}
+.marquee{-webkit-mask-image:none;mask-image:none}
+.marquee__track{animation:none!important;transform:none!important;width:auto;flex-wrap:wrap;justify-content:center}
+.marquee__track>[aria-hidden=true]{display:none}
+.m-progress{display:none}}
+
+@media print{html.m-js [data-reveal]{opacity:1!important}.m-progress{display:none}}

@@ -1,0 +1,36 @@
+{
+  "id": "estimate-builder",
+  "kind": "app",
+  "name": "Estimate Builder",
+  "summary": "A complete estimates and invoices app for a small business, phone first: a money dashboard (waiting to be paid, paid this month, open estimates) over a searchable document list grouped by month with status chips; an editor that saves as you type with customer autocomplete, labour/parts/other line items (reorder, undo), discount in amount or percent, tax per line type, deposit and live balance; a document page with a professional printable estimate or invoice (letterhead from the business tokens, grouped lines, totals, terms, signature line, PAID/VOID stamp), send by text or email, record payments, customer signature, turn an estimate into an invoice, duplicate, void; customers built automatically; insights with charts; settings and backup. Crisp, calm, money-focused.",
+  "best_for": ["estimates", "quotes", "invoices", "billing", "auto repair", "mechanic", "plumber", "electrician", "handyman", "contractor", "landscaper", "cleaning service", "detailer", "painter", "HVAC", "appliance repair", "any trade or service business"],
+  "mood": ["crisp", "calm", "trustworthy", "money-focused", "professional"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "facts", "what": "Hidden <template id=\"facts\"> holding the business tokens (business, phone, email, address, year) that app.js reads for the app header and the letterhead", "edit": "Leave the tokens in place; the owner can also change these facts in the app's Settings"},
+    {"name": "view-docs", "what": "Home screen: date eyebrow, h1, New invoice button, sample-data note, a welcome card with 3 steps and buttons when there are no documents, then 3 money stats, search, Estimates/Invoices switch, status chips and the month-grouped list (rows are built in app.js docRow)", "edit": "Rewrite the h1, the welcome heading/paragraph and the 3 steps in the owner's words (keep one h1, keep data-act and data-if attributes). The stat labels can be renamed; keep their data-t names"},
+    {"name": "view-doc", "what": "One document: header with status pill, money card (total, paid/balance progress, the next step buttons, payments), the printable paper, then Send it / Customer / More / History cards (right column on computers)", "edit": "Card titles and button words can change; keep data-slot, data-act and no-print classes"},
+    {"name": "doc-paper", "what": "The printable estimate or invoice: letterhead from {{business}} {{address}} {{phone}} {{email}} (Settings can override), Prepared for / Bill to, For, dates, grouped line table, totals with discount, tax and deposit, notes, terms, customer signature and date lines, footer", "edit": "Keep the tokens and data-t names. Change labels such as Prepared for, Bill to or Customer approval to the owner's wording. Prints black on white on one page for a normal job"},
+    {"name": "view-editor", "what": "The editor (saves as you type): Estimate/Invoice switch, number, dates, customer with autocomplete from past documents, the job (what it is for + notes), work and parts lines with Labour/Parts/Other add buttons, terms, and a totals card with discount ($ or %), tax for this document, deposit and balance; a sticky total bar with Done on phones", "edit": "Labels and help texts can be reworded for the trade (for example What it is for -> Vehicle). Keep every name= attribute; app.js reads them"},
+    {"name": "row-line", "what": "One line item row (type, description with suggestions from past lines, qty, unit price, amount, drag handle, remove)", "edit": "Rename the types in the <select> labels only (values labour/parts/other are used by the maths and tax settings)"},
+    {"name": "view-customers", "what": "Customers built automatically from the documents: search, list with what each one owes, billed or was quoted; tap opens a sheet with call/text/email, totals and their documents", "edit": "Words only"},
+    {"name": "sheet-customer", "what": "Body of the customer sheet", "edit": "Words only"},
+    {"name": "view-insights", "what": "4 stats (billed and collected this month, average invoice, estimates approved), a 6-month billed vs collected bar chart, a donut of labour/parts/other, top customers", "edit": "Words only; remove a card by deleting its <section> if the owner does not want it"},
+    {"name": "view-settings", "what": "Settings that save as you type: business details on documents, tax name/rate and which line types are taxed, number prefixes and next numbers, validity and due days, usual labour price, currency, starting terms; backup to a file or copied text, restore, CSV export, sample data load/clear, help, erase", "edit": "Change the default currency option order or help answers if needed; keep names"},
+    {"name": "sheets", "what": "Bodies for the send sheet (editable message, text, email, copy, print, mark as sent), the payment form and the signature pad", "edit": "Words only"}
+  ],
+  "photo_slots": [],
+  "remove_if_no_facts": [],
+  "behaviors": [
+    "starts empty with a welcome card; 'Try it with sample data' loads 4 clearly labelled sample documents, 'Clear sample data' removes only those",
+    "everything is saved on the phone (AK.store, key estimate-builder) and survives reloads; Settings backs up and restores (file or copied text) and exports CSV",
+    "money is worked out in whole cents with half-up rounding: line = qty x unit price; discount (amount or %) comes off before tax and is shared across taxable lines; tax applies per line type (labour, parts, other) at the document's own rate; balance = total - deposit - payments",
+    "estimate statuses draft, sent, approved, invoiced, void; invoice statuses draft, sent, part paid, overdue, paid (from payments), void; overdue invoices badge the Documents tab",
+    "editor saves as you type, gives a new document the next number (prefix editable), throws away a new document left empty and gives its number back",
+    "turn an approved estimate into an invoice (copies lines, customer, tax and deposit), duplicate, void and restore, delete with confirm and undo, remove a line with undo, drag lines to reorder",
+    "customer and line descriptions autocomplete from past documents",
+    "send: an editable message with total, balance and dates, as a text message (sms:), an email (mailto:) or copied; print or save as PDF prints only the document; customer can sign on screen to approve",
+    "phone: bottom tabs and a floating New estimate button; computer: sidebar, two-column editor and document page"
+  ],
+  "style_notes": "Built on appkit, so it follows every style; tested at 390 and 1280 with clinical-clean, midnight-neon, neo-brutalist, editorial-serif, soft-pastel and workshop-industrial. Strongest with clinical-clean, swiss-grid, minimal-mono, editorial-serif and workshop-industrial. Status pills use appkit's tuned ok/warn/bad colours (the 'more than one accent colour family' warning is expected). Printing is always black on white."
+}

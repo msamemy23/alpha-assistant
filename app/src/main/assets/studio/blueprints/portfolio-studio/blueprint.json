@@ -1,0 +1,41 @@
+{
+  "id": "portfolio-studio",
+  "kind": "site",
+  "name": "Portfolio Studio",
+  "summary": "Editorial, type-led portfolio: a giant name that fills the screen with rotating role words, a project index whose pictures follow the pointer (thumbnail cards on phones), an asymmetric six-photo grid with a lightbox, portrait and bio, optional services, and a huge copyable email.",
+  "best_for": ["photographer", "graphic designer", "design agency", "freelancer", "illustrator", "artist", "art director", "videographer", "architect", "personal brand"],
+  "mood": ["editorial", "confident", "minimal", "crafted"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "header", "what": "Sticky bar: initial in a circle, the name, Work / About / Contact links, a Say hello button", "edit": "Usually leave as is. If you remove a section, also remove its nav link"},
+    {"name": "hero", "what": "Meta row (Portfolio + year, Based in city), the name as a giant h1 (fills one line on desktop), a line of rotating role words, an intro sentence, two buttons, a spinning stamp that links to the work", "edit": "Keep {{business}} as the h1 name. Set the 4 role words to the owner's real roles (the 5th word must repeat the 1st) and update the hidden .sr-only sentence to match. Rewrite the intro in the owner's voice. Keep one h1"},
+    {"name": "disciplines", "what": "Full-bleed accent band with a moving marquee of disciplines", "edit": "4 to 8 real disciplines, one or two words each; keep the small star svg after each word"},
+    {"name": "index", "what": "Numbered project index: big-type rows on desktop whose picture follows the pointer; thumbnail cards on phones. Each row links to its picture in the work grid", "edit": "One row per real project (3 to 8); short real titles and a one or two word category. Keep href=#work-N matching the grid ids. Rewrite the note under the heading"},
+    {"name": "work", "what": "Six photos in an asymmetric editorial grid (shapes a to f: tall, portrait, square, landscape, panorama, tall) with numbered captions, a small call to action, and a lightbox", "edit": "Keep captions in step with the index titles. To show fewer photos, delete whole figure blocks and their index rows. Rewrite the note under the heading"},
+    {"name": "about", "what": "Portrait with an accent block behind it, a big statement (h2), two bio paragraphs, three small facts (based in, open to, email)", "edit": "Rewrite the statement and bio in the owner's own words from facts they gave. Never add awards, client names, years or numbers they did not give"},
+    {"name": "services", "what": "Optional list of services with dotted leaders and an Ask for rates email link each (subject = service name)", "edit": "One item per real service; never invent prices. Remove the whole section if the owner gave no services"},
+    {"name": "contact", "what": "Inverted (dark on light swapped) block: big question, the email as huge type with a Copy email button, phone, city and hours", "edit": "Rewrite the question if you like. Keep the email link and copy button; remove the hours cell if not relevant"},
+    {"name": "footer", "what": "Copyright with year and name, city, back to top", "edit": "Usually leave as is"}
+  ],
+  "photo_slots": [
+    {"slot": "work-1", "orientation": "portrait", "hint": "the owner's strongest piece; a portrait or hero project shot, tall crop"},
+    {"slot": "work-2", "orientation": "portrait", "hint": "a second project, works in a tall 3:4 crop"},
+    {"slot": "work-3", "orientation": "square", "hint": "a third project or a detail shot, square crop"},
+    {"slot": "work-4", "orientation": "landscape", "hint": "a wide project photo, 3:2"},
+    {"slot": "work-5", "orientation": "landscape", "hint": "a panoramic or very wide image (shown 21:9 on desktop)"},
+    {"slot": "work-6", "orientation": "portrait", "hint": "another tall project shot, 4:5"},
+    {"slot": "portrait", "orientation": "portrait", "hint": "a friendly portrait of the owner, or the studio at work"}
+  ],
+  "remove_if_no_facts": ["services"],
+  "behaviors": [
+    "name scales to fill one line on desktop and shrinks to fit long words on phones",
+    "CSS-only rotating role words (screen readers get a plain sentence)",
+    "project index: picture follows the pointer on desktop, thumbnail cards on touch screens",
+    "lightbox for the work grid (arrows, swipe, Esc)",
+    "copy email button with confirmation",
+    "marquee band, spinning stamp, scroll reveals, sticky glass header, progress bar",
+    "quiet custom cursor ring on desktop mouse only (off for touch and reduced motion)",
+    "section numbers (01, 02...) are automatic CSS counters, so removing a section renumbers the rest"
+  ],
+  "style_notes": "Owns the editorial type-led archetype; colours, fonts, radii and shadows all come from the style kit. Tested with editorial-serif, midnight-neon, neo-brutalist, poster-bold, soft-pastel, minimal-mono and high-contrast-sport at 390 and 1280. Best with editorial-serif, swiss-grid, minimal-mono, newspaper, midnight-neon, dark-luxury."
+}

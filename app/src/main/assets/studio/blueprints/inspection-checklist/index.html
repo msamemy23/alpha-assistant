@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="{{slug}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{business}} Inspections</title>
+<meta name="description" content="Digital inspections for {{business}}: big OK, attention and urgent buttons, notes, photos, customer signature and a report ready to print or send.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="appkit.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript><p style="padding:24px">This app needs JavaScript turned on.</p></noscript>
+<!--
+  INSPECTION CHECKLIST (Alpha Studio app blueprint). Every screen is a <template id="view-..."> below; app.js copies it into the page
+  and fills the parts marked data-t (text), data-if (show/hide), data-slot (lists built in app.js) and data-i (icons).
+  Keep ids, names and data-* attributes when you change words or layout. Business facts come from the tokens in "facts".
+-->
+
+<!-- section:facts -->
+<template id="facts"><b data-k="business">{{business}}</b><b data-k="phone">{{phone}}</b><b data-k="email">{{email}}</b><b data-k="address">{{address}}</b><b data-k="year">{{year}}</b></template>
+<!-- /section:facts -->
+
+<!-- section:view-list -->
+<template id="view-list">
+  <header class="page-head">
+    <div><p class="eyebrow" data-t="todayText"></p><h1>Inspections</h1><p class="sub" data-t="summary"></p></div>
+  </header>
+  <div class="note sample-note" data-if="hasSample"><span data-i="info"></span><div><strong>Sample data is showing.</strong> These inspections are made up so you can try things. Clear them when you are ready.</div><button type="button" class="btn sm" data-act="clear-sample">Clear</button></div>
+
+  <div class="card welcome" data-if="empty">
+    <svg class="illus welcome-art" viewBox="0 0 240 170" aria-hidden="true">
+      <circle class="il-a" cx="120" cy="88" r="74"/>
+      <rect class="il-s" x="72" y="24" width="96" height="126" rx="9"/>
+      <rect class="il-x" x="102" y="16" width="36" height="16" rx="5"/>
+      <circle class="dot-ok" cx="92" cy="58" r="7"/><path class="il-l" d="M108 58h44"/>
+      <circle class="dot-warn" cx="92" cy="84" r="7"/><path class="il-l" d="M108 84h36"/>
+      <circle class="dot-bad" cx="92" cy="110" r="7"/><path class="il-l" d="M108 110h40"/>
+      <rect class="il-s" x="150" y="100" width="44" height="34" rx="6"/><circle class="il-x" cx="172" cy="117" r="8"/>
+    </svg>
+    <h2>Inspect, photograph, report</h2>
+    <p class="muted">Walk around the job with one hand free. Tap OK, Needs attention or Urgent on each check, add a note or a photo, and hand the customer a clear report.</p>
+    <ol class="steps">
+      <li><span class="step-n">1</span><span><strong>Pick a checklist</strong> A vehicle or a home and equipment list, or your own</span></li>
+      <li><span class="step-n">2</span><span><strong>Tap or swipe</strong> Right for OK, left for Needs attention</span></li>
+      <li><span class="step-n">3</span><span><strong>Share the report</strong> Urgent first, with photos and a signature</span></li>
+    </ol>
+    <div class="btns welcome-btns"><button type="button" class="btn primary lg" data-act="new-insp"><span data-i="plus"></span>Start an inspection</button></div>
+    <button type="button" class="btn ghost sm sample-btn" data-act="load-sample"><span data-i="zap"></span>Try it with sample data</button>
+  </div>
+
+  <div class="stack list-body" data-if="!empty">
+    <div class="stats insp-stats">
+      <div class="stat accent"><span class="label"><span data-i="clipboard"></span>In progress</span><span class="value" data-t="openN"></span><span class="meta" data-t="openMeta"></span></div>
+      <div class="stat"><span class="label"><span data-i="check-circle"></span>Done this month</span><span class="value" data-t="doneN"></span><span class="meta" data-t="doneMeta"></span></div>
+      <div class="stat"><span class="label"><span data-i="alert"></span>Urgent found</span><span class="value" data-t="urgentN"></span><span class="meta">This month</span></div>
+    </div>
+    <div class="toolbar"><div class="search"><input type="search" id="insp-q" placeholder="Search customer, vehicle, item, phone" aria-label="Search inspections" autocomplete="off"></div></div>
+    <div class="chips" data-single role="group" aria-label="Filter inspections" data-slot="chips"></div>
+    <div data-slot="list"></div>
+  </div>
+</template>
+<!-- /section:view-list -->
+
+<!-- section:sheet-new -->
+<template id="sheet-new">
+  <p class="muted sheet-lead">Pick the checklist to use. You can change the lists in Checklists.</p>
+  <ul class="tpl-pick" data-slot="templates"></ul>
+</template>
+<!-- /section:sheet-new -->
+
+<!-- section:view-run -->
+<!-- The inspection itself: sticky progress, details, the sections of checks, then notes and the customer's signature. -->
+<template id="view-run">
+  <header class="page-head run-head">
+    <div><p class="eyebrow" data-t="eyebrow"></p><h1 data-t="title"></h1><p class="sub" data-t="sub"></p></div>
+  </header>
+  <div class="run">
+    <div class="run-main">
+      <div class="run-bar" aria-live="polite">
+        <div class="run-bar-top"><strong class="run-pct" data-t="pctText"></strong><span class="run-left muted" data-t="leftText"></span></div>
+        <div class="progress run-prog"></div>
+        <div class="counts">
+          <span class="cnt ok"><span data-i="check"></span><b class="n-ok">0</b> OK</span>
+          <span class="cnt attn"><span data-i="alert"></span><b class="n-attn">0</b> Attention</span>
+          <span class="cnt urgent"><span data-i="x-circle"></span><b class="n-urgent">0</b> Urgent</span>
+        </div>
+      </div>
+
+      <details class="card head-card">
+        <summary><span class="hc-icon"><span data-i="user"></span></span><span class="hc-sum"><span class="hc-title" data-t="headTitle"></span><span class="hc-sub" data-t="headSub"></span></span><span class="link-btn hc-edit">Details</span></summary>
+        <form class="form head-form" autocomplete="off" novalidate>
+          <div class="cols">
+            <div class="field suggest-wrap"><label for="h-cust">Customer</label><input id="h-cust" name="customer" autocapitalize="words" placeholder="Name"></div>
+            <div class="field"><label for="h-phone">Phone</label><input id="h-phone" name="phone" type="tel" inputmode="tel"></div>
+          </div>
+          <div class="cols">
+            <div class="field"><label for="h-subject" class="subject-label">Vehicle</label><input id="h-subject" name="subject" placeholder="Year, make and model"></div>
+            <div class="field"><label for="h-ref" class="ref-label">Mileage</label><input id="h-ref" name="ref" inputmode="text"></div>
+          </div>
+          <div class="cols">
+            <div class="field"><label for="h-date">Date</label><input id="h-date" name="date" type="date"></div>
+            <div class="field"><label for="h-insp">Inspector</label><input id="h-insp" name="inspector" autocapitalize="words"></div>
+          </div>
+          <div class="field"><label for="h-email">Customer email (optional)</label><input id="h-email" name="email" type="email" inputmode="email" autocapitalize="off" spellcheck="false"></div>
+        </form>
+      </details>
+      <p class="swipe-tip muted small"><span data-i="info"></span>Tap a status, or swipe a check right for OK and left for Needs attention. Tap a check's name for notes and photos.</p>
+
+      <div class="secs" data-slot="sections"></div>
+
+      <section class="card finish-card" id="finish">
+        <div class="card-head"><h2>Finish</h2><span class="pill" data-slot="state"></span></div>
+        <div class="form">
+          <div class="field"><label for="f-notes">Overall notes for the customer</label><textarea id="f-notes" rows="3" placeholder="The big picture: what to do now, what can wait"></textarea></div>
+          <div class="field"><span class="label">Customer signature</span>
+            <div class="sig-saved" hidden><div class="sig-holder"></div><button type="button" class="btn sm" data-act="sig-redo"><span data-i="edit"></span>Sign again</button></div>
+            <div class="sig-new"><canvas class="sign-pad"></canvas><div class="btns sig-btns"><button type="button" class="btn sm" data-act="sig-clear"><span data-i="undo"></span>Clear</button><button type="button" class="btn sm soft" data-act="sig-save"><span data-i="check"></span>Save signature</button></div></div>
+            <p class="help">The customer signs to say they have seen the results.</p>
+          </div>
+        </div>
+        <div class="btns fill finish-btns">
+          <button type="button" class="btn primary lg" data-act="finish"><span data-i="check-circle"></span><span class="finish-label">Finish and see the report</span></button>
+        </div>
+        <div class="btns finish-more"><button type="button" class="btn ghost sm danger-text" data-act="delete-insp"><span data-i="trash"></span>Delete this inspection</button></div>
+      </section>
+    </div>
+    <aside class="run-side">
+      <section class="card side-card">
+        <div class="side-ring"><div class="ring" data-slot="ring"><span data-t="pctShort"></span></div><div><p class="side-title" data-t="leftText"></p><p class="muted small" data-t="sideSub"></p></div></div>
+        <div class="btns side-btns">
+          <button type="button" class="btn block" data-act="next"><span data-i="arrow-down"></span>Next unchecked</button>
+          <button type="button" class="btn soft block" data-act="report"><span data-i="file-text"></span>Report</button>
+        </div>
+      </section>
+    </aside>
+    <div class="run-dock">
+      <button type="button" class="btn" data-act="next"><span data-i="arrow-down"></span>Next unchecked</button>
+      <button type="button" class="btn soft" data-act="report"><span data-i="file-text"></span>Report</button>
+    </div>
+  </div>
+</template>
+<!-- /section:view-run -->
+
+<!-- section:row-section -->
+<template id="row-section">
+  <section class="sec">
+    <header class="sec-bar">
+      <h2 class="sec-h"><button type="button" class="sec-toggle" aria-expanded="true"><span data-i="chevron-down" data-cls="sec-chev"></span><span class="sec-name"></span><span class="sec-count num"></span></button></h2>
+      <button type="button" class="btn sm soft sec-ok"><span data-i="check"></span>Rest OK</button>
+    </header>
+    <ul class="items"></ul>
+  </section>
+</template>
+<!-- /section:row-section -->
+
+<!-- section:row-item -->
+<!-- One check. data-st on the li is "", ok, attn, urgent or na. -->
+<template id="row-item">
+  <li class="it">
+    <div class="it-body">
+      <button type="button" class="it-head" aria-expanded="false"><span class="it-name"></span><span class="it-flags"><span class="flag-note" hidden><span data-i="message"></span></span><span class="flag-photo" hidden><span data-i="camera"></span><b></b></span></span><span data-i="more" data-cls="it-more"></span></button>
+      <div class="it-seg" role="group">
+        <button type="button" class="st-btn" data-st="ok" aria-pressed="false"><span data-i="check"></span><span>OK</span></button>
+        <button type="button" class="st-btn" data-st="attn" aria-pressed="false"><span data-i="alert"></span><span>Attention</span></button>
+        <button type="button" class="st-btn" data-st="urgent" aria-pressed="false"><span data-i="x-circle"></span><span>Urgent</span></button>
+      </div>
+      <div class="it-detail" hidden>
+        <textarea class="it-note" rows="2" placeholder="What did you find? What do you recommend?" aria-label="Note"></textarea>
+        <div class="it-photos"><div class="thumbs-row"></div><button type="button" class="add-photo"><span data-i="camera"></span><span>Add photo</span></button></div>
+        <button type="button" class="btn ghost sm it-na"><span data-i="minus"></span><span class="na-label">Not applicable</span></button>
+      </div>
+    </div>
+  </li>
+</template>
+<!-- /section:row-item -->
+
+<!-- section:view-report -->
+<template id="view-report">
+  <header class="page-head no-print">
+    <div><p class="eyebrow">Inspection report</p><h1 data-t="title"></h1><p class="sub" data-t="sub"></p></div>
+  </header>
+  <div class="btns rep-actions no-print">
+    <button type="button" class="btn primary" data-act="share"><span data-i="send"></span>Send to customer</button>
+    <button type="button" class="btn" data-act="print"><span data-i="printer"></span>Print or PDF</button>
+    <button type="button" class="btn" data-act="back-run"><span data-i="clipboard"></span>Checklist</button>
+  </div>
+  <div data-slot="doc"></div>
+</template>
+<!-- /section:view-report -->
+
+<!-- section:doc-report -->
+<!-- The customer-ready report: letterhead from the business tokens, details, a score, then problems first with photos. -->
+<template id="doc-report">
+  <article class="doc report">
+    <header class="doc-head">
+      <div class="lh">
+        <p class="lh-name" data-t="biz.name">{{business}}</p>
+        <p class="lh-line" data-if="biz.address" data-t="biz.address">{{address}}</p>
+        <p class="lh-line" data-if="biz.phone" data-t="biz.phone">{{phone}}</p>
+        <p class="lh-line" data-if="biz.email" data-t="biz.email">{{email}}</p>
+      </div>
+      <div class="right rep-id"><h2>Inspection report</h2><p class="muted" data-t="dateText"></p><p class="muted small" data-t="tplName"></p></div>
+    </header>
+    <dl class="doc-meta">
+      <div data-if="customer"><dt>Customer</dt><dd><span data-t="customer"></span><span class="meta-sub" data-if="phone" data-t="phone"></span></dd></div>
+      <div data-if="subject"><dt data-t="subjectLabel"></dt><dd data-t="subject"></dd></div>
+      <div data-if="ref"><dt data-t="refLabel"></dt><dd data-t="ref"></dd></div>
+      <div data-if="inspector"><dt>Inspected by</dt><dd data-t="inspector"></dd></div>
+    </dl>
+    <div class="score">
+      <div class="sc urgent"><b data-t="n.urgent"></b><span>Urgent</span></div>
+      <div class="sc attn"><b data-t="n.attn"></b><span>Needs attention</span></div>
+      <div class="sc ok"><b data-t="n.ok"></b><span>OK</span></div>
+      <div class="sc none" data-if="n.none"><b data-t="n.none"></b><span>Not checked</span></div>
+    </div>
+    <section class="rep-group urgent" data-if="n.urgent"><h3>Urgent: needs action now</h3><ol class="rep-items" data-slot="urgent"></ol></section>
+    <section class="rep-group attn" data-if="n.attn"><h3>Needs attention soon</h3><ol class="rep-items" data-slot="attn"></ol></section>
+    <section class="rep-group ok" data-if="showOk"><h3>Checked and OK</h3><div class="ok-cols" data-slot="ok"></div></section>
+    <section class="rep-group none" data-if="n.none"><h3>Not checked</h3><p class="rep-list" data-t="noneText"></p></section>
+    <section class="rep-group na" data-if="naText"><h3>Not applicable</h3><p class="rep-list" data-t="naText"></p></section>
+    <section class="doc-notes" data-if="notes"><h3>Notes</h3><p class="pre" data-t="notes"></p></section>
+    <div class="doc-sign">
+      <div><div class="sig-box" data-slot="sig"></div><p class="line" data-t="signLine"></p></div>
+      <div><div class="sig-box"><p class="sig-name" data-t="inspector"></p></div><p class="line">Inspected by</p></div>
+    </div>
+    <p class="doc-foot" data-t="footer"></p>
+  </article>
+</template>
+<!-- /section:doc-report -->
+
+<!-- section:view-templates -->
+<template id="view-templates">
+  <header class="page-head"><div><h1>Checklists</h1><p class="sub">The lists your inspections start from. Changing one never changes past inspections.</p></div>
+    <div class="actions"><button type="button" class="btn soft sm" data-act="new-template"><span data-i="plus"></span>New checklist</button></div></header>
+  <div data-slot="list"></div>
+</template>
+<!-- /section:view-templates -->
+
+<!-- section:view-template -->
+<template id="view-template">
+  <header class="page-head"><div><p class="eyebrow"><span data-i="check-circle" data-cls="save-ico"></span><span class="save-state">Changes save as you type</span></p><h1 class="tpl-title"></h1></div></header>
+  <div class="tpl-edit">
+  <section class="card"><div class="form tpl-form">
+    <div class="field"><label for="t-name">Checklist name</label><input id="t-name" name="name"></div>
+    <div class="cols">
+      <div class="field"><label for="t-subject">What is inspected (label)</label><input id="t-subject" name="subjectLabel" placeholder="Vehicle, Item, Site"></div>
+      <div class="field"><label for="t-ref">Reference (label)</label><input id="t-ref" name="refLabel" placeholder="Mileage, Serial number"></div>
+    </div>
+  </div></section>
+  <div class="tsecs" data-slot="sections"></div>
+  <form class="card add-sec" autocomplete="off"><div class="field"><label for="t-addsec">Add a section</label><div class="row"><input id="t-addsec" name="sec" placeholder="For example: Under the hood"><button type="submit" class="btn soft"><span data-i="plus"></span>Add</button></div></div></form>
+  <div class="btns tpl-more">
+    <button type="button" class="btn" data-act="dup-template"><span data-i="copy"></span>Duplicate</button>
+    <button type="button" class="btn ghost danger-text" data-act="del-template"><span data-i="trash"></span>Delete checklist</button>
+  </div>
+  </div>
+</template>
+<template id="row-tsec">
+  <section class="card tsec">
+    <div class="tsec-head"><button type="button" class="handle" aria-label="Move this section (arrow keys)"><span data-i="grip"></span></button><input class="tsec-name" aria-label="Section name"><button type="button" class="btn icon ghost sm tsec-del" aria-label="Delete this section"><span data-i="trash"></span></button></div>
+    <ul class="list titems"></ul>
+    <form class="row add-item" autocomplete="off"><input name="item" placeholder="Add a check" aria-label="New check"><button type="submit" class="btn soft sm"><span data-i="plus"></span>Add</button></form>
+  </section>
+</template>
+<!-- /section:view-template -->
+
+<!-- section:view-settings -->
+<template id="view-settings">
+  <header class="page-head"><div><h1>Settings</h1><p class="sub"><span data-i="check-circle" data-cls="save-ico"></span><span class="save-state">Changes save as you type</span></p></div></header>
+  <form class="stack settings" id="set-form" novalidate autocomplete="off">
+    <section class="card"><div class="card-head"><h2>On your reports</h2></div>
+      <div class="form">
+        <div class="field"><label for="s-business">Business name</label><input id="s-business" name="business" autocomplete="organization"><p class="help">The letterhead at the top of every report.</p></div>
+        <div class="cols">
+          <div class="field"><label for="s-phone">Phone</label><input id="s-phone" name="phone" type="tel" inputmode="tel"></div>
+          <div class="field"><label for="s-email">Email</label><input id="s-email" name="email" type="email" inputmode="email" autocapitalize="off" spellcheck="false"></div>
+        </div>
+        <div class="field"><label for="s-address">Address</label><textarea id="s-address" name="address" rows="2" class="short"></textarea></div>
+      </div></section>
+    <section class="card"><div class="card-head"><h2>Inspections</h2></div>
+      <div class="form">
+        <div class="field"><label for="s-inspector">Inspector name on new inspections</label><input id="s-inspector" name="inspector" autocapitalize="words"></div>
+        <div class="checks">
+          <label class="check between"><span>List the OK checks in reports<span class="sub">Turn off for a shorter report with only problems</span></span><input type="checkbox" class="switch" name="showOk"></label>
+          <label class="check between"><span>Open notes when a problem is marked<span class="sub">Shows the note box for Attention and Urgent</span></span><input type="checkbox" class="switch" name="autoNote"></label>
+        </div>
+      </div></section>
+  </form>
+  <section class="card"><div class="card-head"><h2>Checklists</h2></div>
+    <p class="muted small card-lead">Edit the vehicle list, the home and equipment list, or make your own.</p>
+    <button type="button" class="btn" data-act="go-templates"><span data-i="list"></span>Edit checklists</button></section>
+  <section class="card"><div class="card-head"><h2>Space on this phone</h2></div>
+    <p class="muted small card-lead" data-t="storeText"></p>
+    <div class="progress store-bar"></div>
+  </section>
+  <section class="card"><div class="card-head"><h2>Backup and restore</h2></div>
+    <p class="muted small card-lead">A backup includes every inspection, photo, signature and checklist.</p>
+    <ul class="list">
+      <li><button type="button" class="item" data-act="backup"><span class="lead"><span data-i="download"></span></span><span class="body"><span class="title">Back up</span><span class="sub">Save one file with everything</span></span></button></li>
+      <li><button type="button" class="item" data-act="copy-backup"><span class="lead"><span data-i="copy"></span></span><span class="body"><span class="title">Copy the backup</span><span class="sub">Paste it into a note or an email to yourself</span></span></button></li>
+      <li><button type="button" class="item" data-act="restore-file"><span class="lead"><span data-i="upload"></span></span><span class="body"><span class="title">Restore from a file</span><span class="sub">Replaces what is on this phone now</span></span></button></li>
+      <li><button type="button" class="item" data-act="restore-text"><span class="lead"><span data-i="clipboard"></span></span><span class="body"><span class="title">Restore from copied text</span><span class="sub">Paste a backup you copied before</span></span></button></li>
+    </ul>
+    <input type="file" id="restore-input" accept=".json,application/json,text/plain" hidden>
+  </section>
+  <section class="card"><div class="card-head"><h2>Sample data</h2></div>
+    <p class="muted small card-lead">Made-up inspections marked "Sample" so you can see how it works. Clearing them never touches your own.</p>
+    <div class="btns"><button type="button" class="btn" data-act="load-sample"><span data-i="zap"></span>Load sample data</button><button type="button" class="btn" data-act="clear-sample"><span data-i="x"></span>Clear sample data</button></div>
+  </section>
+  <section class="section"><div class="sec-head"><h2>Help</h2></div>
+    <div class="accs" data-single>
+      <details class="acc"><summary>Where are inspections and photos saved?</summary><p>On this phone, in this app's own storage. Nothing is sent anywhere unless you text, email or print a report. Photos are made smaller to save space; back up now and then.</p></details>
+      <details class="acc"><summary>What do OK, Attention and Urgent mean?</summary><p>OK: nothing to do. Needs attention: should be looked at soon. Urgent: needs action now, for example for safety. Not applicable hides a check that does not apply.</p></details>
+      <details class="acc"><summary>Can I change the checklists?</summary><p>Yes, in Checklists: rename, reorder, add or delete sections and checks, or make a new list. Past inspections keep the list they were made with.</p></details>
+      <details class="acc"><summary>I deleted something by mistake</summary><p>Tap Undo in the message at the bottom of the screen straight away. If it is too late, restore your last backup.</p></details>
+    </div></section>
+  <div class="danger-zone"><button type="button" class="btn ghost sm" data-act="erase"><span data-i="trash"></span>Erase every inspection</button></div>
+  <p class="muted small center app-foot"><span data-t="bizName"></span> &middot; Inspections &middot; {{year}}</p>
+</template>
+<!-- /section:view-settings -->
+
+<!-- section:sheets -->
+<template id="sheet-share">
+  <div class="form"><div class="field"><label for="share-msg">Message</label><textarea id="share-msg" rows="8"></textarea><p class="help">Change anything you like before you send it. Photos go with a printed or PDF report.</p></div></div>
+  <ul class="list">
+    <li><a class="item share-sms"><span class="lead"><span data-i="message"></span></span><span class="body"><span class="title">Text message</span><span class="sub share-sms-to"></span></span><span data-i="chevron-right" data-cls="chev"></span></a></li>
+    <li><a class="item share-mail"><span class="lead"><span data-i="mail"></span></span><span class="body"><span class="title">Email</span><span class="sub share-mail-to"></span></span><span data-i="chevron-right" data-cls="chev"></span></a></li>
+    <li><button type="button" class="item share-copy"><span class="lead"><span data-i="copy"></span></span><span class="body"><span class="title">Copy the message</span><span class="sub">Paste it into any app</span></span></button></li>
+    <li><button type="button" class="item share-print"><span class="lead"><span data-i="printer"></span></span><span class="body"><span class="title">Print or save as PDF</span><span class="sub">The full report with photos</span></span></button></li>
+  </ul>
+</template>
+<!-- /section:sheets -->
+
+<script src="appkit.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+/* fonts.css | Alpha Studio | self-hosted Latin-subset woff2 from Fontsource (jsDelivr). All fonts are SIL OFL 1.1, see FONTS-LICENSE.txt.
+   Put this file next to your index.html with the fonts/ folder beside it, then: <link rel="stylesheet" href="fonts.css">
+   Pick ONE pairing: <html data-fonts="oswald-inter">  ->  sets --font-display and --font-body (and styles h1-h4 + .display).
+   Pairings: oswald-inter | barlow | bebas-inter | archivo | playfair-source | grotesk-dm | sora-inter | fraunces-work | dmserif-dm | mono-grotesk
+   Variable fonts carry a weight range, so font-weight: 500/600/700 all work. Static fonts list their exact weights. */
+
+/* Oswald (variable 200-700) */
+@font-face{font-family:"Oswald";font-style:normal;font-weight:200 700;font-display:swap;src:url(fonts/oswald-var.woff2) format("woff2")}
+/* Inter (variable 100-900) */
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/inter-var.woff2) format("woff2")}
+/* Barlow Condensed (static 600, 700) and Barlow (static 400, 600) */
+@font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-700.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/barlow-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/barlow-600.woff2) format("woff2")}
+/* Bebas Neue (single weight 400) */
+@font-face{font-family:"Bebas Neue";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/bebas-neue-400.woff2) format("woff2")}
+/* Archivo (variable 100-900) and Archivo Narrow (variable 400-700) */
+@font-face{font-family:"Archivo";font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/archivo-var.woff2) format("woff2")}
+@font-face{font-family:"Archivo Narrow";font-style:normal;font-weight:400 700;font-display:swap;src:url(fonts/archivo-narrow-var.woff2) format("woff2")}
+/* Playfair Display (variable 400-900) and Source Sans 3 (variable 200-900) */
+@font-face{font-family:"Playfair Display";font-style:normal;font-weight:400 900;font-display:swap;src:url(fonts/playfair-var.woff2) format("woff2")}
+@font-face{font-family:"Source Sans 3";font-style:normal;font-weight:200 900;font-display:swap;src:url(fonts/source-sans-3-var.woff2) format("woff2")}
+/* Space Grotesk (variable 300-700) and DM Sans (variable 100-1000) */
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:300 700;font-display:swap;src:url(fonts/space-grotesk-var.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-style:normal;font-weight:100 1000;font-display:swap;src:url(fonts/dm-sans-var.woff2) format("woff2")}
+/* Sora (variable 100-800) */
+@font-face{font-family:"Sora";font-style:normal;font-weight:100 800;font-display:swap;src:url(fonts/sora-var.woff2) format("woff2")}
+/* Fraunces (variable 100-900) and Work Sans (variable 100-900) */
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/fraunces-var.woff2) format("woff2")}
+@font-face{font-family:"Work Sans";font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/work-sans-var.woff2) format("woff2")}
+/* DM Serif Display (single weight 400) */
+@font-face{font-family:"DM Serif Display";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/dm-serif-display-400.woff2) format("woff2")}
+/* Space Mono (static 400, 700) */
+@font-face{font-family:"Space Mono";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/space-mono-400.woff2) format("woff2")}
+@font-face{font-family:"Space Mono";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/space-mono-700.woff2) format("woff2")}
+
+:root{--font-mono:"Space Mono",ui-monospace,Menlo,Consolas,monospace}
+
+/* pairings (set on <html>) */
+[data-fonts="oswald-inter"]{--font-display:"Oswald","Arial Narrow",Impact,sans-serif;--font-body:"Inter",system-ui,"Segoe UI",Roboto,Arial,sans-serif}
+[data-fonts="barlow"]{--font-display:"Barlow Condensed","Arial Narrow",Impact,sans-serif;--font-body:"Barlow",system-ui,"Segoe UI",Roboto,Arial,sans-serif}
+[data-fonts="bebas-inter"]{--font-display:"Bebas Neue",Impact,"Arial Narrow",sans-serif;--font-body:"Inter",system-ui,"Segoe UI",Roboto,Arial,sans-serif}
+[data-fonts="archivo"]{--font-display:"Archivo",system-ui,"Segoe UI",Arial,sans-serif;--font-body:"Archivo Narrow","Arial Narrow",Arial,sans-serif}
+[data-fonts="playfair-source"]{--font-display:"Playfair Display",Georgia,"Times New Roman",serif;--font-body:"Source Sans 3",system-ui,"Segoe UI",Arial,sans-serif}
+[data-fonts="grotesk-dm"]{--font-display:"Space Grotesk",system-ui,"Segoe UI",Arial,sans-serif;--font-body:"DM Sans",system-ui,"Segoe UI",Arial,sans-serif}
+[data-fonts="sora-inter"]{--font-display:"Sora",system-ui,"Segoe UI",Arial,sans-serif;--font-body:"Inter",system-ui,"Segoe UI",Roboto,Arial,sans-serif}
+[data-fonts="fraunces-work"]{--font-display:"Fraunces",Georgia,"Times New Roman",serif;--font-body:"Work Sans",system-ui,"Segoe UI",Arial,sans-serif}
+[data-fonts="dmserif-dm"]{--font-display:"DM Serif Display",Georgia,"Times New Roman",serif;--font-body:"DM Sans",system-ui,"Segoe UI",Arial,sans-serif}
+[data-fonts="mono-grotesk"]{--font-display:"Space Mono",ui-monospace,Menlo,Consolas,monospace;--font-body:"Space Grotesk",system-ui,"Segoe UI",Arial,sans-serif}
+[data-fonts]{font-family:var(--font-body)}
+[data-fonts] :is(h1,h2,h3,h4,.display){font-family:var(--font-display)}

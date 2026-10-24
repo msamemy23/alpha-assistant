@@ -1,0 +1,66 @@
+{
+  "id": "soft-pastel",
+  "name": "Soft Pastel",
+  "signature": "Blush page, raspberry accent, arch-cropped photo, pill buttons, floating cards.",
+  "mood": ["sweet", "gentle", "cheerful", "cared-for"],
+  "bestFor": ["pet groomers", "florists", "bakeries", "nail and hair salons", "daycare", "tutoring", "boutiques"],
+  "fonts": "dmserif-dm",
+  "colors": {
+    "bg": "#FFF7F4",
+    "surface": "#FCE6EA",
+    "ink": "#35212B",
+    "muted": "#6B4F5C",
+    "accent": "#B03A6A",
+    "onAccent": "#FFFFFF"
+  },
+  "contrast": {
+    "ink/bg": 14.14,
+    "ink/surface": 12.57,
+    "muted/bg": 6.85,
+    "muted/surface": 6.08,
+    "onAccent/accent": 5.73,
+    "accent/bg": 5.42,
+    "accent/surface": 4.82,
+    "accentAsText": true,
+    "note": "Light theme. Raspberry is safe as text on both backgrounds. White on raspberry passes AA."
+  },
+  "radius": {"sm": 12, "md": 20, "lg": 28, "button": 999},
+  "shadow": {"card": "0 20px 40px -24px rgba(53,33,43,.35)", "pop": "0 28px 56px -24px rgba(53,33,43,.4)"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 96, "gutter": 20, "maxWidth": 1080},
+  "type": {
+    "scaleRatio": 1.25,
+    "basePx": 18,
+    "bodyLeading": 1.7,
+    "h1": "clamp(2.5rem,8vw,4.5rem)",
+    "h2": "clamp(1.875rem,5vw,2.875rem)",
+    "h3": "1.5rem",
+    "headingCase": "none",
+    "headingWeight": 400,
+    "headingLeading": 1.1,
+    "headingTracking": "0",
+    "eyebrow": "0.875rem, weight 600, accent color, sentence case, with a small round dot before it"
+  },
+  "motion": {
+    "rule": "Float: cards rise 28px over 900ms with a 100ms stagger and a soft ease-out, never faster, never bouncing.",
+    "reveal": "up",
+    "staggerMs": 100,
+    "durationMs": 900,
+    "ease": "cubic-bezier(.22,.8,.24,1)",
+    "use": ["data-reveal", "data-stagger", "data-lift"],
+    "avoid": ["snappy transitions", "data-tilt", "marquee"]
+  },
+  "hero": {
+    "treatment": "arch-photo",
+    "layout": "Photo cropped to an arch (border-radius 999px 999px 28px 28px) on the right, headline and pill button on the left, a large blob of surface color behind the photo.",
+    "photo": "Real, bright, warm photo of the shop, the animals, the flowers or the work."
+  },
+  "background": "Blush white with two large flat surface-color blobs (static SVG shapes) behind the hero and one mid-page section. No gradients.",
+  "button": {
+    "shape": "Pill, 999px radius, 52px tall.",
+    "fill": "Accent fill, white label; secondary is a surface-color pill with ink label.",
+    "label": "Weight 600, sentence case.",
+    "hover": "Lifts 4px with data-lift; shadow is static.",
+    "minHeightPx": 48
+  },
+  "banned": ["black backgrounds", "sharp 0-radius corners", "uppercase shouting", "neon", "heavy shadows", "condensed fonts"]
+}

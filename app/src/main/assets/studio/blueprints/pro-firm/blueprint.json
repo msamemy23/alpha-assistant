@@ -1,0 +1,30 @@
+{
+  "id": "pro-firm",
+  "kind": "local",
+  "name": "Pro Firm",
+  "summary": "Calm, authoritative page for a professional practice: a large left-aligned headline beside an office photo with a floating 'Request a consultation' card, practice areas as tabs (accordion on phones), a numbered what-to-expect timeline, team cards, credentials and a disclaimer next to the FAQ, and an inverted contact band with hours.",
+  "best_for": ["law office", "lawyer", "attorney", "solicitor", "clinic", "doctor", "dentist", "dental practice", "physiotherapist", "therapist", "counselor", "accountant", "bookkeeper", "tax preparer", "financial adviser", "consultant", "real estate agent", "realtor", "insurance agent", "insurance broker", "notary", "architect", "veterinarian"],
+  "mood": ["calm", "authoritative", "trustworthy", "professional", "clear", "reassuring"],
+  "files": ["index.html", "style.css", "app.js"],
+  "sections": [
+    {"name": "header", "what": "Sticky glass header: monogram ({{initial}}) and name, page links on wide screens, a Call button always visible, a menu on phones", "edit": "Keep the Call button. If you remove a section, also remove its link here and in the footer"},
+    {"name": "hero", "what": "Eyebrow (name and city), two-part headline (strong first sentence, softer second sentence in .hero__soft), the tagline as a pull line, intro, call + 'How we can help' buttons, hours and office facts, the hero photo, and the consultation card (#consult) whose form builds an email or a text message", "edit": "Rewrite the h1 around the owner's real promise; keep one h1 and the two-part shape. Keep the form fields short (name, phone or email, message). The form needs no server: app.js opens the visitor's own email or messages app"},
+    {"name": "practice", "what": "Practice areas: each .area is an accordion item on phones; app.js turns them into tabs with a detail panel on wide screens (number, icon, title, description, 'Often a good fit when' ticks, 'Ask about this' link that pre-fills the form)", "edit": "One .area per real service (3 to 6). Change the label in .area__label and the same words in .area__name and data-topic; keep data-no in step with the number. Delete extras; tabs rebuild themselves"},
+    {"name": "process", "what": "About paragraph and photo, then a numbered 4-step 'what to expect' timeline (horizontal on wide screens, vertical on phones)", "edit": "Write the about paragraph from the owner's facts. Keep 3 to 5 steps that describe how a new client is really handled"},
+    {"name": "team", "what": "Three people cards with portrait photos, name, role and a short bio; a swipe strip on phones", "edit": "Only real people with names the owner gave you; otherwise delete the whole section and its nav links"},
+    {"name": "faq", "what": "Six questions in an accordion (details/summary), with the credentials card beside them", "edit": "Answer with the owner's real policies (fees, appointments, privacy). Delete questions you cannot answer honestly"},
+    {"name": "credentials", "what": "Nested inside faq: a card with a drawn seal (business name and city around the initial), a short list of registration / oversight / languages lines, and a disclaimer", "edit": "Fill in only real registration or licence details the owner gave you and delete the other lines. Keep the disclaimer and adapt it to the profession (legal, medical, financial, property, insurance)"},
+    {"name": "contact", "what": "Inverted band (ink background): headline, big phone link, email, consultation and Directions buttons, and a card with office address, opening hours (app.js splits {{hours}} into rows) and visiting notes", "edit": "Replace the Visiting line with real parking or access notes, or delete that block"},
+    {"name": "footer", "what": "Monogram, name and tagline, contact, hours, page links, copyright with a short 'not professional advice' line, back to top", "edit": "Keep the links in step with the sections you kept"}
+  ],
+  "photo_slots": [
+    {"slot": "hero", "orientation": "landscape", "hint": "the office, a meeting or consultation in progress, or the professional at work; calm and well lit"},
+    {"slot": "about", "orientation": "landscape", "hint": "a quiet detail of the workplace: a desk, the reception, the treatment room or the building"},
+    {"slot": "team-1", "orientation": "portrait", "hint": "head-and-shoulders portrait of a team member, plain background"},
+    {"slot": "team-2", "orientation": "portrait", "hint": "head-and-shoulders portrait of a team member, plain background"},
+    {"slot": "team-3", "orientation": "portrait", "hint": "head-and-shoulders portrait of a team member, plain background"}
+  ],
+  "remove_if_no_facts": ["team", "credentials"],
+  "behaviors": ["sticky glass header with an always-visible Call button", "menu on phones", "consultation form that opens a pre-written email or text (no server)", "practice areas: accordion on phones, tabs with keyboard arrows on wide screens", "'Ask about this' pre-fills the form", "opening hours split into tidy rows", "Directions link built from the address", "reveal on scroll", "scroll progress bar"],
+  "style_notes": "Works best with: editorial-serif, clinical-clean, dark-luxury, swiss-grid, earthy-craft (newspaper and coastal also suit it). Tested under ten kit styles, light and dark, serif and loud, at 390 and 1280 px. Accent is only used as a fill (buttons, icons on accent tiles, rules), never as body text, so lime or orange accents stay readable. JSON-LD uses ProfessionalService; change @type to LegalService, Dentist, MedicalBusiness, AccountingService, RealEstateAgent or InsuranceAgency to match the business."
+}

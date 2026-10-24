@@ -1,0 +1,74 @@
+{
+  "id": "dark-luxury",
+  "name": "Dark Luxury",
+  "signature": "Near-black page, ivory serif, gold hairlines, slow cinematic fades.",
+  "mood": ["exclusive", "refined", "cinematic", "quiet"],
+  "bestFor": [
+    "high-end detailing",
+    "European car specialists",
+    "collision restoration",
+    "barbers",
+    "custom upholstery",
+    "wedding limos",
+    "steakhouses"
+  ],
+  "fonts": "playfair-source",
+  "colors": {
+    "bg": "#0D0C0A",
+    "surface": "#1A1814",
+    "ink": "#F3EBDD",
+    "muted": "#B9AE9A",
+    "accent": "#C9A24B",
+    "onAccent": "#0D0C0A"
+  },
+  "contrast": {
+    "ink/bg": 16.51,
+    "ink/surface": 14.97,
+    "muted/bg": 8.92,
+    "muted/surface": 8.08,
+    "onAccent/accent": 8.14,
+    "accent/bg": 8.14,
+    "accent/surface": 7.38,
+    "accentAsText": true,
+    "note": "Dark theme. Gold is safe as text on both backgrounds. Dark labels on gold buttons pass AA."
+  },
+  "radius": {"sm": 0, "md": 2, "lg": 4, "button": 0},
+  "shadow": {"card": "none", "pop": "0 24px 60px -24px rgba(0,0,0,.8)"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 120, "gutter": 24, "maxWidth": 1120},
+  "type": {
+    "scaleRatio": 1.333,
+    "basePx": 18,
+    "bodyLeading": 1.7,
+    "h1": "clamp(2.75rem,8vw,5.5rem)",
+    "h2": "clamp(2rem,5vw,3.25rem)",
+    "h3": "1.5rem",
+    "headingCase": "none",
+    "headingWeight": 500,
+    "headingLeading": 1.06,
+    "headingTracking": "0.005em",
+    "eyebrow": "0.75rem, weight 600, uppercase, 0.28em tracking, gold, with a 40px gold hairline before it"
+  },
+  "motion": {
+    "rule": "Cinematic: everything fades in over 1100ms with a 150ms stagger and no movement, and only the hero photo drifts with parallax.",
+    "reveal": "fade",
+    "staggerMs": 150,
+    "durationMs": 1100,
+    "ease": "cubic-bezier(.16,.84,.24,1)",
+    "use": ["data-reveal", "data-stagger", "data-parallax on the hero photo at 0.1"],
+    "avoid": ["data-count-to", "marquee", "data-tilt", "bright flashes"]
+  },
+  "hero": {
+    "treatment": "photo-full-bleed",
+    "layout": "Full-viewport dark photo with a vignette, a 1px gold frame inset 16px from the edges, headline bottom-left in ivory, one outlined gold button. Scroll cue is a thin vertical gold line.",
+    "photo": "Real, well-lit photo of the finished work; must be dark enough for the ivory headline."
+  },
+  "background": "Near-black with a faint vignette on photo sections. Gold 1px hairlines separate sections. No patterns, no cards with fills: use hairline-bordered boxes.",
+  "button": {
+    "shape": "Square corners, 52px tall.",
+    "fill": "Primary: gold fill, dark label. Secondary: 1px gold outline, ivory label.",
+    "label": "Body sans, weight 600, uppercase, 0.16em tracking.",
+    "hover": "Press feedback only; the gold fill never animates.",
+    "minHeightPx": 48
+  },
+  "banned": ["bright colors", "emoji", "pill buttons", "drop shadows on cards", "busy patterns", "stock luxury-car photos"]
+}

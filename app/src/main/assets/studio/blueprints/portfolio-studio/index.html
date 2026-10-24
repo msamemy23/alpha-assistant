@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en" data-kind="site">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{business}} | Portfolio and selected work</title>
+<meta name="description" content="{{business}} in {{city}}: selected work, a short story behind it and an easy way to start a project together.">
+<meta name="theme-color" content="#111111">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-progress>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- section:header -->
+<header class="site-header" data-sticky>
+  <div class="wrap site-header__bar">
+    <a class="brand" href="#top" data-shrink aria-label="{{business}}, back to the top">
+      <span class="brand__mark" aria-hidden="true">{{initial}}</span>
+      <span class="brand__name">{{business}}</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#index">Work</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="pill-btn" href="#contact">Say hello
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+    </a>
+  </div>
+</header>
+<!-- /section:header -->
+
+<main id="main">
+
+<!-- section:hero -->
+<!-- The name is the hero. Rotating role words: keep exactly 4 words, and repeat the FIRST word as the 5th so the loop is seamless.
+     Update the hidden .sr-only sentence to match (screen readers read that instead of the moving words). -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="hero__grid-lines" aria-hidden="true"></div>
+  <div class="wrap hero__inner">
+    <div class="hero__meta" data-reveal="fade">
+      <span class="hero__meta-item">Portfolio <span class="tnum">{{year}}</span></span>
+      <span class="hero__meta-item hero__meta-item--mid">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+        <span class="hero__meta-text"><span class="hide-sm">Based in </span>{{city}}</span>
+      </span>
+      <span class="hero__meta-item hero__meta-item--end">Selected work below</span>
+    </div>
+
+    <h1 class="hero__title" id="hero-title">
+      <span class="hero__name" data-fit="line">{{business}}</span>
+      <span class="hero__role">
+        <span class="hero__role-dash" aria-hidden="true"></span>
+        <span class="hero__role-lead">Independent</span>
+        <span class="sr-only">photographer, designer and art director</span>
+        <span class="rotator" aria-hidden="true"><span class="rotator__stack"><span>photographer</span><span>designer</span><span>art director</span><span>visual artist</span><span>photographer</span></span></span>
+      </span>
+    </h1>
+
+    <div class="hero__foot">
+      <p class="hero__lead" data-reveal>Write one or two sentences about what you make and who you make it for. Keep it plain, warm and specific.</p>
+      <div class="hero__actions" data-reveal data-delay="120">
+        <a class="btn btn--solid" href="#index" data-magnetic="0.2">See selected work
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+        </a>
+        <a class="btn btn--line" href="{{email_href}}">Email me</a>
+      </div>
+    </div>
+  </div>
+
+  <a class="stamp" href="#index" aria-label="Scroll to the selected work">
+    <svg class="stamp__ring" viewBox="0 0 160 160" aria-hidden="true">
+      <defs><path id="stamp-circle" d="M80 80m-60 0a60 60 0 1 1 120 0a60 60 0 1 1-120 0"/></defs>
+      <text><textPath href="#stamp-circle" textLength="371" lengthAdjust="spacing">Selected work &#8226; Scroll down &#8226;</textPath></text>
+    </svg>
+    <svg class="stamp__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+  </a>
+</section>
+<!-- /section:hero -->
+
+<!-- section:disciplines -->
+<!-- A moving band of the things you do. One word or two per item; 4 to 8 items. -->
+<section class="disciplines" aria-label="Disciplines">
+  <div class="marquee" data-speed="60">
+    <div class="marquee__track" style="--g:0px">
+      <span class="disc">Photography<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></svg></span>
+      <span class="disc">Art direction<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></svg></span>
+      <span class="disc">Brand identity<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></svg></span>
+      <span class="disc">Portraits<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></svg></span>
+      <span class="disc">Editorial<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></svg></span>
+      <span class="disc">Design<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></svg></span>
+    </div>
+  </div>
+</section>
+<!-- /section:disciplines -->
+
+<!-- section:index -->
+<!-- The project index. Desktop: hovering a row shows its picture next to the pointer. Phones: each row is a card with a thumbnail.
+     One row per real project (3 to 8). Each row links to its picture in the work grid (#work-1 ...). Keep titles short. -->
+<section class="index" id="index" aria-labelledby="index-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Index</p>
+      <h2 class="sec-head__title" id="index-title">Selected projects</h2>
+      <p class="sec-head__note">A short line about the projects below: what ties them together, or what you are proudest of.</p>
+    </div>
+
+    <ol class="index__list" data-stagger="70">
+      <li class="index__item">
+        <a class="index__row" href="#work-1">
+          <img class="index__thumb" src="{{photo:work-1}}" alt="{{alt:work-1}}" width="480" height="600" loading="lazy" decoding="async">
+          <span class="index__num tnum">01</span>
+          <h3 class="index__title">Portrait series</h3>
+          <span class="index__cat">Portraits</span>
+          <svg class="index__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </li>
+      <li class="index__item">
+        <a class="index__row" href="#work-2">
+          <img class="index__thumb" src="{{photo:work-2}}" alt="{{alt:work-2}}" width="480" height="600" loading="lazy" decoding="async">
+          <span class="index__num tnum">02</span>
+          <h3 class="index__title">Mountain light</h3>
+          <span class="index__cat">Landscape</span>
+          <svg class="index__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </li>
+      <li class="index__item">
+        <a class="index__row" href="#work-3">
+          <img class="index__thumb" src="{{photo:work-3}}" alt="{{alt:work-3}}" width="480" height="600" loading="lazy" decoding="async">
+          <span class="index__num tnum">03</span>
+          <h3 class="index__title">A wedding day</h3>
+          <span class="index__cat">Weddings</span>
+          <svg class="index__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </li>
+      <li class="index__item">
+        <a class="index__row" href="#work-4">
+          <img class="index__thumb" src="{{photo:work-4}}" alt="{{alt:work-4}}" width="480" height="600" loading="lazy" decoding="async">
+          <span class="index__num tnum">04</span>
+          <h3 class="index__title">City after dark</h3>
+          <span class="index__cat">Personal</span>
+          <svg class="index__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </li>
+      <li class="index__item">
+        <a class="index__row" href="#work-5">
+          <img class="index__thumb" src="{{photo:work-5}}" alt="{{alt:work-5}}" width="480" height="600" loading="lazy" decoding="async">
+          <span class="index__num tnum">05</span>
+          <h3 class="index__title">Out on the coast</h3>
+          <span class="index__cat">Travel</span>
+          <svg class="index__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </li>
+      <li class="index__item">
+        <a class="index__row" href="#work-6">
+          <img class="index__thumb" src="{{photo:work-6}}" alt="{{alt:work-6}}" width="480" height="600" loading="lazy" decoding="async">
+          <span class="index__num tnum">06</span>
+          <h3 class="index__title">In motion</h3>
+          <span class="index__cat">Editorial</span>
+          <svg class="index__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </li>
+    </ol>
+  </div>
+</section>
+<!-- /section:index -->
+
+<!-- section:work -->
+<!-- Six pictures in an asymmetric grid; each has its own shape (a to f). Tap or click one to see it larger.
+     Keep the ids work-1 ... work-6 in step with the index rows above. -->
+<section class="work" id="work" aria-labelledby="work-title">
+  <div class="wrap">
+    <div class="sec-head sec-head--split">
+      <p class="eyebrow">Work</p>
+      <h2 class="sec-head__title" id="work-title">Selected work</h2>
+      <p class="sec-head__note">One line about the pictures below. Tap any of them to see it larger.</p>
+    </div>
+
+    <div class="work__grid">
+      <figure class="work__item work__item--a" id="work-1" data-reveal="up">
+        <button class="work__open" type="button" data-cursor="view" aria-label="View larger: Portrait series">
+          <img src="{{photo:work-1}}" alt="{{alt:work-1}}" width="1200" height="1500" loading="lazy" decoding="async">
+        </button>
+        <figcaption><span class="work__num tnum">01</span><span class="work__name">Portrait series</span><span class="work__cat">Portraits</span></figcaption>
+      </figure>
+      <figure class="work__item work__item--b" id="work-2" data-reveal="up" data-delay="120">
+        <button class="work__open" type="button" data-cursor="view" aria-label="View larger: Mountain light">
+          <img src="{{photo:work-2}}" alt="{{alt:work-2}}" width="1200" height="1600" loading="lazy" decoding="async">
+        </button>
+        <figcaption><span class="work__num tnum">02</span><span class="work__name">Mountain light</span><span class="work__cat">Landscape</span></figcaption>
+      </figure>
+      <figure class="work__item work__item--c" id="work-3" data-reveal="up">
+        <button class="work__open" type="button" data-cursor="view" aria-label="View larger: A wedding day">
+          <img src="{{photo:work-3}}" alt="{{alt:work-3}}" width="1200" height="1200" loading="lazy" decoding="async">
+        </button>
+        <figcaption><span class="work__num tnum">03</span><span class="work__name">A wedding day</span><span class="work__cat">Weddings</span></figcaption>
+      </figure>
+      <figure class="work__item work__item--d" id="work-4" data-reveal="up" data-delay="120">
+        <button class="work__open" type="button" data-cursor="view" aria-label="View larger: City after dark">
+          <img src="{{photo:work-4}}" alt="{{alt:work-4}}" width="1500" height="1000" loading="lazy" decoding="async">
+        </button>
+        <figcaption><span class="work__num tnum">04</span><span class="work__name">City after dark</span><span class="work__cat">Personal</span></figcaption>
+      </figure>
+      <figure class="work__item work__item--e" id="work-5" data-reveal="up">
+        <button class="work__open" type="button" data-cursor="view" aria-label="View larger: Out on the coast">
+          <img src="{{photo:work-5}}" alt="{{alt:work-5}}" width="1800" height="900" loading="lazy" decoding="async">
+        </button>
+        <figcaption><span class="work__num tnum">05</span><span class="work__name">Out on the coast</span><span class="work__cat">Travel</span></figcaption>
+      </figure>
+      <div class="work__aside" data-reveal="up">
+        <p class="work__aside-text">Want something like this for your own project?</p>
+        <a class="link-arrow" href="#contact">Start a conversation
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <figure class="work__item work__item--f" id="work-6" data-reveal="up" data-delay="120">
+        <button class="work__open" type="button" data-cursor="view" aria-label="View larger: In motion">
+          <img src="{{photo:work-6}}" alt="{{alt:work-6}}" width="1200" height="1500" loading="lazy" decoding="async">
+        </button>
+        <figcaption><span class="work__num tnum">06</span><span class="work__name">In motion</span><span class="work__cat">Editorial</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+<!-- /section:work -->
+
+<!-- section:about -->
+<!-- Portrait plus a short bio. Rewrite the statement (h2) and the two paragraphs in the owner's own voice. -->
+<section class="about" id="about" aria-labelledby="about-title">
+  <div class="wrap about__grid">
+    <figure class="about__photo" data-reveal="scale">
+      <img src="{{photo:portrait}}" alt="{{alt:portrait}}" width="960" height="1200" loading="lazy" decoding="async">
+      <figcaption>{{business}}<span aria-hidden="true"> / </span>{{city}}</figcaption>
+    </figure>
+    <div class="about__text">
+      <p class="eyebrow">About</p>
+      <h2 class="about__statement" id="about-title" data-reveal>Pictures and design for people who care about the details.</h2>
+      <div class="about__bio" data-reveal data-delay="100">
+        <p>Write two or three sentences about who you are, how you got here and what you love to make. Keep it in your own voice.</p>
+        <p>Add a line about how you like to work with people: how a project starts, what happens along the way and what they get at the end.</p>
+      </div>
+      <dl class="about__facts" data-reveal data-delay="180">
+        <div><dt>Based in</dt><dd>{{city}}</dd></div>
+        <div><dt>Open to</dt><dd>Commissions and collaborations</dd></div>
+        <div><dt>Say hello</dt><dd><a href="{{email_href}}">Send an email</a></dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+<!-- /section:about -->
+
+<!-- section:services -->
+<!-- Optional: remove this whole section if the owner has not described their services. Never invent prices;
+     "Ask for rates" opens an email with the service name as the subject. -->
+<section class="services" id="services" aria-labelledby="services-title">
+  <div class="wrap services__grid">
+    <div class="sec-head">
+      <p class="eyebrow">Services</p>
+      <h2 class="sec-head__title" id="services-title">Ways to work together</h2>
+      <p class="sec-head__note">Every project is a little different, so rates are quoted per project. Ask and you will get a clear answer.</p>
+    </div>
+    <ul class="services__list" data-stagger="80">
+      <li class="service">
+        <div class="service__head">
+          <h3 class="service__name">Portrait sessions</h3>
+          <span class="service__leader" aria-hidden="true"></span>
+          <a class="service__ask" href="{{email_href}}?subject=Portrait%20sessions">Ask for rates</a>
+        </div>
+        <p class="service__text">Describe this service in one or two sentences: what is included and who it is for.</p>
+      </li>
+      <li class="service">
+        <div class="service__head">
+          <h3 class="service__name">Brand and campaign work</h3>
+          <span class="service__leader" aria-hidden="true"></span>
+          <a class="service__ask" href="{{email_href}}?subject=Brand%20and%20campaign%20work">Ask for rates</a>
+        </div>
+        <p class="service__text">Describe this service in one or two sentences: what is included and who it is for.</p>
+      </li>
+      <li class="service">
+        <div class="service__head">
+          <h3 class="service__name">Events and weddings</h3>
+          <span class="service__leader" aria-hidden="true"></span>
+          <a class="service__ask" href="{{email_href}}?subject=Events%20and%20weddings">Ask for rates</a>
+        </div>
+        <p class="service__text">Describe this service in one or two sentences: what is included and who it is for.</p>
+      </li>
+      <li class="service">
+        <div class="service__head">
+          <h3 class="service__name">Design and art direction</h3>
+          <span class="service__leader" aria-hidden="true"></span>
+          <a class="service__ask" href="{{email_href}}?subject=Design%20and%20art%20direction">Ask for rates</a>
+        </div>
+        <p class="service__text">Describe this service in one or two sentences: what is included and who it is for.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+<!-- /section:services -->
+
+<!-- section:contact -->
+<section class="contact" id="contact" aria-labelledby="contact-title">
+  <div class="wrap">
+    <p class="eyebrow">Contact</p>
+    <h2 class="contact__title" id="contact-title" data-reveal>Have a project in mind? Let&rsquo;s talk.</h2>
+    <div class="contact__mail" data-reveal data-delay="120">
+      <a class="contact__email" href="{{email_href}}" data-fit="line" data-fit-min="40" data-fit-max="128" data-email>{{email}}</a>
+      <button class="copy-btn" type="button" data-copy-from=".contact__email">
+        <svg class="copy-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <svg class="copy-btn__done" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+        <span class="copy-btn__label">Copy email</span>
+      </button>
+    </div>
+    <div class="contact__more" data-reveal data-delay="200">
+      <div class="contact__cell">
+        <p class="contact__label">Phone</p>
+        <a class="contact__link" href="{{phone_href}}">{{phone}}</a>
+      </div>
+      <div class="contact__cell">
+        <p class="contact__label">Based in</p>
+        <p class="contact__value">{{city}}</p>
+      </div>
+      <div class="contact__cell">
+        <p class="contact__label">Studio hours</p>
+        <p class="contact__value">{{hours}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- /section:contact -->
+
+</main>
+
+<!-- section:footer -->
+<footer class="site-footer">
+  <div class="wrap site-footer__row">
+    <p>&copy; {{year}} {{business}}</p>
+    <p class="site-footer__city">{{city}}</p>
+    <a class="to-top" href="#top">Back to top
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+    </a>
+  </div>
+</footer>
+<!-- /section:footer -->
+
+<p class="toast" role="status" aria-live="polite"></p>
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{NAME}} | {{CITY}}</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="theme-color" content="#0f1b2d">
+<meta property="og:title" content="{{NAME}}">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:type" content="website">
+<script type="application/ld+json">{{JSONLD}}</script>
+<style>
+:root{--ink:#14202e;--muted:#5b6b7c;--line:#e3e8ee;--bg:#f6f8fb;--card:#fff;--navy:#0f1b2d;--navy2:#18304f;--accent:#e8412d;--accent2:#c93421;--ok:#17803d}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5;-webkit-text-size-adjust:100%}
+a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.top{position:sticky;top:0;z-index:20;background:rgba(15,27,45,.96);backdrop-filter:blur(8px);color:#fff}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px}
+.brand{font-weight:800;letter-spacing:.2px;font-size:17px;line-height:1.15}
+.brand small{display:block;font-weight:500;font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:#9fb3cc}
+nav.links{display:none;gap:22px;font-size:15px}
+nav.links a{text-decoration:none;color:#d6e2f2}
+nav.links a:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:13px 22px;font:inherit;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer;transition:transform .08s,background .15s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent2)}
+.btn.ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.28)}
+.btn.ghost:hover{background:rgba(255,255,255,.2)}
+.btn.small{padding:9px 16px;font-size:14.5px;white-space:nowrap}
+.num{display:none}
+@media(min-width:440px){.num{display:inline}}
+.hero{background:radial-gradient(1200px 500px at 85% -10%,#27538a 0%,transparent 60%),linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;padding:56px 0 64px}
+.hero h1{margin:0 0 14px;font-size:clamp(30px,7vw,52px);line-height:1.08;letter-spacing:-.5px;max-width:15em}
+.hero p.lead{margin:0 0 26px;font-size:clamp(16.5px,3.6vw,20px);color:#cfdcec;max-width:34em}
+.hero .actions{display:flex;flex-wrap:wrap;gap:12px}
+.facts{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:30px;color:#b9cbe1;font-size:15px}
+.facts span{display:inline-flex;align-items:center;gap:8px}
+section{padding:56px 0}
+section h2{margin:0 0 6px;font-size:clamp(25px,5vw,34px);letter-spacing:-.3px}
+section p.sub{margin:0 0 26px;color:var(--muted);max-width:40em}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px}
+.card .ic{font-size:26px;line-height:1;margin-bottom:10px}
+.card h3{margin:0;font-size:17px}
+.two{display:grid;gap:22px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.panel h3{margin:0 0 12px;font-size:19px}
+table.hours{width:100%;border-collapse:collapse;font-size:16px}
+table.hours td{padding:9px 0;border-bottom:1px solid var(--line)}
+table.hours tr:last-child td{border-bottom:0}
+table.hours td:last-child{text-align:right;font-weight:600}
+.addr{font-size:18px;font-weight:600;margin:0 0 4px}
+.muted{color:var(--muted)}
+.map{margin-top:16px;border-radius:14px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/3;background:#e9eef4}
+.map iframe{width:100%;height:100%;border:0;display:block}
+form{display:grid;gap:14px}
+label{font-weight:600;font-size:14.5px;display:block;margin-bottom:5px}
+input,textarea{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1px solid #cdd6e0;border-radius:12px;background:#fff;color:var(--ink)}
+input:focus,textarea:focus{outline:3px solid #bcd3f5;border-color:#6d9be0}
+textarea{min-height:110px;resize:vertical}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.notice{border-radius:12px;padding:14px 16px;font-weight:600;display:none}
+.notice.ok{display:block;background:#e7f6ec;color:var(--ok);border:1px solid #bfe6cc}
+.notice.alt{display:block;background:#fff4e5;color:#8a5200;border:1px solid #f2d6a8}
+footer{background:var(--navy);color:#a9bbd1;padding:34px 0 90px;font-size:14.5px}
+footer a{color:#e6eefa}
+.callbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px}
+.callbar .btn{flex:1;padding:13px 10px}
+@media(min-width:760px){
+ nav.links{display:flex}
+ .two{grid-template-columns:1fr 1fr;align-items:start}
+ .callbar{display:none}
+ footer{padding-bottom:34px}
+ .hero{padding:84px 0 92px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="wrap">
+  <div class="brand">{{NAME}}<small>{{CITY}}</small></div>
+  <nav class="links" aria-label="Sections"><a href="#services">Services</a><a href="#visit">Hours &amp; location</a><a href="#quote">Free quote</a></nav>
+  <a class="btn primary small" href="tel:{{PHONE_TEL}}">Call<span class="num">&nbsp;{{PHONE_DISPLAY}}</span></a>
+ </div>
+</header>
+
+<main>
+<div class="hero">
+ <div class="wrap">
+  <h1>{{TAGLINE}}</h1>
+  <p class="lead">{{BLURB}}</p>
+  <div class="actions">
+   <a class="btn primary" href="tel:{{PHONE_TEL}}">&#128222; Call {{PHONE_DISPLAY}}</a>
+   <a class="btn ghost" href="#quote">Get a free quote</a>
+   <a class="btn ghost" href="https://www.google.com/maps/search/?api=1&amp;query={{ADDRESS_QUERY}}" rel="noopener">Directions</a>
+  </div>
+  <div class="facts"><span>&#128205; {{ADDRESS}}</span></div>
+ </div>
+</div>
+
+<section id="services">
+ <div class="wrap">
+  <h2>What we do</h2>
+  <p class="sub">Not sure what your car needs? Call us or send a quote request and we'll point you in the right direction.</p>
+  <div class="grid">{{SERVICES}}</div>
+ </div>
+</section>
+
+<section id="visit" style="background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+ <div class="wrap two">
+  <div class="panel">
+   <h3>Hours</h3>
+   <table class="hours"><tbody>{{HOURS}}</tbody></table>
+  </div>
+  <div class="panel">
+   <h3>Find us</h3>
+   <p class="addr">{{ADDRESS}}</p>
+   <p class="muted" style="margin:0 0 12px">Tap the number to call, or open directions in your maps app.</p>
+   <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <a class="btn primary small" href="tel:{{PHONE_TEL}}">Call {{PHONE_DISPLAY}}</a>
+    <a class="btn small" style="background:#eef2f7" href="https://www.google.com/maps/search/?api=1&amp;query={{ADDRESS_QUERY}}" rel="noopener">Directions</a>
+   </div>
+   <div class="map"><iframe title="Map to {{NAME}}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q={{ADDRESS_QUERY}}&amp;output=embed"></iframe></div>
+  </div>
+ </div>
+</section>
+
+<section id="quote">
+ <div class="wrap" style="max-width:640px">
+  <h2>Get a free quote</h2>
+  <p class="sub">Tell us about your car and what's going on. We'll get back to you.</p>
+  <form id="quoteForm" class="panel" novalidate>
+   <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
+   <div><label for="q-name">Your name</label><input id="q-name" name="name" autocomplete="name" required maxlength="100"></div>
+   <div><label for="q-phone">Phone number</label><input id="q-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="30"></div>
+   <div><label for="q-vehicle">Year, make and model</label><input id="q-vehicle" name="vehicle" placeholder="e.g. 2016 Toyota Camry" maxlength="120"></div>
+   <div><label for="q-message">What does it need?</label><textarea id="q-message" name="message" maxlength="1500" placeholder="Brakes squeaking, check engine light, oil change..."></textarea></div>
+   <button class="btn primary" type="submit" id="quoteSend">Send my request</button>
+   <div id="quoteNote" class="notice" role="status"></div>
+  </form>
+ </div>
+</section>
+</main>
+
+<footer>
+ <div class="wrap">
+  <strong style="color:#fff">{{NAME}}</strong><br>
+  {{ADDRESS}}<br>
+  <a href="tel:{{PHONE_TEL}}">{{PHONE_DISPLAY}}</a><br><br>
+  &copy; {{YEAR}} {{NAME}}
+ </div>
+</footer>
+
+<div class="callbar">
+ <a class="btn primary" href="tel:{{PHONE_TEL}}">&#128222; Call now</a>
+ <a class="btn" style="background:#eef2f7" href="#quote">Free quote</a>
+</div>
+
+<script>
+(function(){
+ var QUOTE_URL={{QUOTE_URL_JS}}, QUOTE_KEY={{QUOTE_KEY_JS}}, SHOP_TEL={{PHONE_TEL_JS}};
+ var form=document.getElementById('quoteForm'), note=document.getElementById('quoteNote'), send=document.getElementById('quoteSend');
+ function say(kind,text){note.className='notice '+kind;note.textContent=text;}
+ function viaText(d){
+  var body='Quote request from '+d.name+' ('+d.phone+')'+(d.vehicle?'\nVehicle: '+d.vehicle:'')+(d.message?'\n'+d.message:'');
+  say('alt','Almost done: your texting app will open with your request ready. Tap Send. Or call us at '+SHOP_TEL+'.');
+  window.location.href='sms:'+SHOP_TEL+'?body='+encodeURIComponent(body);
+ }
+ form.addEventListener('submit',function(e){
+  e.preventDefault();
+  if(form.website.value){return;}
+  var d={name:form.name.value.trim(),phone:form.phone.value.trim(),vehicle:form.vehicle.value.trim(),message:form.message.value.trim()};
+  if(!d.name||d.phone.replace(/\D/g,'').length<7){say('alt','Please add your name and a phone number we can reach you at.');return;}
+  if(!QUOTE_URL||!QUOTE_KEY){viaText(d);return;}
+  send.disabled=true;send.textContent='Sending...';
+  var headers={'Content-Type':'application/json','apikey':QUOTE_KEY,'Prefer':'return=minimal'};
+  if(QUOTE_KEY.indexOf('eyJ')===0){headers['Authorization']='Bearer '+QUOTE_KEY;}
+  fetch(QUOTE_URL.replace(/\/$/,'')+'/rest/v1/website_quotes',{method:'POST',headers:headers,body:JSON.stringify(d)})
+   .then(function(r){if(!r.ok){throw new Error('HTTP '+r.status);}
+    say('ok','Thank you! We got your request and will call you soon.');form.reset();})
+   .catch(function(){viaText(d);})
+   .then(function(){send.disabled=false;send.textContent='Send my request';});
+ });
+})();
+</script>
+</body>
+</html>

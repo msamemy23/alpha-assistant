@@ -1,0 +1,38 @@
+{
+  "id": "inspection-checklist",
+  "kind": "app",
+  "name": "Inspection Checklist",
+  "summary": "A digital inspection app built for one-handed phone use in a workshop: pick a checklist (a 39-check vehicle inspection and a home or equipment inspection ship with it, both editable), then tap huge OK / Attention / Urgent buttons or swipe a check right for OK and left for attention, add a note and up to 3 photos per check, mark checks not applicable, 'Rest OK' a whole section, jump to the next unchecked item; a sticky progress bar with live traffic-light counts; customer signature; a polished printable and shareable report with the letterhead, a score, urgent and attention items first with photos, then OK checks by section; history with search and filters; a checklist editor; settings with storage meter and backup. Bold, fast, traffic-light colours that respect the style.",
+  "best_for": ["vehicle inspection", "multi-point inspection", "auto repair", "mechanic", "tire shop", "fleet checks", "pre-purchase inspection", "home inspection", "equipment inspection", "HVAC service", "property check", "safety checklist", "any trade that inspects and reports"],
+  "mood": ["fast", "bold", "practical", "trustworthy", "workshop"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "facts", "what": "Hidden <template id=\"facts\"> holding the business tokens (business, phone, email, address, year) that app.js reads for the header and the report letterhead", "edit": "Leave the tokens in place; the owner can change these facts in the app's Settings"},
+    {"name": "view-list", "what": "Home: date eyebrow, h1, sample-data note, a welcome card with 3 steps when empty, then 3 stats (in progress, done this month, urgent found), search, filter chips and the history grouped into In progress / Finished (rows built in app.js row())", "edit": "Rewrite the h1, welcome heading, paragraph and steps in the owner's words; keep one h1 and the data-act / data-if attributes"},
+    {"name": "sheet-new", "what": "The 'New inspection' sheet listing the checklists as big cards", "edit": "Words only"},
+    {"name": "view-run", "what": "Doing an inspection: sticky progress bar with OK / Attention / Urgent counts, a details card (customer with suggestions, phone, vehicle or item, mileage or reference, date, inspector, email), a swipe tip, the sections of checks, and a Finish card (overall notes, customer signature pad, finish button, delete); a side panel on computers and a Next unchecked / Report dock on phones", "edit": "Labels and help text can be reworded; keep class names, ids and data-act attributes (app.js uses them). The labels Vehicle and Mileage come from the checklist"},
+    {"name": "row-section", "what": "One section of checks: fold button with name and count, and a Rest OK button", "edit": "Words only"},
+    {"name": "row-item", "what": "One check: name (tap for note and photos), three big status buttons, and the note / photos / Not applicable panel", "edit": "Button words can change (keep data-st values ok, attn, urgent)"},
+    {"name": "view-report", "what": "The report page: header plus Send to customer, Print or PDF and Checklist buttons", "edit": "Words only"},
+    {"name": "doc-report", "what": "The printable customer report: letterhead from {{business}} {{address}} {{phone}} {{email}} (Settings can override), details, a score of urgent / attention / OK / not checked, urgent items then attention items with notes and photos, OK checks in columns by section, not checked and not applicable lists, notes, customer signature and inspector lines, footer", "edit": "Rename the group headings to the owner's wording; keep data-t, data-if and data-slot attributes"},
+    {"name": "view-templates", "what": "The checklists list with a New checklist button", "edit": "Words only"},
+    {"name": "view-template", "what": "Checklist editor that saves as you type: name, the two labels (what is inspected, reference), sections with drag handles, rename and delete, checks with drag, rename, delete (undo) and add, add section, duplicate, delete checklist", "edit": "Words only"},
+    {"name": "view-settings", "what": "Settings that save as you type: business details on reports, default inspector, report and note options, link to checklists, storage meter, backup (file or copied text, photos included), restore, sample data, help, erase", "edit": "Words only; keep names"},
+    {"name": "sheets", "what": "Body of the Send the report sheet (editable message, text, email, copy, print)", "edit": "Words only"}
+  ],
+  "photo_slots": [],
+  "remove_if_no_facts": [],
+  "behaviors": [
+    "starts empty with a welcome card; 'Try it with sample data' loads 2 clearly labelled sample inspections (one finished with a drawn 'Sample photo'), 'Clear sample data' removes only those",
+    "everything is saved on the phone and survives reloads: inspections and checklists in AK.store 'inspection-checklist', photos and signatures in a separate store 'inspection-photos' so taps stay fast; unused photos are cleaned up on the next start",
+    "each check: tap OK / Attention / Urgent (tap again to clear), or swipe right for OK and left for Needs attention on touch screens; Attention or Urgent opens the note box (setting); up to 3 photos per check, resized to 900 px; Not applicable; Rest OK per section with undo; Next unchecked scrolls to and highlights the next open check",
+    "sticky progress bar with live counts; finished sections without problems fold away; sections with problems stay open",
+    "customer signature pad; Finish warns about unchecked items, then shows the report",
+    "report groups by severity with photos, prints black on white with print-safe status colours, and is sent as a text message, email or copied text; Print or PDF includes the photos",
+    "checklists are copied into each inspection, so editing or deleting a checklist never changes past inspections",
+    "history with search (customer, phone, vehicle or item, reference, inspector) and filters (in progress, finished, with urgent); delete with confirm and undo",
+    "storage meter warns before the browser's roughly 5 MB fills up; backup includes photos",
+    "phone: bottom tabs, floating New inspection button, dock with Next unchecked and Report; computer: sidebar, side panel with progress ring"
+  ],
+  "style_notes": "Built on appkit, so it follows every style; tested at 390 and 1280 with workshop-industrial, clinical-clean, midnight-neon, soft-pastel, neo-brutalist and editorial-serif. Strongest with workshop-industrial, high-contrast-sport, clinical-clean and midnight-neon. Status colours are appkit's contrast-tuned --ak-ok / --ak-warn / --ak-bad (the 'more than one accent colour family' warning is expected); the style accent drives progress, main buttons and focus."
+}

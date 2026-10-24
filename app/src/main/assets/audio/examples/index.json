@@ -1,0 +1,10 @@
+[
+  { "file": "shop-jingle-15s.json",        "what": "Upbeat shop jingle, 128 BPM, C major I-V-vi-IV, drums + bass + steel guitar strums + vibraphone hook + synth bell; exactly 15.0 s", "uses": "SoundFont, steps/repeat, chord+strum, fx send, synth:bell, durationSec, fadeOut" },
+  { "file": "hold-music-20s-loop.json",    "what": "Calm hold music, 96 BPM, Cmaj7-Am7-Fmaj7-G, 4-bar pattern looped to 20 s with a seamless tail", "uses": "loop.toSeconds, lengthBars, pad + electric piano arpeggio + bass + flute + brush hats, targetLufs -16" },
+  { "file": "ringtone-5s.json",            "what": "Cheerful 5 s ringtone, 144 BPM, 3 bars, loops seamlessly", "uses": "loop.times=1 (tail wrap), marimba motif, synth:bell accents, step velocity digits" },
+  { "file": "drum-loop-100bpm.json",       "what": "Drum loop at 100 BPM: 2-bar pattern x4 = 19.2 s, light swing", "uses": "power drum kit, 32-step patterns, swing, humanize, percussion track" },
+  { "file": "transition-sfx-set.json",     "what": "Transition sound effects: whoosh + ding, swoosh + pop + low ding", "uses": "sfx mode, ZzFX presets with filter sweep, pitch shift, pan, reverb send" },
+  { "file": "chiptune-game-theme.json",    "what": "8-bar A-minor chiptune game theme at 150 BPM, seamless loop", "uses": "synth:chiptune (+osc square), chiptune-tri, kick, snare, chiptune-noise; fast JS synth engine, no SoundFont" },
+  { "file": "acoustic-guitar-riff.json",   "what": "Fingerpicked nylon-guitar riff Em-C-G-D plus final strum, soft pad", "uses": "SoundFont guitar, humanize+seed, chord with octave/strum, fx chorus/reverb" },
+  { "file": "service-ready-chime.json",    "what": "'Service ready' notification chime: four rising chime notes", "uses": "sfx mode, chime preset with pitch offsets 0/4/7/12" }
+]

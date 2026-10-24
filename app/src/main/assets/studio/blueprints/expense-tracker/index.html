@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="{{slug}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{business}} Money Tracker</title>
+<meta name="description" content="Money in and out for {{business}}: spending by category, monthly budgets, repeating bills, receipts and backups, kept on this phone.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="appkit.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript><p style="padding:24px">This money tracker needs JavaScript turned on.</p></noscript>
+
+<!-- section:facts -->
+<!-- The owner's facts. app.js reads them (business name in the top bar, letterhead on the printed report). -->
+<div id="facts" hidden>
+  <span data-fact="business">{{business}}</span>
+  <span data-fact="phone">{{phone}}</span>
+  <span data-fact="email">{{email}}</span>
+  <span data-fact="address">{{address}}</span>
+  <span data-fact="year">{{year}}</span>
+</div>
+<!-- /section:facts -->
+
+<!-- section:view-home -->
+<!-- HOME (tab "Home"): month switcher, big numbers, donut by category, 6-month bars, budgets, recent, coming up.
+     data-slot="..." elements are filled by app.js (renderHome). <i data-icon="name"> becomes an icon. -->
+<template id="view-home">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Overview</p>
+      <h1 data-slot="month-title">This month</h1>
+      <p class="sub" data-slot="month-sub"></p>
+    </div>
+    <div class="month-nav" role="group" aria-label="Change month">
+      <button type="button" class="btn icon soft" data-act="month-prev" aria-label="Previous month"><i data-icon="chevron-left"></i></button>
+      <button type="button" class="btn soft sm now-btn" data-act="month-now" data-slot="now-btn">Today</button>
+      <button type="button" class="btn icon soft" data-act="month-next" aria-label="Next month"><i data-icon="chevron-right"></i></button>
+    </div>
+  </header>
+
+  <div data-slot="banner" class="stack banner-slot"></div>
+
+  <!-- Shown only while there is no data at all -->
+  <section class="card welcome" data-slot="welcome" hidden>
+    <div class="welcome-art" aria-hidden="true">
+      <span class="w-coin w-a"></span><span class="w-coin w-b"></span><span class="w-coin w-c"></span>
+      <svg viewBox="0 0 200 120" class="w-chart" preserveAspectRatio="none"><path class="w-area" d="M0 104 C30 98 44 70 72 74 S118 40 142 46 S180 22 200 16 V120 H0Z"/><path class="w-line" d="M0 104 C30 98 44 70 72 74 S118 40 142 46 S180 22 200 16"/></svg>
+    </div>
+    <h2>Know where every dollar goes</h2>
+    <p class="muted">Add money in and out as it happens. Your month, your categories and your budgets add up by themselves, right on this phone.</p>
+    <ul class="w-steps">
+      <li><i data-icon="plus"></i><span><b>Add an entry in seconds.</b> Amount, category, done. Snap the receipt if you like.</span></li>
+      <li><i data-icon="chart"></i><span><b>Set a monthly budget</b> for any category and see when it runs low.</span></li>
+      <li><i data-icon="refresh"></i><span><b>Rent, payroll, phone bills:</b> set them once and they add themselves on the right dates.</span></li>
+    </ul>
+    <div class="btns">
+      <button type="button" class="btn primary lg" data-act="new-txn"><i data-icon="plus"></i>Add your first entry</button>
+      <button type="button" class="btn soft lg" data-act="sample"><i data-icon="zap"></i>Try it with sample data</button>
+    </div>
+  </section>
+
+  <div class="stack home-main" data-slot="main" style="--gap:24px">
+    <div class="stats trio">
+      <div class="stat accent wide hero-net">
+        <span class="label"><i data-icon="wallet"></i> <span data-slot="net-label">Net this month</span></span>
+        <span class="value fit" data-slot="net"></span>
+        <div class="flow" data-slot="flow" aria-hidden="true"></div>
+        <span class="meta" data-slot="net-meta"></span>
+      </div>
+      <button type="button" class="stat" data-act="show-type" data-type="income">
+        <span class="label"><i data-icon="arrow-down"></i> Money in</span>
+        <span class="value fit" data-slot="income"></span>
+        <span class="delta" data-slot="income-delta"></span>
+        <span class="spark" data-slot="in-spark" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="stat" data-act="show-type" data-type="expense">
+        <span class="label"><i data-icon="arrow-up"></i> Money out</span>
+        <span class="value fit" data-slot="spent"></span>
+        <span class="delta" data-slot="spent-delta"></span>
+        <span class="spark" data-slot="out-spark" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div class="dash">
+      <section class="card spend-card">
+        <div class="card-head"><h2>Where it went</h2><span class="muted small" data-slot="spend-count"></span></div>
+        <div class="donut-wrap" data-slot="donut-wrap">
+          <div class="donut-box">
+            <div data-slot="donut"></div>
+            <div class="donut-center" aria-hidden="true"><span class="dc-val" data-slot="dc-val"></span><span class="dc-lbl" data-slot="dc-lbl">Spent</span></div>
+          </div>
+          <ul class="cat-break" data-slot="breakdown"></ul>
+        </div>
+        <div data-slot="spend-empty"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Last 6 months</h2>
+          <span class="legend-mini" aria-hidden="true"><span><i class="k k-in"></i>In</span><span><i class="k k-out"></i>Out</span></span>
+        </div>
+        <div data-slot="bars" class="bars"></div>
+        <p class="muted small avg-line" data-slot="avg"></p>
+      </section>
+    </div>
+
+    <section class="section">
+      <div class="sec-head"><h2>Budgets</h2><button type="button" class="btn ghost sm" data-act="go" data-to="/budgets">All budgets <i data-icon="chevron-right"></i></button></div>
+      <div data-slot="budgets"></div>
+    </section>
+
+    <div class="dash dash-even">
+      <section class="section">
+        <div class="sec-head"><h2>Recent</h2><button type="button" class="btn ghost sm" data-act="go" data-to="/activity">See all <i data-icon="chevron-right"></i></button></div>
+        <div data-slot="recent"></div>
+      </section>
+      <section class="section">
+        <div class="sec-head"><h2>Coming up</h2><button type="button" class="btn ghost sm" data-act="go" data-to="/repeat">Repeating <i data-icon="chevron-right"></i></button></div>
+        <div data-slot="upcoming"></div>
+      </section>
+    </div>
+
+    <div class="btns report-row">
+      <button type="button" class="btn soft" data-act="go" data-to="/home/report"><i data-icon="file-text"></i>Month report</button>
+    </div>
+  </div>
+</template>
+<!-- /section:view-home -->
+
+<!-- section:view-activity -->
+<!-- ACTIVITY (tab "Activity"): search, filters, entries grouped by day. Filled by renderActivity in app.js. -->
+<template id="view-activity">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow" data-slot="scope-label">This month</p>
+      <h1>Activity</h1>
+      <p class="sub" data-slot="summary"></p>
+    </div>
+    <div class="month-nav" data-slot="month-nav" role="group" aria-label="Change month">
+      <button type="button" class="btn icon soft" data-act="month-prev" aria-label="Previous month"><i data-icon="chevron-left"></i></button>
+      <button type="button" class="btn icon soft" data-act="month-next" aria-label="Next month"><i data-icon="chevron-right"></i></button>
+    </div>
+  </header>
+  <div class="toolbar sticky act-tools">
+    <div class="search"><input type="search" id="act-q" placeholder="Search notes, categories, amounts" aria-label="Search entries" autocomplete="off"></div>
+    <div class="act-row">
+      <div class="seg" role="radiogroup" aria-label="Which dates">
+        <label><input type="radio" name="scope" value="month"><span>Month</span></label>
+        <label><input type="radio" name="scope" value="all"><span>All time</span></label>
+      </div>
+      <select id="act-cat" class="chip-sel" aria-label="Category"></select>
+    </div>
+  </div>
+  <div class="chips filter-chips" role="group" aria-label="Filter">
+    <button type="button" class="chip" data-type="all" aria-pressed="true">All</button>
+    <button type="button" class="chip" data-type="income" aria-pressed="false">Money in</button>
+    <button type="button" class="chip" data-type="expense" aria-pressed="false">Money out</button>
+    <button type="button" class="chip" data-flag="photo" aria-pressed="false"><i data-icon="camera"></i>Receipts</button>
+  </div>
+  <div data-slot="list" class="day-groups"></div>
+  <div class="btns export-row" data-slot="export-row">
+    <button type="button" class="btn soft" data-act="export-csv" data-scope="filtered"><i data-icon="download"></i><span data-slot="export-label">Export these as CSV</span></button>
+  </div>
+</template>
+<!-- /section:view-activity -->
+
+<!-- section:view-budgets -->
+<!-- BUDGETS (tab "Budgets"): monthly limit per category, rings, pace and over-budget warnings. -->
+<template id="view-budgets">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow" data-slot="month-label">This month</p>
+      <h1>Budgets</h1>
+      <p class="sub" data-slot="pace-sub"></p>
+    </div>
+    <div class="month-nav" role="group" aria-label="Change month">
+      <button type="button" class="btn icon soft" data-act="month-prev" aria-label="Previous month"><i data-icon="chevron-left"></i></button>
+      <button type="button" class="btn icon soft" data-act="month-next" aria-label="Next month"><i data-icon="chevron-right"></i></button>
+    </div>
+  </header>
+  <div data-slot="has-budgets" class="stack" style="--gap:24px">
+    <div class="stats trio">
+      <div class="stat accent wide">
+        <span class="label"><i data-icon="wallet"></i> <span data-slot="left-label">Left to spend</span></span>
+        <span class="value fit" data-slot="left"></span>
+        <div class="pace-bar" data-slot="pace-bar"><span class="pace-fill"></span><span class="pace-mark" title="Where you would be at an even pace"></span></div>
+        <span class="meta" data-slot="left-meta"></span>
+      </div>
+      <div class="stat"><span class="label">Budgeted</span><span class="value fit" data-slot="budgeted"></span><span class="meta" data-slot="budgeted-meta"></span></div>
+      <div class="stat"><span class="label">Spent so far</span><span class="value fit" data-slot="spent"></span><span class="meta" data-slot="spent-meta"></span></div>
+    </div>
+    <div data-slot="alerts" class="stack" style="--gap:10px"></div>
+    <section class="section">
+      <div class="sec-head"><h2>Your budgets</h2></div>
+      <div class="budget-grid" data-slot="grid"></div>
+    </section>
+  </div>
+  <section class="card" data-slot="no-budgets" hidden></section>
+  <section class="section" data-slot="unbudgeted-wrap">
+    <div class="sec-head"><h2>No budget yet</h2></div>
+    <ul class="list" data-slot="unbudgeted"></ul>
+  </section>
+</template>
+<!-- /section:view-budgets -->
+
+<!-- section:view-repeat -->
+<!-- REPEATING (tab "Repeating"): rules that add entries by themselves (weekly, every 2 weeks, monthly, yearly). -->
+<template id="view-repeat">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Set once</p>
+      <h1>Repeating</h1>
+      <p class="sub">Rent, payroll, phone and other regular money add themselves on the right dates.</p>
+    </div>
+  </header>
+  <div class="stats" data-slot="stats">
+    <div class="stat accent"><span class="label">Repeating out</span><span class="value fit" data-slot="out"></span><span class="meta">about per month</span></div>
+    <div class="stat"><span class="label">Repeating in</span><span class="value fit" data-slot="in"></span><span class="meta">about per month</span></div>
+  </div>
+  <div data-slot="list"></div>
+  <p class="muted small fine">Entries are added when you open the app on or after their date. Changing a repeating entry only changes the ones still to come.</p>
+</template>
+<!-- /section:view-repeat -->
+
+<!-- section:view-settings -->
+<!-- SETTINGS (tab "Settings"): currency, categories, backup and restore, CSV, sample data, storage. -->
+<template id="view-settings">
+  <header class="page-head">
+    <div><p class="eyebrow">Settings</p><h1>Your data</h1><p class="sub">Everything stays on this phone. Back it up now and then.</p></div>
+  </header>
+  <div data-slot="sample-note"></div>
+  <div class="settings-grid">
+    <section class="card">
+      <div class="card-head"><h2>Preferences</h2></div>
+      <div class="form">
+        <div class="field"><label for="set-cur">Currency</label>
+          <select id="set-cur">
+            <option value="USD">US dollar (USD)</option><option value="CAD">Canadian dollar (CAD)</option><option value="MXN">Mexican peso (MXN)</option>
+            <option value="EUR">Euro (EUR)</option><option value="GBP">British pound (GBP)</option><option value="AUD">Australian dollar (AUD)</option>
+            <option value="NZD">New Zealand dollar (NZD)</option><option value="ZAR">South African rand (ZAR)</option><option value="INR">Indian rupee (INR)</option>
+            <option value="PHP">Philippine peso (PHP)</option><option value="BRL">Brazilian real (BRL)</option><option value="CHF">Swiss franc (CHF)</option>
+            <option value="JPY">Japanese yen (JPY)</option>
+          </select>
+          <p class="help">Changes how amounts are shown. It does not convert them.</p>
+        </div>
+      </div>
+      <ul class="list inset-list">
+        <li><button type="button" class="item" data-act="go" data-to="/data/categories"><span class="lead"><i data-icon="tag"></i></span><span class="body"><span class="title">Categories</span><span class="sub" data-slot="cat-count"></span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Backup</h2></div>
+      <p class="muted small">A backup file holds everything, receipt photos too. Keep it somewhere safe, like your email or a drive.</p>
+      <div class="btns fill stack-btns">
+        <button type="button" class="btn primary" data-act="backup"><i data-icon="download"></i>Save a backup</button>
+        <label class="btn soft file-btn"><i data-icon="upload"></i>Restore a backup<input type="file" accept=".json,application/json" class="file-in" id="restore-in"></label>
+      </div>
+      <p class="muted small" data-slot="last-backup"></p>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Spreadsheet (CSV)</h2></div>
+      <p class="muted small">Open your entries in Excel or Google Sheets, or bring in entries from a bank or another app. Columns: Date, Type, Category, Amount, Note.</p>
+      <div class="btns fill stack-btns">
+        <button type="button" class="btn soft" data-act="export-csv" data-scope="all"><i data-icon="download"></i>Export CSV</button>
+        <label class="btn soft file-btn"><i data-icon="upload"></i>Import CSV<input type="file" accept=".csv,text/csv,text/plain" class="file-in" id="csv-in"></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Storage</h2></div>
+      <div class="store-meter"><div class="progress" data-slot="store-bar"></div><p class="small muted" data-slot="store-text"></p></div>
+      <div class="btns fill stack-btns">
+        <button type="button" class="btn soft" data-act="sample" data-slot="sample-btn"><i data-icon="zap"></i>Load sample data</button>
+        <button type="button" class="btn soft" data-act="clear-sample" data-slot="clear-sample-btn"><i data-icon="x"></i>Clear sample data</button>
+        <button type="button" class="btn ghost danger-text" data-act="erase"><i data-icon="trash"></i>Erase everything</button>
+      </div>
+    </section>
+  </div>
+</template>
+<!-- /section:view-settings -->
+
+<!-- section:view-categories -->
+<!-- CATEGORIES (route #/data/categories): add, rename, recolour, delete. -->
+<template id="view-categories">
+  <header class="page-head">
+    <div><p class="eyebrow">Settings</p><h1>Categories</h1><p class="sub">Pick a colour and an icon so you can spot them at a glance.</p></div>
+    <div class="actions"><button type="button" class="btn primary sm" data-act="new-cat"><i data-icon="plus"></i>New category</button></div>
+  </header>
+  <section class="section"><div class="sec-head"><h2>Money out</h2></div><ul class="list" data-slot="expense"></ul></section>
+  <section class="section"><div class="sec-head"><h2>Money in</h2></div><ul class="list" data-slot="income"></ul></section>
+</template>
+<!-- /section:view-categories -->
+
+<!-- section:view-report -->
+<!-- MONTH REPORT (route #/home/report): a printable page with the owner's letterhead. -->
+<template id="view-report">
+  <header class="page-head no-print">
+    <div><p class="eyebrow">Report</p><h1 data-slot="title">Month report</h1><p class="sub">Print it, save it as a PDF, or copy the summary into a message.</p></div>
+    <div class="actions">
+      <button type="button" class="btn soft sm" data-act="copy-report"><i data-icon="copy"></i>Copy summary</button>
+      <button type="button" class="btn primary sm" data-act="print-report"><i data-icon="printer"></i>Print</button>
+    </div>
+  </header>
+  <article class="doc report">
+    <div class="doc-head">
+      <div>
+        <h2 data-fact="business">{{business}}</h2>
+        <p class="muted small">{{address}}<br>{{phone}} · {{email}}</p>
+      </div>
+      <div class="right"><p class="eyebrow">Money report</p><p class="rep-month" data-slot="period"></p></div>
+    </div>
+    <dl class="doc-meta">
+      <div><dt>Money in</dt><dd data-slot="in"></dd></div>
+      <div><dt>Money out</dt><dd data-slot="out"></dd></div>
+      <div><dt>Net</dt><dd data-slot="net"></dd></div>
+      <div><dt>Entries</dt><dd data-slot="count"></dd></div>
+    </dl>
+    <h3 class="rep-h">Money out by category</h3>
+    <table><thead><tr><th>Category</th><th class="num">Budget</th><th class="num">Spent</th><th class="num">Share</th></tr></thead><tbody data-slot="out-rows"></tbody></table>
+    <h3 class="rep-h">Money in by category</h3>
+    <table><thead><tr><th>Category</th><th class="num">Amount</th><th class="num">Share</th></tr></thead><tbody data-slot="in-rows"></tbody></table>
+    <h3 class="rep-h">All entries</h3>
+    <table class="rep-entries"><thead><tr><th>Date</th><th>Category and note</th><th class="num">Amount</th></tr></thead><tbody data-slot="rows"></tbody></table>
+    <div class="doc-total">
+      <div><span>Money in</span><span data-slot="t-in"></span></div>
+      <div><span>Money out</span><span data-slot="t-out"></span></div>
+      <div class="grand"><span>Net</span><span data-slot="t-net"></span></div>
+    </div>
+    <p class="doc-foot">Prepared <span data-slot="prepared"></span> for {{business}}. Amounts are as entered in this app; this is not an accounting statement.</p>
+  </article>
+</template>
+<!-- /section:view-report -->
+
+<!-- section:form-txn -->
+<!-- ADD / EDIT ENTRY sheet. Field names are read by saveTxn() in app.js. -->
+<template id="form-txn">
+  <form class="form txn-form" novalidate>
+    <div class="seg block type-seg" role="radiogroup" aria-label="Money in or out">
+      <label><input type="radio" name="type" value="expense" checked><span><i data-icon="arrow-up"></i>Money out</span></label>
+      <label><input type="radio" name="type" value="income"><span><i data-icon="arrow-down"></i>Money in</span></label>
+    </div>
+    <div class="field amount-field">
+      <label for="tx-amount">Amount</label>
+      <div class="affix amount"><span data-slot="sym">$</span><input id="tx-amount" name="amount" data-money inputmode="decimal" autocomplete="off" placeholder="0.00" required></div>
+    </div>
+    <fieldset class="field">
+      <legend>Category</legend>
+      <div class="cat-grid" data-slot="cats" role="radiogroup" aria-label="Category"></div>
+      <button type="button" class="link-btn manage-link" data-act="manage-cats">Add or change categories</button>
+    </fieldset>
+    <div class="cols" style="--min:150px">
+      <div class="field"><label for="tx-date">Date</label><input id="tx-date" name="date" type="date" required></div>
+      <div class="field" data-slot="repeat-field"><label for="tx-repeat">Repeat</label>
+        <select id="tx-repeat" name="repeat">
+          <option value="">Just once</option><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option>
+          <option value="monthly">Every month</option><option value="yearly">Every year</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label for="tx-note">Note</label><input id="tx-note" name="note" maxlength="140" autocomplete="off" placeholder="What was it for?"></div>
+    <div class="field">
+      <span class="label">Receipt</span>
+      <div class="receipt" data-slot="receipt"></div>
+      <label class="btn soft file-btn" data-slot="photo-btn"><i data-icon="camera"></i><span data-slot="photo-label">Add a receipt photo</span><input type="file" accept="image/*" class="file-in" data-slot="photo-in"></label>
+    </div>
+    <div class="note" data-slot="rec-note" hidden><i data-icon="refresh"></i><div><span data-slot="rec-text"></span> <button type="button" class="link-btn" data-slot="rec-edit">Edit the repeating entry</button></div></div>
+  </form>
+</template>
+<!-- /section:form-txn -->
+
+<!-- section:form-category -->
+<template id="form-category">
+  <form class="form" novalidate>
+    <div class="field"><label for="cat-name">Name</label><input id="cat-name" name="name" maxlength="40" autocomplete="off" required placeholder="For example: Parts"></div>
+    <div class="seg block" role="radiogroup" aria-label="Kind">
+      <label><input type="radio" name="kind" value="expense" checked><span>Money out</span></label>
+      <label><input type="radio" name="kind" value="income"><span>Money in</span></label>
+    </div>
+    <fieldset class="field"><legend>Colour</legend><div class="swatches" data-slot="colors" role="radiogroup" aria-label="Colour"></div></fieldset>
+    <fieldset class="field"><legend>Icon</legend><div class="icon-grid" data-slot="icons" role="radiogroup" aria-label="Icon"></div></fieldset>
+    <div class="field" data-slot="budget-field"><label for="cat-budget">Monthly budget</label>
+      <div class="affix"><span data-slot="sym">$</span><input id="cat-budget" name="budget" data-money inputmode="decimal" autocomplete="off" placeholder="No budget"></div>
+      <p class="help">Leave empty for no limit.</p>
+    </div>
+  </form>
+</template>
+<!-- /section:form-category -->
+
+<!-- section:form-repeat -->
+<template id="form-repeat">
+  <form class="form" novalidate>
+    <div class="seg block" role="radiogroup" aria-label="Money in or out">
+      <label><input type="radio" name="type" value="expense" checked><span>Money out</span></label>
+      <label><input type="radio" name="type" value="income"><span>Money in</span></label>
+    </div>
+    <div class="field amount-field"><label for="rp-amount">Amount each time</label>
+      <div class="affix amount"><span data-slot="sym">$</span><input id="rp-amount" name="amount" data-money inputmode="decimal" autocomplete="off" placeholder="0.00" required></div></div>
+    <fieldset class="field"><legend>Category</legend><div class="cat-grid" data-slot="cats" role="radiogroup" aria-label="Category"></div></fieldset>
+    <div class="field"><label for="rp-note">Name</label><input id="rp-note" name="note" maxlength="140" autocomplete="off" placeholder="For example: Shop rent"></div>
+    <div class="cols" style="--min:150px">
+      <div class="field"><label for="rp-freq">How often</label>
+        <select id="rp-freq" name="freq"><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option><option value="monthly" selected>Every month</option><option value="yearly">Every year</option></select></div>
+      <div class="field"><label for="rp-start">First date</label><input id="rp-start" name="start" type="date" required></div>
+    </div>
+    <p class="note rule-line" data-slot="rule-text" aria-live="polite"></p>
+    <div class="field"><label for="rp-end">Last date (optional)</label><input id="rp-end" name="end" type="date"><p class="help">Leave empty to keep going.</p></div>
+    <label class="check between"><span>Active<span class="sub">Turn off to pause it without deleting.</span></span><input type="checkbox" class="switch" name="active" checked></label>
+  </form>
+</template>
+<!-- /section:form-repeat -->
+
+<!-- section:form-budget -->
+<template id="form-budget">
+  <form class="form" novalidate>
+    <p class="muted" data-slot="hint"></p>
+    <div class="field amount-field"><label for="bd-amount">Monthly budget</label>
+      <div class="affix amount"><span data-slot="sym">$</span><input id="bd-amount" name="budget" data-money inputmode="decimal" autocomplete="off" placeholder="0.00"></div></div>
+  </form>
+</template>
+<!-- /section:form-budget -->
+
+<script src="appkit.js"></script>
+<script src="app.js" defer></script>
+</body>
+</html>

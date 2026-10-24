@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#14171f">
+<title>Engine Beats</title>
+</head>
+<body style="margin:0;background:#14171f">
+<canvas id="c"></canvas>
+<script src="../juice.js"></script>
+<script>
+'use strict';
+// =====================================================================
+// ENGINE BEATS - a 16-step beat maker built from garage sounds. Tap pads to build a loop, press PLAY.
+// Melodic rows: tap a pad again to step through its notes.
+// TO RETHEME: change CONFIG only. Every "CUSTOMIZE:" line is safe to edit.
+// =====================================================================
+const CONFIG = {
+  id: 'engine-beats',                 // CUSTOMIZE: unique short id (your beat is saved under this name)
+  title: 'ENGINE BEATS',              // CUSTOMIZE: toy title (also update <title> above)
+  shop: "Mike's Auto Repair",         // CUSTOMIZE: business name (shown under the title)
+  text: {                             // CUSTOMIZE: any wording (keep it short)
+    play: 'PLAY', stop: 'STOP', clear: 'CLEAR', random: 'RANDOM', preset: 'PRESET', tempo: 'BPM', page: 'STEPS', paused: 'PAUSED', resume: 'Tap to resume', hint: 'Tap the pads to make a beat'
+  },
+  colors: { bg: '#14171f', bg2: '#1f2533', panel: '#10131a', pad: '#262d3d', padBeat: '#2f374b', text: '#f4f6f8', accent: '#ff7a1a', gold: '#ffd23f', btn: '#3a4668' }, // CUSTOMIZE: colours
+  bpm: 108, bpmMin: 60, bpmMax: 180,  // CUSTOMIZE: starting tempo and the allowed range
+  rows: [                             // CUSTOMIZE: row names, colours and sounds. w = sine|triangle|square|sawtooth|noise, notes = pitches (tap the pad again to cycle), bend < 1 drops the pitch
+    { name: 'PISTON', color: '#e05260', w: 'sine',     v: .55, len: 1.5, bend: .22, notes: ['C3'] },
+    { name: 'IMPACT', color: '#ff7a1a', w: 'noise',    v: .13, len: .9,  notes: ['C3'] },
+    { name: 'TICK',   color: '#ffd23f', w: 'noise',    v: .045, len: .22, notes: ['C3'] },
+    { name: 'CLANK',  color: '#2ec4b6', w: 'square',   v: .09, len: .6, bend: .55, notes: ['G4', 'D5'] },
+    { name: 'ENGINE', color: '#4895ef', w: 'sawtooth', v: .14, len: 1.8, notes: ['E2', 'G2', 'A2'] },
+    { name: 'HORN',   color: '#b583e8', w: 'triangle', v: .16, len: 1.6, notes: ['A4', 'C5', 'E5'] }
+  ],
+  presets: [                          // CUSTOMIZE: starter beats. 6 rows (same order as rows) of 16 characters: . = off, 1 2 3 = which note
+    { name: 'IDLE',    bpm: 96,  rows: ['1...1...1...1...', '....1.......1...', '1.1.1.1.1.1.1.1.', '................', '1.......2.......', '................'] },
+    { name: 'REDLINE', bpm: 138, rows: ['1..1..1.1..1..1.', '....1.......1..1', '1111111111111111', '..1...2...1...2.', '1.1.3.1.1.1.3.2.', '........1.......'] },
+    { name: 'CRUISE',  bpm: 110, rows: ['1.....1...1.....', '....1.......1...', '..1...1...1...1.', '....2.......1...', '1...2...3...2...', '1...1..2....3...'] }
+  ]
+};
+
+// ---------------------------------------------------------------- setup
+const J = Juice, T = CONFIG.text, C = CONFIG.colors, PI2 = Math.PI * 2, rows = CONFIG.rows, NR = rows.length, STEPS = 16, PAGE = 8, cv = document.getElementById('c');
+J.init({ id: CONFIG.id, title: CONFIG.title, str: { paused: T.paused, resume: T.resume } });
+J.fit(cv, { w: 360, h: 640, min: .5, max: 1.8, bg: C.bg });
+
+let ui = [], uiNext = [];
+function button(c, s, x, y, w, h, fn, col, tc, key) {
+  uiNext.push({ x: x - w / 2, y: y - h / 2, w, h, fn });
+  const dn = J.pt.down && Math.abs(J.pt.x - x) < w / 2 && Math.abs(J.pt.y - y) < h / 2, k = dn ? .94 : 1;
+  c.save(); c.translate(x, y); c.scale(k, k);
+  c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, -w / 2, -h / 2 + 4, w, h, h / 3); c.fill();
+  c.fillStyle = col || C.btn; J.rr(c, -w / 2, -h / 2, w, h, h / 3); c.fill();
+  if (typeof s === 'function') s(c); else J.txt(c, s, 0, 1, { size: Math.min(h * .4, 20), color: tc || '#fff', stroke: 0, max: w - 14 }); c.restore();
+}
+J.on('tap', (x, y) => { for (const b of ui) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { b.fn(); return; } });
+const snd = J.btn({ x: () => J.W - 62, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'snd', x, y, 20, J.opts.sound), onpress: () => J.setOpt('sound'), key: 'KeyM' });
+const pause = J.btn({ x: () => J.W - 24, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'pause', x, y, 18), onpress: () => J.pause(), key: 'KeyP' });
+
+// ---------------------------------------------------------------- pattern + audio
+const val = rows.map(() => Array(STEPS).fill(0));
+const song = { bpm: CONFIG.bpm, tracks: rows.map(r => ({ w: r.w, v: r.v, len: r.len, bend: r.bend || 0, p: Array(STEPS).fill('.') })) };
+let page = 0, playing = false, step = -1, energy = 0, tt = 0, presetIx = -1, hintT = 6, pulse = rows.map(() => Array(STEPS).fill(0));
+function setPad(r, s, v) { val[r][s] = v; song.tracks[r].p[s] = v ? rows[r].notes[v - 1] : '.'; }
+function loadRows(strs) { strs.forEach((str, r) => { for (let s = 0; s < STEPS; s++) { const ch = str[s] || '.', v = ch === '.' ? 0 : Math.min(+ch, rows[r].notes.length); setPad(r, s, v); } }); }
+function persist() { J.save('beat', { val, bpm: song.bpm }); }
+function preview(r, v) { const R = rows[r], n = R.notes[Math.max(0, v - 1)]; if (R.w === 'noise') J.noise(R.len * .12, R.v * 1.6, 0); else J.tone(J.hz(n), .22 * R.len * .6, R.w, R.v * 1.8, 0, R.bend || 0); }
+function hit(r, s) { const R = rows[r], p = padRect(r, s); J.burst(p.x + p.w / 2, p.y + p.h / 2, { n: 5, color: [R.color, '#fff'], spd: [40, 130], size: [2, 4], life: [.25, .5] }); pulse[r][s] = 1; if (r === 0) { energy = Math.min(1, energy + .5); J.shake(.07); } else if (r === 1) energy = Math.min(1, energy + .3); }
+function togglePlay() { J.unlock(); if (playing) { J.music.stop(); playing = false; step = -1; } else { J.music.start(song); playing = true; hintT = 0; } J.play('click'); }
+const saved = J.load('beat', null);
+if (saved && saved.val) { saved.val.forEach((row, r) => row.forEach((v, s) => rows[r] && setPad(r, s, Math.min(v, rows[r].notes.length)))); song.bpm = saved.bpm || song.bpm; } else { loadRows(CONFIG.presets[0].rows); song.bpm = CONFIG.presets[0].bpm; presetIx = 0; }
+
+// layout
+function lay() {
+  const CW = Math.min(J.W - 20, 520), x0 = (J.W - CW) / 2, lw = Math.min(60, CW * .17), pw = (CW - lw) / PAGE, ph = 48;
+  return { x0, lw, pw, ph, gy: 168, CW };
+}
+function padRect(r, s) { const L = lay(), c = s % PAGE; return { x: L.x0 + L.lw + c * L.pw + 2, y: L.gy + r * (L.ph + 6) + 2, w: L.pw - 4, h: L.ph - 4 }; }
+
+J.on('tap', (x, y) => {
+  const L = lay(); if (x < L.x0 + L.lw || x > L.x0 + L.CW) return;
+  for (let r = 0; r < NR; r++) {
+    const ry = L.gy + r * (L.ph + 6); if (y < ry || y > ry + L.ph) continue;
+    const c = Math.floor((x - L.x0 - L.lw) / L.pw); if (c < 0 || c >= PAGE) return; const s = page * PAGE + c, n = rows[r].notes.length, v = (val[r][s] + 1) % (n + 1);
+    setPad(r, s, v); persist(); if (v) { preview(r, v); J.play('tick', 1 + v * .15, .5); J.burst(x, y, { n: 4, color: rows[r].color, spd: [30, 90], size: [2, 3] }); } else J.play('click', .7, .5); pulse[r][s] = 1; return;
+  }
+});
+
+function update(dt) {
+  tt += dt; hintT = Math.max(0, hintT - dt); energy = Math.max(0, energy - dt * 2.2);
+  for (const r of pulse) for (let s = 0; s < STEPS; s++) if (r[s] > 0) r[s] = Math.max(0, r[s] - dt * 5);
+  if (playing) { const p = J.music.pos(); if (p >= 0) { const s = p % STEPS; if (s !== step) { step = s; for (let r = 0; r < NR; r++) if (val[r][s]) { if (Math.floor(s / PAGE) === page) hit(r, s); else { pulse[r][s] = 1; if (r === 0) energy = Math.min(1, energy + .5); } } } } }
+}
+
+// ---------------------------------------------------------------- drawing
+function gauge(c, x, y, r, v) {
+  c.save(); c.translate(x, y); c.strokeStyle = '#2d3548'; c.lineWidth = r * .16; c.lineCap = 'round'; c.beginPath(); c.arc(0, 0, r, Math.PI * .8, Math.PI * 2.2); c.stroke();
+  c.strokeStyle = v > .8 ? '#e63946' : C.accent; c.beginPath(); c.arc(0, 0, r, Math.PI * .8, Math.PI * (.8 + 1.4 * v)); c.stroke();
+  for (let i = 0; i <= 8; i++) { const a = Math.PI * (.8 + 1.4 * i / 8); c.strokeStyle = i > 6 ? '#e63946' : '#9fb3c8'; c.lineWidth = 3; c.beginPath(); c.moveTo(Math.cos(a) * r * .72, Math.sin(a) * r * .72); c.lineTo(Math.cos(a) * r * .86, Math.sin(a) * r * .86); c.stroke(); }
+  const a = Math.PI * (.8 + 1.4 * v); c.strokeStyle = '#fff'; c.lineWidth = 4; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a) * r * .68, Math.sin(a) * r * .68); c.stroke(); c.fillStyle = C.accent; c.beginPath(); c.arc(0, 0, r * .11, 0, PI2); c.fill(); c.restore();
+}
+function pistons(c, x, y) {
+  for (let i = 0; i < 4; i++) { const bx = x + i * 26, ph = playing ? Math.sin((step < 0 ? tt * 3 : step * .8) * 1.3 + i * 1.57) : Math.sin(tt * 1.5 + i * 1.57) * .4, hy = y + 14 + (ph + 1) * 8;
+    c.fillStyle = '#1a1f2c'; J.rr(c, bx, y, 22, 56, 6); c.fill(); c.fillStyle = '#9fb3c8'; J.rr(c, bx + 3, hy, 16, 18, 4); c.fill(); c.fillStyle = '#6b7684'; c.fillRect(bx + 9, hy + 18, 4, 56 - (hy - y) - 18); }
+}
+function draw(c) {
+  ui = uiNext; uiNext = [];
+  const g = c.createLinearGradient(0, 0, 0, J.H); g.addColorStop(0, C.bg2); g.addColorStop(1, C.bg); c.fillStyle = g; c.fillRect(-30, -30, J.W + 60, J.H + 60);
+  const L = lay(), mx = J.W / 2;
+  gauge(c, mx, 106, 42, .12 + energy * .8 + Math.sin(tt * 2) * .02); pistons(c, Math.max(8, mx - 160), 74); pistons(c, Math.min(mx + 60, J.W - 108), 74);
+  // grid
+  c.fillStyle = C.panel; J.rr(c, L.x0 - 4, L.gy - 6, L.CW + 8, NR * (L.ph + 6) + 6, 16); c.fill();
+  for (let r = 0; r < NR; r++) {
+    const R = rows[r], ry = L.gy + r * (L.ph + 6); c.fillStyle = R.color; J.rr(c, L.x0 + 2, ry + 4, L.lw - 6, L.ph - 8, 10); c.fill(); J.txt(c, R.name, L.x0 + L.lw / 2 - 1, ry + L.ph / 2, { size: 11, color: '#15181f', stroke: 0, max: L.lw - 12 });
+    for (let c0 = 0; c0 < PAGE; c0++) {
+      const s = page * PAGE + c0, p = padRect(r, s), v = val[r][s], pu = pulse[r][s], k = 1 + pu * .14;
+      c.save(); c.translate(p.x + p.w / 2, p.y + p.h / 2); c.scale(k, k); c.fillStyle = v ? R.color : (c0 % 4 < 2 ? C.padBeat : C.pad); J.rr(c, -p.w / 2, -p.h / 2, p.w, p.h, 9); c.fill();
+      if (v) { c.fillStyle = 'rgba(255,255,255,.28)'; J.rr(c, -p.w / 2 + 3, -p.h / 2 + 3, p.w - 6, p.h * .28, 6); c.fill(); if (R.notes.length > 1) { c.fillStyle = 'rgba(0,0,0,.45)'; for (let d = 0; d < v; d++) { c.beginPath(); c.arc(-(v - 1) * 4 + d * 8, p.h / 2 - 9, 2.6, 0, PI2); c.fill(); } } }
+      if (pu > 0) { c.fillStyle = 'rgba(255,255,255,' + pu * .6 + ')'; J.rr(c, -p.w / 2, -p.h / 2, p.w, p.h, 9); c.fill(); } c.restore();
+    }
+  }
+  if (playing && step >= 0 && Math.floor(step / PAGE) === page) { const p = padRect(0, step); c.strokeStyle = '#fff'; c.globalAlpha = .75; c.lineWidth = 3; J.rr(c, p.x - 1, L.gy, p.w + 2, NR * (L.ph + 6) - 4, 10); c.stroke(); c.globalAlpha = 1; }
+}
+function hud(c) {
+  const W = J.W, H = J.H, L = lay(), mx = W / 2, by = L.gy + NR * (L.ph + 6);
+  J.txt(c, CONFIG.title, 16, 24, { size: 22, align: 'left', color: C.accent, max: W - 150 }); J.txt(c, CONFIG.shop, 16, 46, { size: 12, align: 'left', color: '#8f9bb3', stroke: 0, max: W - 150 });
+  // page tabs with playhead dots
+  for (let p = 0; p < 2; p++) { const x = mx - 46 + p * 92, on = page === p; button(c, (c2) => { J.txt(c2, p ? '9-16' : '1-8', 0, 1, { size: 15, color: on ? '#15181f' : '#fff', stroke: 0 }); if (playing && Math.floor(step / PAGE) === p) { c2.fillStyle = C.accent; c2.beginPath(); c2.arc(-34, 0, 4, 0, PI2); c2.fill(); } }, x, by + 22, 84, 32, () => { page = p; J.play('tick', 1.2, .5); }, on ? C.gold : C.btn); }
+  const y1 = by + 74, y2 = y1 + 56;
+  button(c, playing ? T.stop : T.play, mx - 70, y1, 120, 52, togglePlay, playing ? '#e05260' : '#2ec4b6', '#10151c');
+  button(c, '-', mx + 20, y1, 44, 44, () => { song.bpm = Math.max(CONFIG.bpmMin, song.bpm - 4); persist(); J.play('tick', .9, .6); });
+  J.txt(c, song.bpm, mx + 66, y1 - 6, { size: 22 }); J.txt(c, T.tempo, mx + 66, y1 + 14, { size: 11, color: '#8f9bb3', stroke: 0 });
+  button(c, '+', mx + 112, y1, 44, 44, () => { song.bpm = Math.min(CONFIG.bpmMax, song.bpm + 4); persist(); J.play('tick', 1.2, .6); });
+  const bw = Math.min(104, (L.CW - 20) / 3);
+  button(c, T.preset + (presetIx >= 0 ? ' ' + CONFIG.presets[presetIx].name : ''), mx - bw - 6, y2, bw + 4, 42, () => { presetIx = (presetIx + 1) % CONFIG.presets.length; const P = CONFIG.presets[presetIx]; loadRows(P.rows); song.bpm = P.bpm; persist(); J.play('power'); J.burst(mx, by - 100, { n: 18, color: rows.map(r => r.color), spd: [60, 220], grav: 200 }); });
+  button(c, T.random, mx + 4, y2, bw - 8, 42, () => { for (let r = 0; r < NR; r++) for (let s = 0; s < STEPS; s++) { const dens = [.28, .18, .55, .15, .22, .12][r % 6]; setPad(r, s, Math.random() < dens ? 1 + Math.floor(Math.random() * rows[r].notes.length) : 0); } presetIx = -1; persist(); J.play('power', 1.3); });
+  button(c, T.clear, mx + bw + 4, y2, bw - 14, 42, () => { for (let r = 0; r < NR; r++) for (let s = 0; s < STEPS; s++) setPad(r, s, 0); presetIx = -1; persist(); J.play('lose', 1.6, .5); });
+  if (hintT > 0 && !playing) J.txt(c, T.hint, mx, 150, { size: 13, color: C.gold, max: W - 30, stroke: 0 });
+}
+window.__qa.info = () => ({ playing, step, page, bpm: song.bpm, on: val.map(r => r.filter(Boolean).length).join(','), energy: +energy.toFixed(2), music: J.music.on });
+J.loop({ update, draw, hud });
+</script>
+</body>
+</html>

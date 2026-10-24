@@ -1,0 +1,38 @@
+{
+  "id": "restaurant-cafe",
+  "kind": "local",
+  "name": "Restaurant & Cafe",
+  "summary": "One-page site for a place that serves food: full-bleed hero photo with a slow Ken Burns drift and the business name set huge over it, Call to reserve + Text an order buttons, a notched 'Today' ticket overlapping the hero (hours with today's line highlighted, address, parking note), a tabbed menu with dotted price leaders, a story with an offset photo, spinning seal and pull line, a masonry gallery with a lightbox and a call tile, a reserve/visit block, and an inverted footer with a giant wordmark. Warm, appetising, editorial.",
+  "best_for": ["restaurant", "cafe", "coffee shop", "bakery", "bistro", "diner", "pizzeria", "food truck", "bar", "brunch spot", "tea room", "deli", "ice cream shop", "catering kitchen"],
+  "mood": ["warm", "appetising", "editorial", "inviting"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "hero", "what": "Full-bleed photo (slow Ken Burns), eyebrow with the city, h1 = {{business}} in huge type, lead = {{tagline}}, Call to reserve (tel:) + Text an order (sms:) buttons", "edit": "Keep the h1 as the business name (names over about 22 characters get a smaller size automatically). Rewrite <title> as \"Business | kind of place in City\" (10-60 characters) and the meta description (50-160). Rename the buttons to fit (for example 'Call to order' for a food truck or bakery); keep the tel: and data-sms links. The eyebrow can name the kind of place, for example 'Bakery and coffee in {{city}}'"},
+    {"name": "today", "what": "Notched ticket overlapping the hero: today's weekday (app.js), opening hours with today's line marked, address with a Directions link, and a parking/transit note", "edit": "Write one true line about parking, transit or step-free access, or delete that <div class=\"today__col\"> (the other two columns stretch). Hours come from {{hours}}"},
+    {"name": "menu", "what": "Centered head, accessible tabs (one per menu panel; arrow keys work; without JavaScript every panel shows), dishes with name (h4), dotted leader, price and one-line description, an allergy note", "edit": "One panel per real menu section, with a matching tab button (same id/aria-controls pairs). One <li class=\"dish\"> per real dish; replace every 'Price' with the owner's real price or delete the <span class=\"dish__price\"> and its dots. Never invent dishes or prices: if the owner gave no menu, delete the whole section"},
+    {"name": "story", "what": "Offset photo with an outline frame and a spinning {{initial}} seal; eyebrow, h2, two short paragraphs, a large pull line and a signature line", "edit": "Write the owner's real story in 2-3 short sentences per paragraph. The pull line is one line in the owner's own words, never an invented customer quote. Delete the section if there is no story to tell"},
+    {"name": "gallery", "what": "Masonry (CSS columns): 4 photos (tall, wide, wide, tall so the seams stagger) that open in a lightbox with alt text captions, plus a 'Hungry yet?' call tile", "edit": "Use the owner's real photos of food, drinks and the room; write honest alt text, it becomes the caption. Delete the section if there are no real photos"},
+    {"name": "visit", "what": "Reserve and visit: h2, lead, three big action rows (Call to reserve, Text an order, Get directions) and a card with hours, address, phone and email", "edit": "Rename the action rows to match how the place works (reservations, pickup, delivery). Delete the email row if there is no email"},
+    {"name": "footer", "what": "Inverted colours (ink background), giant wordmark, address, phone, email, copyright, back to top", "edit": "Tokens only; add a real social link only if the owner gave one"}
+  ],
+  "photo_slots": [
+    {"slot": "hero", "orientation": "landscape", "hint": "an appetising wide shot: a plated dish on a table, the dining room, the counter or the storefront; it is darkened at the bottom and left for the text, so busy detail there is fine"},
+    {"slot": "story", "orientation": "portrait", "hint": "the owner, the kitchen at work, the counter, or bread/coffee being made"},
+    {"slot": "gallery-1", "orientation": "portrait", "hint": "a signature dish, close-up (shown 4:5)"},
+    {"slot": "gallery-2", "orientation": "landscape", "hint": "the room or the counter (shown 4:3)"},
+    {"slot": "gallery-3", "orientation": "landscape", "hint": "drinks, a table spread or the terrace (shown 4:3)"},
+    {"slot": "gallery-4", "orientation": "portrait", "hint": "another dish, a dessert or a pastry (shown 4:5)"}
+  ],
+  "remove_if_no_facts": ["menu", "story", "gallery"],
+  "behaviors": [
+    "header sits transparent on the photo, then turns solid and shrinks on scroll",
+    "slow Ken Burns drift on the hero photo (off for reduced motion and screenshots)",
+    "Today ticket shows the weekday and highlights today's opening hours line (app.js parses {{hours}})",
+    "menu tabs with a sliding underline, arrow/Home/End keys, dishes stagger in on switch; all panels show without JavaScript",
+    "masonry gallery with a lightbox (arrows, swipe, Esc, focus returns)",
+    "sms: and Google Maps links are built in app.js from {{phone_href}} and the data-address attribute",
+    "floating Call button on phones once the hero has scrolled away",
+    "reveal on scroll, scroll progress bar, slow spinning seal, gentle parallax on the story photo"
+  ],
+  "style_notes": "Works with every style; strongest with warm-hospitality, editorial-serif, dark-luxury, earthy-craft, retro-americana, poster-bold and coastal. Tested at 390 and 1280 with warm-hospitality, dark-luxury, poster-bold, soft-pastel, neo-brutalist, midnight-neon, editorial-serif and high-contrast-sport. Hero text is white on a darkened photo (a gradient scrim sits under it); everything else only uses --c-ink/--c-muted on --c-bg/--c-surface and --c-on-accent on --c-accent. The footer inverts ink and bg. Prices are the word 'Price' until the owner gives real ones."
+}

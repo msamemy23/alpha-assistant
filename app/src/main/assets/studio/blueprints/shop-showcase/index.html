@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en" data-kind="site">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{business}} | Shop the collection</title>
+<meta name="description" content="{{business}} in {{city}}: browse the collection, ask about any piece by text or email, and pick up in person or have it sent.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#shop">Skip to the collection</a>
+
+<!-- section:topbar -->
+<div class="topbar">
+  <div class="container topbar__inner">
+    <p><span class="hide-sm">Questions about a piece? </span>Call or text <a href="{{phone_href}}">{{phone}}</a></p>
+    <p class="topbar__hours">{{hours}}</p>
+  </div>
+</div>
+<!-- /section:topbar -->
+
+<!-- section:header -->
+<header class="site-header" data-sticky>
+  <div class="container site-header__bar">
+    <a class="brand" href="#top" data-shrink aria-label="{{business}}, back to the top">
+      <span class="brand__mark" aria-hidden="true">{{initial}}</span>
+      <span class="brand__name">{{business}}</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#shop">Collection</a>
+      <a href="#order">How to order</a>
+      <a href="#story">Our story</a>
+      <a href="#faq">Shipping &amp; returns</a>
+    </nav>
+    <a class="btn btn--small" href="#order"><span class="hide-sm">How to order</span><span class="show-sm">Order</span></a>
+  </div>
+</header>
+<!-- /section:header -->
+
+<main id="top">
+<!-- section:hero -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="kicker" data-reveal><span class="kicker__dot" aria-hidden="true"></span>{{city}} &middot; Shop small</p>
+      <h1 class="hero__title" id="hero-title" data-reveal data-delay="80">Pieces worth <em>keeping.</em></h1>
+      <p class="hero__lead" data-reveal data-delay="160">Describe what {{business}} sells in one or two sentences: what it is, who makes or chooses it, and what makes it special.</p>
+    </div>
+
+    <!-- Collage: three photos that overlap on an arch, with a turning badge. -->
+    <div class="collage" data-reveal="fade" data-delay="120">
+      <figure class="collage__item collage__item--a">
+        <img src="{{photo:hero-1}}" alt="{{alt:hero-1}}" width="900" height="1125" decoding="async">
+        <figcaption class="collage__caption"><span>N&deg;01</span><i class="hide-sm">From the collection</i></figcaption>
+      </figure>
+      <figure class="collage__item collage__item--b" data-parallax="0.12">
+        <img src="{{photo:hero-2}}" alt="{{alt:hero-2}}" width="900" height="675" decoding="async">
+      </figure>
+      <figure class="collage__item collage__item--c" data-parallax="-0.1">
+        <img src="{{photo:hero-3}}" alt="{{alt:hero-3}}" width="700" height="700" decoding="async">
+      </figure>
+      <svg class="collage__badge" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <defs><path id="sh-ring" d="M60 60m-43 0a43 43 0 1 1 86 0a43 43 0 1 1-86 0"/></defs>
+        <circle class="collage__badge-disc" cx="60" cy="60" r="58"/>
+        <text class="collage__badge-text"><textPath href="#sh-ring" textLength="268" lengthAdjust="spacingAndGlyphs">{{business}} &#183; {{city}} &#183; shop small &#183;</textPath></text>
+        <path class="collage__badge-star" d="M60 44l4.2 11.8L76 60l-11.8 4.2L60 76l-4.2-11.8L44 60l11.8-4.2z"/>
+      </svg>
+    </div>
+
+    <div class="hero__more">
+      <div class="hero__actions" data-reveal data-delay="240">
+        <a class="btn btn--primary" href="#shop">Browse the collection
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
+        <a class="btn btn--line" href="#order">How to order</a>
+      </div>
+      <ul class="hero__meta" data-reveal data-delay="320">
+        <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>{{address}}</span></li>
+        <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>{{hours}}</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<!-- /section:hero -->
+
+<!-- section:shop -->
+<section class="shop" id="shop" aria-labelledby="shop-title">
+  <div class="container">
+    <div class="shop__head">
+      <div data-reveal>
+        <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>The collection</p>
+        <h2 id="shop-title">Shop the collection.</h2>
+      </div>
+      <p class="shop__intro" data-reveal data-delay="100">Tap <strong>Ask about this</strong> on anything you like and we will reply with prices, sizes and when it is ready.</p>
+    </div>
+
+    <div class="shop__tools" data-reveal>
+      <div class="chips" role="group" aria-label="Filter the collection">
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">All<span class="chip__count"></span></button>
+        <button class="chip" type="button" data-filter="new" aria-pressed="false">New<span class="chip__count"></span></button>
+        <button class="chip" type="button" data-filter="gifts" aria-pressed="false">Gifts<span class="chip__count"></span></button>
+        <button class="chip" type="button" data-filter="everyday" aria-pressed="false">Everyday<span class="chip__count"></span></button>
+        <button class="chip" type="button" data-filter="seasonal" aria-pressed="false">Seasonal<span class="chip__count"></span></button>
+      </div>
+      <p class="shop__status" aria-live="polite">8 pieces</p>
+    </div>
+
+    <!-- data-ask-via: auto (text on phones, email on computers) | sms | email -->
+    <div class="products" data-ask-via="auto">
+      <article class="product product--feature" data-cat="new gifts">
+        <div class="product__media">
+          <img src="{{photo:product-1}}" alt="{{alt:product-1}}" width="1000" height="1000" loading="lazy" decoding="async">
+          <span class="product__tag">New</span>
+        </div>
+        <div class="product__body">
+          <h3 class="product__name">Signature piece</h3>
+          <p class="product__desc">Two lines about your best-known piece: what it is, what it is made from, and why people come back for it.</p>
+          <div class="product__foot">
+            <p class="product__price">Price on request</p>
+            <a class="product__ask" href="{{email_href}}" data-ask>Ask about this<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="product" data-cat="everyday">
+        <div class="product__media">
+          <img src="{{photo:product-2}}" alt="{{alt:product-2}}" width="800" height="1000" loading="lazy" decoding="async">
+        </div>
+        <div class="product__body">
+          <h3 class="product__name">Everyday favourite</h3>
+          <p class="product__desc">One line about what it is, or who it suits.</p>
+          <div class="product__foot">
+            <p class="product__price">Price on request</p>
+            <a class="product__ask" href="{{email_href}}" data-ask>Ask about this<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="product" data-cat="gifts">
+        <div class="product__media">
+          <img src="{{photo:product-3}}" alt="{{alt:product-3}}" width="800" height="1000" loading="lazy" decoding="async">
+          <span class="product__tag">Gift</span>
+        </div>
+        <div class="product__body">
+          <h3 class="product__name">Gift set</h3>
+          <p class="product__desc">One line about what is inside, and who it makes a good present for.</p>
+          <div class="product__foot">
+            <p class="product__price">Price on request</p>
+            <a class="product__ask" href="{{email_href}}" data-ask>Ask about this<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="product" data-cat="seasonal new">
+        <div class="product__media">
+          <img src="{{photo:product-4}}" alt="{{alt:product-4}}" width="800" height="1000" loading="lazy" decoding="async">
+          <span class="product__tag">Seasonal</span>
+        </div>
+        <div class="product__body">
+          <h3 class="product__name">Seasonal pick</h3>
+          <p class="product__desc">One line about what makes it right for this time of year.</p>
+          <div class="product__foot">
+            <p class="product__price">Price on request</p>
+            <a class="product__ask" href="{{email_href}}" data-ask>Ask about this<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="product" data-cat="everyday">
+        <div class="product__media">
+          <img src="{{photo:product-5}}" alt="{{alt:product-5}}" width="800" height="1000" loading="lazy" decoding="async">
+        </div>
+        <div class="product__body">
+          <h3 class="product__name">The classic</h3>
+          <p class="product__desc">One line about the piece people ask for most.</p>
+          <div class="product__foot">
+            <p class="product__price">Price on request</p>
+            <a class="product__ask" href="{{email_href}}" data-ask>Ask about this<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="product product--wide" data-cat="gifts seasonal">
+        <div class="product__media">
+          <img src="{{photo:product-6}}" alt="{{alt:product-6}}" width="1200" height="800" loading="lazy" decoding="async">
+          <span class="product__tag">Custom</span>
+        </div>
+        <div class="product__body">
+          <h3 class="product__name">Made to order</h3>
+          <p class="product__desc">Say what people can ask you to make or put together for them, and how far ahead they should ask.</p>
+          <div class="product__foot">
+            <p class="product__price">Price on request</p>
+            <a class="product__ask" href="{{email_href}}" data-ask>Ask about this<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="product" data-cat="everyday new">
+        <div class="product__media">
+          <img src="{{photo:product-7}}" alt="{{alt:product-7}}" width="800" height="1000" loading="lazy" decoding="async">
+          <span class="product__tag">New</span>
+        </div>
+        <div class="product__body">
+          <h3 class="product__name">Small treat</h3>
+          <p class="product__desc">One line about a little something that is easy to add to any order.</p>
+          <div class="product__foot">
+            <p class="product__price">Price on request</p>
+            <a class="product__ask" href="{{email_href}}" data-ask>Ask about this<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="product" data-cat="seasonal">
+        <div class="product__media">
+          <img src="{{photo:product-8}}" alt="{{alt:product-8}}" width="800" height="1000" loading="lazy" decoding="async">
+        </div>
+        <div class="product__body">
+          <h3 class="product__name">Weekend special</h3>
+          <p class="product__desc">One line about something you only have now and then.</p>
+          <div class="product__foot">
+            <p class="product__price">Price on request</p>
+            <a class="product__ask" href="{{email_href}}" data-ask>Ask about this<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+<!-- /section:shop -->
+
+<!-- section:order -->
+<section class="order" id="order" aria-labelledby="order-title">
+  <div class="container">
+    <div class="order__head" data-reveal>
+      <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>How to order</p>
+      <h2 id="order-title">Three easy steps, no checkout.</h2>
+    </div>
+    <ol class="order__steps" data-stagger="110" data-reveal="up">
+      <li class="order-step">
+        <span class="order-step__num" aria-hidden="true">1</span>
+        <h3>Pick what you like</h3>
+        <p>Browse the collection and tap Ask about this on anything that catches your eye.</p>
+      </li>
+      <li class="order-step order-step--mid">
+        <span class="order-step__num" aria-hidden="true">2</span>
+        <h3>Call or text us</h3>
+        <p>Tell us what you would like. We confirm what is available, the price, and when it will be ready.</p>
+      </li>
+      <li class="order-step order-step--end">
+        <span class="order-step__num" aria-hidden="true">3</span>
+        <h3>Pick up or we send it</h3>
+        <p>Collect it from {{address}}, or ask us about delivery and shipping.</p>
+      </li>
+    </ol>
+    <div class="order__actions" data-reveal>
+      <a class="btn btn--primary" href="{{phone_href}}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Call {{phone}}</a>
+      <a class="btn btn--line order__text" href="{{phone_href}}" data-sms><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Send a text</a>
+      <a class="btn btn--line" href="{{email_href}}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Email us</a>
+    </div>
+  </div>
+</section>
+<!-- /section:order -->
+
+<!-- section:story -->
+<section class="story" id="story" aria-labelledby="story-title">
+  <div class="container story__grid">
+    <figure class="story__figure" data-reveal="scale">
+      <img src="{{photo:about}}" alt="{{alt:about}}" width="900" height="1100" loading="lazy" decoding="async">
+      <span class="story__stamp" aria-hidden="true"><b>{{initial}}</b>{{city}}</span>
+    </figure>
+    <div class="story__text" data-reveal>
+      <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>Our story</p>
+      <h2 id="story-title">The people behind {{business}}.</h2>
+      <p class="story__pull">Write two or three warm sentences in your own words: how the shop started, what you make or choose, and what you care about.</p>
+      <p class="story__more">Add a shorter second paragraph about how things are made or picked, and who does it.</p>
+      <dl class="visit">
+        <div class="visit__row"><dt>Visit</dt><dd>{{address}}</dd></div>
+        <div class="visit__row"><dt>Hours</dt><dd>{{hours}}</dd></div>
+        <div class="visit__row"><dt>Call or text</dt><dd><a href="{{phone_href}}">{{phone}}</a></dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+<!-- /section:story -->
+
+<!-- section:faq -->
+<section class="faq" id="faq" aria-labelledby="faq-title">
+  <div class="container faq__grid">
+    <div class="faq__intro" data-reveal>
+      <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>Good to know</p>
+      <h2 id="faq-title">Shipping, pickup &amp; returns.</h2>
+    </div>
+    <div class="faq__list" data-stagger="70" data-reveal="up">
+      <details class="faq__item" open>
+        <summary><span class="faq__num" aria-hidden="true">01</span><span class="faq__q">Do you ship?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__a"><p>Say where you ship to, how long it usually takes, and how the cost is worked out. If you only offer pickup, say so here.</p></div>
+      </details>
+      <details class="faq__item">
+        <summary><span class="faq__num" aria-hidden="true">02</span><span class="faq__q">Can I pick up in person?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__a"><p>Explain how pickup works at {{address}}: when to come, and what to bring or say when you arrive.</p></div>
+      </details>
+      <details class="faq__item">
+        <summary><span class="faq__num" aria-hidden="true">03</span><span class="faq__q">How do I pay?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__a"><p>List the ways people can pay, and when: when they order, or when they collect.</p></div>
+      </details>
+      <details class="faq__item">
+        <summary><span class="faq__num" aria-hidden="true">04</span><span class="faq__q">Can I return or exchange something?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__a"><p>Describe your return and exchange rules in plain words: how many days, what condition, and how to start.</p></div>
+      </details>
+      <details class="faq__item">
+        <summary><span class="faq__num" aria-hidden="true">05</span><span class="faq__q">Do you take custom orders?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__a"><p>Say whether you make or put things together on request, and how far ahead people should ask.</p></div>
+      </details>
+    </div>
+    <div class="help-card">
+      <p class="help-card__title">Still not sure?</p>
+      <p>Ask us anything about a piece, a gift or an order.</p>
+      <div class="help-card__links">
+        <a href="{{phone_href}}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>{{phone}}</a>
+        <a href="{{email_href}}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>{{email}}</a>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- /section:faq -->
+</main>
+
+<!-- section:footer -->
+<footer class="site-footer">
+  <div class="container">
+    <p class="site-footer__word" aria-hidden="true">{{business}}</p>
+    <div class="site-footer__cols">
+      <div class="site-footer__col">
+        <p class="site-footer__label">Visit</p>
+        <p>{{address}}</p>
+        <p>{{hours}}</p>
+      </div>
+      <div class="site-footer__col">
+        <p class="site-footer__label">Contact</p>
+        <a href="{{phone_href}}">{{phone}}</a>
+        <a href="{{email_href}}">{{email}}</a>
+      </div>
+      <nav class="site-footer__col" aria-label="Footer">
+        <p class="site-footer__label">Shop</p>
+        <a href="#shop">The collection</a>
+        <a href="#order">How to order</a>
+        <a href="#faq">Shipping &amp; returns</a>
+      </nav>
+    </div>
+    <div class="site-footer__base">
+      <p>&copy; {{year}} {{business}}</p>
+      <a href="#top">Back to top</a>
+    </div>
+  </div>
+</footer>
+<!-- /section:footer -->
+
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="{{slug}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{business}} Calculators</title>
+<meta name="description" content="Pocket calculators for {{business}}: loan payments, markup and margin, sales tax, tips, percentages, units, time cards, tire sizes and fuel cost.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="appkit.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript><p style="padding:24px">These calculators need JavaScript turned on.</p></noscript>
+
+<!-- section:facts -->
+<!-- The owner's facts: business name in the top bar, letterhead on printed loan tables and tire comparisons. -->
+<div id="facts" hidden>
+  <span data-fact="business">{{business}}</span>
+  <span data-fact="phone">{{phone}}</span>
+  <span data-fact="email">{{email}}</span>
+  <span data-fact="address">{{address}}</span>
+</div>
+<!-- /section:facts -->
+
+<!-- section:view-home -->
+<!-- HOME (tab "Tools"): search, pinned favourites as big tiles (with their last answer), every calculator by group.
+     Tiles and rows are drawn by renderHome() in app.js from the CALCS list. -->
+<template id="view-home">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Toolbox</p>
+      <h1>Calculators</h1>
+      <p class="sub">Answers update as you type. Your last numbers are remembered.</p>
+    </div>
+  </header>
+  <div class="search home-search"><input type="search" id="find" placeholder="Find a calculator" aria-label="Find a calculator" autocomplete="off" enterkeyhint="go"></div>
+  <section class="section" data-slot="pinned-wrap">
+    <div class="sec-head"><h2>Pinned</h2></div>
+    <div class="tiles" data-slot="pinned"></div>
+  </section>
+  <div class="groups" data-slot="groups"></div>
+  <p class="muted small fine" data-slot="nomatch" hidden>Nothing matches. Try “loan”, “tax”, “tire” or “hours”.</p>
+</template>
+<!-- /section:view-home -->
+
+<!-- section:view-calc -->
+<!-- Every calculator page: header (pin + start over) + the calculator's own template (below) + its saved answers. -->
+<template id="view-calc">
+  <header class="page-head calc-head">
+    <div>
+      <p class="eyebrow" data-slot="group"></p>
+      <h1 data-slot="name"></h1>
+      <p class="sub" data-slot="blurb"></p>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn icon soft pin-btn" data-act="pin" aria-pressed="false" aria-label="Pin to the top of Tools"><i data-icon="star"></i></button>
+      <button type="button" class="btn icon soft" data-act="reset" aria-label="Start over"><i data-icon="undo"></i></button>
+    </div>
+  </header>
+  <div class="calc-body" data-slot="body"></div>
+  <section class="section" data-slot="recent-wrap" hidden>
+    <div class="sec-head"><h2>Saved answers</h2><button type="button" class="btn ghost sm" data-act="go" data-to="/history">All history <i data-icon="chevron-right"></i></button></div>
+    <ul class="list" data-slot="recent"></ul>
+  </section>
+</template>
+<!-- /section:view-calc -->
+
+<!-- section:calc-loan -->
+<!-- LOAN / PAYMENT. Inputs: amount, rate (APR %), term + unit, extra per month. Outputs: data-out="..." filled by app.js. -->
+<template id="calc-loan">
+  <div class="calc-grid">
+    <section class="result" aria-live="polite">
+      <p class="r-label">Monthly payment</p>
+      <p class="r-big"><span class="r-num" data-out="payment" data-fmt="money"></span><span class="r-unit">a month</span></p>
+      <dl class="r-grid">
+        <div><dt>Total interest</dt><dd data-out="interest" data-fmt="money"></dd></div>
+        <div><dt>Total paid</dt><dd data-out="total" data-fmt="money"></dd></div>
+        <div><dt>Paid off in</dt><dd data-out="payoff" data-fmt="text"></dd></div>
+        <div data-show="extra"><dt>Extra saves</dt><dd data-out="saved" data-fmt="money"></dd></div>
+      </dl>
+      <p class="r-note" data-out="note" data-fmt="text"></p>
+      <p class="r-msg" data-out="msg" data-fmt="text"></p>
+      <div class="r-actions"><button type="button" class="btn primary sm" data-act="copy"><i data-icon="copy"></i>Copy</button><button type="button" class="btn soft sm" data-act="save"><i data-icon="star"></i>Save</button></div>
+    </section>
+    <form class="card inputs form" novalidate>
+      <div class="field"><label for="ln-amount">Amount borrowed</label><div class="affix"><span data-sym>$</span><input id="ln-amount" name="amount" data-num inputmode="decimal" autocomplete="off" placeholder="25,000"></div></div>
+      <div class="field"><label for="ln-rate">Interest rate (APR)</label><div class="affix"><input id="ln-rate" name="rate" data-num inputmode="decimal" autocomplete="off" placeholder="6.5"><span>% a year</span></div></div>
+      <div class="field"><label for="ln-term">Length of loan</label>
+        <div class="term-row"><div class="affix"><input id="ln-term" name="term" data-num inputmode="decimal" autocomplete="off" placeholder="5"></div>
+          <div class="seg" role="radiogroup" aria-label="Years or months"><label><input type="radio" name="unit" value="years"><span>Years</span></label><label><input type="radio" name="unit" value="months"><span>Months</span></label></div></div></div>
+      <div class="field"><label for="ln-extra">Extra each month (optional)</label><div class="affix"><span data-sym>$</span><input id="ln-extra" name="extra" data-num inputmode="decimal" autocomplete="off" placeholder="0"></div><p class="help">Paying a little extra shortens the loan and cuts the interest.</p></div>
+    </form>
+  </div>
+  <section class="card schedule" data-slot="schedule">
+    <div class="card-head"><h2>Payoff schedule</h2>
+      <div class="seg" role="radiogroup" aria-label="Show by"><label><input type="radio" name="sched" value="year" checked><span>Years</span></label><label><input type="radio" name="sched" value="month"><span>Months</span></label></div></div>
+    <p class="legend-mini" aria-hidden="true"><span><i class="k k1"></i>Principal</span><span><i class="k k2"></i>Interest</span></p>
+    <div data-slot="loan-chart" class="loan-chart"></div>
+    <div class="table-scroll" data-allow-overflow><table class="table sched-table"><thead><tr><th data-slot="col-1">Year</th><th class="num">Principal</th><th class="num">Interest</th><th class="num">Balance</th></tr></thead><tbody data-slot="loan-rows"></tbody></table></div>
+    <div class="btns end"><button type="button" class="btn soft sm" data-act="print-loan"><i data-icon="printer"></i>Print schedule</button></div>
+  </section>
+</template>
+<!-- /section:calc-loan -->
+
+<!-- section:calc-pricing -->
+<!-- MARKUP, MARGIN, DISCOUNT, SALES TAX. Type any two boxes in a mode; the others fill in (marked "auto"). -->
+<template id="calc-pricing">
+  <div class="seg block mode-seg" role="radiogroup" aria-label="What to work out">
+    <label><input type="radio" name="mode" value="m"><span>Margin</span></label>
+    <label><input type="radio" name="mode" value="d"><span>Discount</span></label>
+    <label><input type="radio" name="mode" value="t"><span>Sales tax</span></label>
+  </div>
+  <div class="calc-grid">
+    <section class="result" aria-live="polite">
+      <p class="r-label" data-out="label" data-fmt="text">Selling price</p>
+      <p class="r-big"><span class="r-num" data-out="main" data-fmt="money"></span></p>
+      <p class="r-line" data-out="line" data-fmt="text"></p>
+      <p class="r-msg" data-out="msg" data-fmt="text"></p>
+      <div class="r-actions"><button type="button" class="btn primary sm" data-act="copy"><i data-icon="copy"></i>Copy</button><button type="button" class="btn soft sm" data-act="save"><i data-icon="star"></i>Save</button></div>
+    </section>
+    <form class="card inputs form solver" novalidate>
+      <p class="help solver-help">Fill in any two boxes. The rest work themselves out.</p>
+      <div class="mode-fields" data-mode="m">
+        <div class="field"><label for="pm-cost">Cost</label><div class="affix"><span data-sym>$</span><input id="pm-cost" name="m_cost" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+        <div class="field"><label for="pm-price">Selling price</label><div class="affix"><span data-sym>$</span><input id="pm-price" name="m_price" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+        <div class="cols two"><div class="field"><label for="pm-markup">Markup</label><div class="affix"><input id="pm-markup" name="m_markup" data-num data-solve="pct" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+          <div class="field"><label for="pm-margin">Margin</label><div class="affix"><input id="pm-margin" name="m_margin" data-num data-solve="pct" inputmode="decimal" autocomplete="off"><span>%</span></div></div></div>
+        <div class="field"><label for="pm-profit">Profit</label><div class="affix"><span data-sym>$</span><input id="pm-profit" name="m_profit" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+      </div>
+      <div class="mode-fields" data-mode="d">
+        <div class="field"><label for="pd-orig">Original price</label><div class="affix"><span data-sym>$</span><input id="pd-orig" name="d_orig" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+        <div class="field"><label for="pd-pct">Discount</label><div class="affix"><input id="pd-pct" name="d_pct" data-num data-solve="pct" inputmode="decimal" autocomplete="off"><span>% off</span></div></div>
+        <div class="field"><label for="pd-sale">Sale price</label><div class="affix"><span data-sym>$</span><input id="pd-sale" name="d_sale" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+        <div class="field"><label for="pd-save">Amount saved</label><div class="affix"><span data-sym>$</span><input id="pd-save" name="d_save" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+      </div>
+      <div class="mode-fields" data-mode="t">
+        <div class="field"><label for="pt-base">Price before tax</label><div class="affix"><span data-sym>$</span><input id="pt-base" name="t_base" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+        <div class="field"><label for="pt-rate">Tax rate</label><div class="affix"><input id="pt-rate" name="t_rate" data-num data-solve="pct" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+        <div class="field"><label for="pt-tax">Tax</label><div class="affix"><span data-sym>$</span><input id="pt-tax" name="t_tax" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+        <div class="field"><label for="pt-total">Total with tax</label><div class="affix"><span data-sym>$</span><input id="pt-total" name="t_total" data-num data-solve="money" inputmode="decimal" autocomplete="off"></div></div>
+      </div>
+      <button type="button" class="btn ghost sm clear-two" data-act="clear-mode"><i data-icon="x"></i>Clear these boxes</button>
+    </form>
+  </div>
+</template>
+<!-- /section:calc-pricing -->
+
+<!-- section:calc-tip -->
+<template id="calc-tip">
+  <div class="calc-grid">
+    <section class="result" aria-live="polite">
+      <p class="r-label" data-out="label" data-fmt="text">Each person pays</p>
+      <p class="r-big"><span class="r-num" data-out="each" data-fmt="money"></span></p>
+      <dl class="r-grid">
+        <div><dt>Tip</dt><dd data-out="tip" data-fmt="money"></dd></div>
+        <div><dt>Total</dt><dd data-out="total" data-fmt="money"></dd></div>
+        <div><dt>Tip rate</dt><dd data-out="rate" data-fmt="pct"></dd></div>
+      </dl>
+      <p class="r-note" data-out="note" data-fmt="text"></p>
+      <p class="r-msg" data-out="msg" data-fmt="text"></p>
+      <div class="r-actions"><button type="button" class="btn primary sm" data-act="copy"><i data-icon="copy"></i>Copy</button><button type="button" class="btn soft sm" data-act="save"><i data-icon="star"></i>Save</button></div>
+    </section>
+    <form class="card inputs form" novalidate>
+      <div class="field"><label for="tp-bill">Bill</label><div class="affix big-in"><span data-sym>$</span><input id="tp-bill" name="bill" data-num inputmode="decimal" autocomplete="off" placeholder="0.00"></div></div>
+      <div class="field"><label for="tp-pct">Tip</label>
+        <div class="chips tip-chips" role="group" aria-label="Quick tip">
+          <button type="button" class="chip" data-tip="10">10%</button><button type="button" class="chip" data-tip="15">15%</button><button type="button" class="chip" data-tip="18">18%</button>
+          <button type="button" class="chip" data-tip="20">20%</button><button type="button" class="chip" data-tip="25">25%</button>
+        </div>
+        <div class="affix"><input id="tp-pct" name="pct" data-num inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+      <div class="field"><label for="tp-people">People</label><div class="stepper"><input id="tp-people" name="people" type="number" min="1" max="99" step="1"></div></div>
+      <div class="field"><label for="tp-tax">Tax already in the bill (optional)</label><div class="affix"><span data-sym>$</span><input id="tp-tax" name="tax" data-num inputmode="decimal" autocomplete="off" placeholder="0.00"></div><p class="help">The tip is worked out on the bill before tax.</p></div>
+      <label class="check between"><span>Round up each share<span class="sub">To the next whole dollar. The tip grows a little.</span></span><input type="checkbox" class="switch" name="round"></label>
+    </form>
+  </div>
+</template>
+<!-- /section:calc-tip -->
+
+<!-- section:calc-percent -->
+<!-- PERCENTAGES: four little calculators, each with its own answer and Copy. -->
+<template id="calc-percent">
+  <form class="pct-grid" novalidate>
+    <section class="card pct-card" data-part="of">
+      <h2 class="pct-t">Percent of a number</h2>
+      <div class="pct-row"><input name="of_x" data-num inputmode="decimal" aria-label="Percent" autocomplete="off"><span>% of</span><input name="of_y" data-num inputmode="decimal" aria-label="Number" autocomplete="off"></div>
+      <div class="pct-foot"><p class="pct-a"><span class="pct-eq">=</span><span class="r-num" data-out="of" data-fmt="num"></span></p>
+        <button type="button" class="btn soft sm" data-act="copy" data-part="of"><i data-icon="copy"></i>Copy</button></div>
+    </section>
+    <section class="card pct-card" data-part="is">
+      <h2 class="pct-t">What percent is it?</h2>
+      <div class="pct-row"><input name="is_x" data-num inputmode="decimal" aria-label="Part" autocomplete="off"><span>out of</span><input name="is_y" data-num inputmode="decimal" aria-label="Whole" autocomplete="off"></div>
+      <div class="pct-foot"><p class="pct-a"><span class="pct-eq">=</span><span class="r-num" data-out="is" data-fmt="pct"></span></p>
+        <button type="button" class="btn soft sm" data-act="copy" data-part="is"><i data-icon="copy"></i>Copy</button></div>
+    </section>
+    <section class="card pct-card" data-part="ch">
+      <h2 class="pct-t">Percent change</h2>
+      <div class="pct-row"><span>From</span><input name="ch_x" data-num inputmode="decimal" aria-label="From" autocomplete="off"><span>to</span><input name="ch_y" data-num inputmode="decimal" aria-label="To" autocomplete="off"></div>
+      <div class="pct-foot"><p class="pct-a"><span class="r-num" data-out="ch" data-fmt="pct"></span><span class="pct-tag" data-out="chWord" data-fmt="text"></span></p>
+        <button type="button" class="btn soft sm" data-act="copy" data-part="ch"><i data-icon="copy"></i>Copy</button></div>
+    </section>
+    <section class="card pct-card" data-part="pm">
+      <h2 class="pct-t">Add or take off a percent</h2>
+      <div class="pct-row"><input name="pm_y" data-num inputmode="decimal" aria-label="Number" autocomplete="off"><span aria-hidden="true">&plusmn;</span><input name="pm_x" data-num inputmode="decimal" aria-label="Percent" autocomplete="off"><span>%</span></div>
+      <div class="pct-foot"><p class="pct-a two"><span><small>Plus</small><span class="r-num" data-out="plus" data-fmt="num"></span></span><span><small>Minus</small><span class="r-num" data-out="minus" data-fmt="num"></span></span></p>
+        <button type="button" class="btn soft sm" data-act="copy" data-part="pm"><i data-icon="copy"></i>Copy</button></div>
+    </section>
+  </form>
+</template>
+<!-- /section:calc-percent -->
+
+<!-- section:calc-units -->
+<template id="calc-units">
+  <div class="chips unit-cats" role="radiogroup" aria-label="What to convert" data-slot="cats"></div>
+  <div class="calc-grid">
+    <section class="result" aria-live="polite">
+      <p class="r-label" data-out="from" data-fmt="text"></p>
+      <p class="r-big"><span class="r-num" data-out="value" data-fmt="text"></span><span class="r-unit" data-out="unit" data-fmt="text"></span></p>
+      <p class="r-msg" data-out="msg" data-fmt="text"></p>
+      <div class="r-actions"><button type="button" class="btn primary sm" data-act="copy"><i data-icon="copy"></i>Copy</button><button type="button" class="btn soft sm" data-act="save"><i data-icon="star"></i>Save</button></div>
+    </section>
+    <form class="card inputs form" novalidate>
+      <input type="hidden" name="cat">
+      <div class="field"><label for="un-val">Value</label><div class="affix big-in"><input id="un-val" name="val" data-num inputmode="decimal" autocomplete="off" placeholder="1"></div></div>
+      <div class="swap-row">
+        <div class="field"><label for="un-from">From</label><select id="un-from" name="from"></select></div>
+        <button type="button" class="btn icon soft swap" data-act="swap" aria-label="Swap the two units"><i data-icon="swap"></i></button>
+        <div class="field"><label for="un-to">To</label><select id="un-to" name="to"></select></div>
+      </div>
+    </form>
+  </div>
+  <section class="section">
+    <div class="sec-head"><h2 data-slot="all-title">Every unit</h2></div>
+    <ul class="list all-units" data-slot="all"></ul>
+  </section>
+</template>
+<!-- /section:calc-units -->
+
+<!-- section:calc-timecard -->
+<!-- TIME CARD & PAY: one row per day (start, end, break). Overnight shifts are fine (end before start = next day). -->
+<template id="calc-timecard">
+  <div class="calc-grid">
+    <section class="result tc-result" aria-live="polite">
+      <div class="tc-pair">
+        <div><p class="r-label">Hours this week</p><p class="r-big"><span class="r-num" data-out="hm" data-fmt="text"></span></p><p class="r-line"><span data-out="hours" data-fmt="num2"></span> hours</p></div>
+        <div><p class="r-label">Gross pay</p><p class="r-big"><span class="r-num" data-out="pay" data-fmt="money"></span></p><p class="r-line" data-out="rateLine" data-fmt="text"></p></div>
+      </div>
+      <dl class="r-grid">
+        <div><dt>Regular</dt><dd data-out="reg" data-fmt="text"></dd></div>
+        <div><dt>Overtime</dt><dd data-out="ot" data-fmt="text"></dd></div>
+        <div><dt>Regular pay</dt><dd data-out="regPay" data-fmt="money"></dd></div>
+        <div><dt>Overtime pay</dt><dd data-out="otPay" data-fmt="money"></dd></div>
+      </dl>
+      <p class="r-note" data-out="note" data-fmt="text"></p>
+      <p class="r-msg" data-out="msg" data-fmt="text"></p>
+      <div class="r-actions"><button type="button" class="btn primary sm" data-act="copy"><i data-icon="copy"></i>Copy</button><button type="button" class="btn soft sm" data-act="save"><i data-icon="star"></i>Save</button></div>
+    </section>
+    <form class="card inputs form" novalidate>
+      <div class="cols two">
+        <div class="field"><label for="tc-rate">Pay rate</label><div class="affix"><span data-sym>$</span><input id="tc-rate" name="rate" data-num inputmode="decimal" autocomplete="off" placeholder="0.00"><span>/ hr</span></div></div>
+        <div class="field"><label for="tc-mult">Overtime pay</label><div class="affix"><input id="tc-mult" name="mult" data-num inputmode="decimal" autocomplete="off"><span>x rate</span></div></div>
+        <div class="field"><label for="tc-week">Overtime after</label><div class="affix"><input id="tc-week" name="weekly" data-num inputmode="decimal" autocomplete="off"><span>h / week</span></div></div>
+        <div class="field"><label for="tc-day">and after (optional)</label><div class="affix"><input id="tc-day" name="daily" data-num inputmode="decimal" autocomplete="off" placeholder="none"><span>h / day</span></div></div>
+      </div>
+      <div class="days">
+        <div class="day-row head" aria-hidden="true"><span>Day</span><span>Start</span><span>End</span><span>Break</span><span class="num">Hours</span></div>
+        <div class="day-row"><span class="dn">Mon</span><input type="time" name="s0" aria-label="Monday start"><input type="time" name="e0" aria-label="Monday end"><div class="affix brk"><input name="b0" data-num inputmode="numeric" aria-label="Monday break in minutes" placeholder="0"><span>min</span></div><span class="dh num" data-out="d0" data-fmt="text"></span></div>
+        <div class="day-row"><span class="dn">Tue</span><input type="time" name="s1" aria-label="Tuesday start"><input type="time" name="e1" aria-label="Tuesday end"><div class="affix brk"><input name="b1" data-num inputmode="numeric" aria-label="Tuesday break in minutes" placeholder="0"><span>min</span></div><span class="dh num" data-out="d1" data-fmt="text"></span></div>
+        <div class="day-row"><span class="dn">Wed</span><input type="time" name="s2" aria-label="Wednesday start"><input type="time" name="e2" aria-label="Wednesday end"><div class="affix brk"><input name="b2" data-num inputmode="numeric" aria-label="Wednesday break in minutes" placeholder="0"><span>min</span></div><span class="dh num" data-out="d2" data-fmt="text"></span></div>
+        <div class="day-row"><span class="dn">Thu</span><input type="time" name="s3" aria-label="Thursday start"><input type="time" name="e3" aria-label="Thursday end"><div class="affix brk"><input name="b3" data-num inputmode="numeric" aria-label="Thursday break in minutes" placeholder="0"><span>min</span></div><span class="dh num" data-out="d3" data-fmt="text"></span></div>
+        <div class="day-row"><span class="dn">Fri</span><input type="time" name="s4" aria-label="Friday start"><input type="time" name="e4" aria-label="Friday end"><div class="affix brk"><input name="b4" data-num inputmode="numeric" aria-label="Friday break in minutes" placeholder="0"><span>min</span></div><span class="dh num" data-out="d4" data-fmt="text"></span></div>
+        <div class="day-row"><span class="dn">Sat</span><input type="time" name="s5" aria-label="Saturday start"><input type="time" name="e5" aria-label="Saturday end"><div class="affix brk"><input name="b5" data-num inputmode="numeric" aria-label="Saturday break in minutes" placeholder="0"><span>min</span></div><span class="dh num" data-out="d5" data-fmt="text"></span></div>
+        <div class="day-row"><span class="dn">Sun</span><input type="time" name="s6" aria-label="Sunday start"><input type="time" name="e6" aria-label="Sunday end"><div class="affix brk"><input name="b6" data-num inputmode="numeric" aria-label="Sunday break in minutes" placeholder="0"><span>min</span></div><span class="dh num" data-out="d6" data-fmt="text"></span></div>
+      </div>
+      <div class="btns">
+        <button type="button" class="btn soft sm" data-act="copy-monday"><i data-icon="copy"></i>Copy Monday to every weekday</button>
+        <button type="button" class="btn ghost sm" data-act="clear-week"><i data-icon="x"></i>Clear the week</button>
+      </div>
+    </form>
+  </div>
+</template>
+<!-- /section:calc-timecard -->
+
+<!-- section:calc-tire -->
+<!-- TIRE SIZE: reads 225/45R17, P225/45R17, LT265/70R17, 225/45-17, 33x12.50R15. Compares two sizes and the speedometer. -->
+<template id="calc-tire">
+  <div class="calc-grid">
+    <section class="result" aria-live="polite">
+      <p class="r-label" data-out="label" data-fmt="text">Speedometer</p>
+      <p class="r-big"><span class="r-num" data-out="main" data-fmt="text"></span><span class="r-unit" data-out="mainUnit" data-fmt="text"></span></p>
+      <p class="r-line" data-out="line" data-fmt="text"></p>
+      <div class="tire-art" data-slot="tire-art" aria-hidden="true"></div>
+      <p class="r-msg" data-out="msg" data-fmt="text"></p>
+      <div class="r-actions"><button type="button" class="btn primary sm" data-act="copy"><i data-icon="copy"></i>Copy</button><button type="button" class="btn soft sm" data-act="save"><i data-icon="star"></i>Save</button><button type="button" class="btn ghost sm" data-act="print-tire"><i data-icon="printer"></i>Print</button></div>
+    </section>
+    <form class="card inputs form" novalidate>
+      <div class="cols" style="--min:220px">
+        <div class="field"><label for="ti-a">Current size</label><input id="ti-a" name="a" class="size-in" list="tire-sizes" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="225/45R17"></div>
+        <div class="field"><label for="ti-b">New size (to compare)</label><input id="ti-b" name="b" class="size-in" list="tire-sizes" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="245/40R18"></div>
+      </div>
+      <div class="field"><label for="ti-speed">Speedometer shows</label><div class="affix"><input id="ti-speed" name="speed" data-num inputmode="decimal" autocomplete="off"><span data-slot="speed-unit">mph</span></div></div>
+      <datalist id="tire-sizes">
+        <option value="195/65R15"></option><option value="205/55R16"></option><option value="215/55R17"></option><option value="215/60R16"></option><option value="225/45R17"></option>
+        <option value="225/65R17"></option><option value="235/45R18"></option><option value="235/65R17"></option><option value="245/40R18"></option><option value="245/45R19"></option>
+        <option value="255/70R17"></option><option value="265/70R17"></option><option value="275/55R20"></option><option value="285/75R16"></option><option value="31x10.50R15"></option>
+        <option value="33x12.50R15"></option><option value="35x12.50R20"></option>
+      </datalist>
+    </form>
+  </div>
+  <section class="card tire-table-card">
+    <div class="card-head"><h2>Side by side</h2></div>
+    <div class="table-scroll" data-allow-overflow><table class="table tire-table"><thead><tr><th></th><th class="num" data-out="hA" data-fmt="text">Current</th><th class="num" data-out="hB" data-fmt="text">New</th><th class="num">Change</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Section width</th><td class="num" data-out="wA" data-fmt="text"></td><td class="num" data-out="wB" data-fmt="text"></td><td class="num" data-out="wD" data-fmt="text"></td></tr>
+        <tr><th scope="row">Sidewall height</th><td class="num" data-out="sA" data-fmt="text"></td><td class="num" data-out="sB" data-fmt="text"></td><td class="num" data-out="sD" data-fmt="text"></td></tr>
+        <tr><th scope="row">Overall diameter</th><td class="num" data-out="dA" data-fmt="text"></td><td class="num" data-out="dB" data-fmt="text"></td><td class="num" data-out="dD" data-fmt="text"></td></tr>
+        <tr><th scope="row">Circumference</th><td class="num" data-out="cA" data-fmt="text"></td><td class="num" data-out="cB" data-fmt="text"></td><td class="num" data-out="cD" data-fmt="text"></td></tr>
+        <tr><th scope="row">Revolutions per mile</th><td class="num" data-out="rA" data-fmt="text"></td><td class="num" data-out="rB" data-fmt="text"></td><td class="num" data-out="rD" data-fmt="text"></td></tr>
+        <tr class="speedo-row"><th scope="row">Real speed <span data-out="vLabel" data-fmt="text"></span></th><td class="num" data-out="vA" data-fmt="text"></td><td class="num" data-out="vB" data-fmt="text"></td><td class="num" data-out="vD" data-fmt="text"></td></tr>
+      </tbody></table></div>
+    <p class="muted small fine">A difference over about 3% in overall diameter can upset the speedometer, ABS and transmission shift points. Check clearance and the vehicle maker's advice.</p>
+  </section>
+</template>
+<!-- /section:calc-tire -->
+
+<!-- section:calc-fuel -->
+<template id="calc-fuel">
+  <div class="seg block mode-seg" role="radiogroup" aria-label="What to work out">
+    <label><input type="radio" name="mode" value="trip"><span>Trip cost</span></label>
+    <label><input type="radio" name="mode" value="fill"><span>Fill-up MPG</span></label>
+  </div>
+  <div class="calc-grid">
+    <section class="result" aria-live="polite">
+      <p class="r-label" data-out="label" data-fmt="text"></p>
+      <p class="r-big"><span class="r-num" data-out="main" data-fmt="text"></span><span class="r-unit" data-out="mainUnit" data-fmt="text"></span></p>
+      <dl class="r-grid" data-slot="fuel-grid">
+        <div><dt data-out="k1" data-fmt="text"></dt><dd data-out="v1" data-fmt="text"></dd></div>
+        <div><dt data-out="k2" data-fmt="text"></dt><dd data-out="v2" data-fmt="text"></dd></div>
+        <div><dt data-out="k3" data-fmt="text"></dt><dd data-out="v3" data-fmt="text"></dd></div>
+      </dl>
+      <p class="r-note" data-out="note" data-fmt="text"></p>
+      <p class="r-msg" data-out="msg" data-fmt="text"></p>
+      <div class="r-actions"><button type="button" class="btn primary sm" data-act="copy"><i data-icon="copy"></i>Copy</button><button type="button" class="btn soft sm" data-act="save"><i data-icon="star"></i>Save</button></div>
+    </section>
+    <form class="card inputs form" novalidate>
+      <div class="seg block" role="radiogroup" aria-label="Units"><label><input type="radio" name="units" value="us"><span>Miles, gallons</span></label><label><input type="radio" name="units" value="metric"><span>Km, litres</span></label></div>
+      <div class="mode-fields" data-mode="trip">
+        <div class="field"><label for="fu-dist" data-slot="l-dist">Distance</label><div class="affix"><input id="fu-dist" name="dist" data-num inputmode="decimal" autocomplete="off"><span data-u="dist">mi</span></div></div>
+        <div class="field"><label for="fu-eco" data-slot="l-eco">Fuel economy</label><div class="affix"><input id="fu-eco" name="eco" data-num inputmode="decimal" autocomplete="off"><span data-u="eco">mpg</span></div></div>
+        <div class="field"><label for="fu-price">Fuel price</label><div class="affix"><span data-sym>$</span><input id="fu-price" name="price" data-num inputmode="decimal" autocomplete="off"><span data-u="per">/ gal</span></div></div>
+        <div class="cols two">
+          <label class="check between"><span>Round trip</span><input type="checkbox" class="switch" name="round"></label>
+          <div class="field"><label for="fu-people">Split between</label><div class="stepper"><input id="fu-people" name="people" type="number" min="1" max="99" step="1"></div></div>
+        </div>
+      </div>
+      <div class="mode-fields" data-mode="fill">
+        <div class="cols two">
+          <div class="field"><label for="fu-o1">Odometer at last fill</label><div class="affix"><input id="fu-o1" name="odo1" data-num inputmode="decimal" autocomplete="off"><span data-u="dist">mi</span></div></div>
+          <div class="field"><label for="fu-o2">Odometer now</label><div class="affix"><input id="fu-o2" name="odo2" data-num inputmode="decimal" autocomplete="off"><span data-u="dist">mi</span></div></div>
+        </div>
+        <div class="field"><label for="fu-trip">or distance driven</label><div class="affix"><input id="fu-trip" name="driven" data-num inputmode="decimal" autocomplete="off"><span data-u="dist">mi</span></div><p class="help">Leave the odometer boxes empty to use this.</p></div>
+        <div class="field"><label for="fu-fuel">Fuel added</label><div class="affix"><input id="fu-fuel" name="fuel" data-num inputmode="decimal" autocomplete="off"><span data-u="vol">gal</span></div></div>
+        <div class="field"><label for="fu-paid">Fuel price (optional)</label><div class="affix"><span data-sym>$</span><input id="fu-paid" name="fprice" data-num inputmode="decimal" autocomplete="off"><span data-u="per">/ gal</span></div></div>
+      </div>
+    </form>
+  </div>
+</template>
+<!-- /section:calc-fuel -->
+
+<!-- section:view-history -->
+<template id="view-history">
+  <header class="page-head">
+    <div><p class="eyebrow">Saved answers</p><h1>History</h1><p class="sub">Answers are kept when you tap Copy or Save. Tap one to open it with the same numbers.</p></div>
+    <div class="actions"><button type="button" class="btn ghost sm" data-act="clear-history" data-slot="clear-btn"><i data-icon="trash"></i>Clear</button></div>
+  </header>
+  <div class="search"><input type="search" id="hist-q" placeholder="Search answers" aria-label="Search answers" autocomplete="off"></div>
+  <div data-slot="list"></div>
+</template>
+<!-- /section:view-history -->
+
+<!-- section:view-settings -->
+<template id="view-settings">
+  <header class="page-head">
+    <div><p class="eyebrow">Settings</p><h1>Preferences</h1><p class="sub">How answers look. Everything stays on this phone.</p></div>
+  </header>
+  <div class="settings-grid">
+    <section class="card">
+      <div class="card-head"><h2>Money</h2></div>
+      <form class="form" id="set-form" novalidate>
+        <div class="field"><label for="set-sym">Currency symbol</label><input id="set-sym" name="symbol" maxlength="4" autocomplete="off">
+          <div class="chips sym-chips" role="group" aria-label="Common symbols"><button type="button" class="chip" data-sym-pick="$">$</button><button type="button" class="chip" data-sym-pick="&euro;">&euro;</button><button type="button" class="chip" data-sym-pick="&pound;">&pound;</button><button type="button" class="chip" data-sym-pick="&yen;">&yen;</button><button type="button" class="chip" data-sym-pick="&#8377;">&#8377;</button><button type="button" class="chip" data-sym-pick="R$">R$</button><button type="button" class="chip" data-sym-pick="kr ">kr</button></div></div>
+        <label class="check between"><span>Show cents<span class="sub">Turn off to round money to whole amounts.</span></span><input type="checkbox" class="switch" name="cents"></label>
+        <div class="field"><label for="set-dec">Decimal places for other numbers</label><div class="stepper"><input id="set-dec" name="decimals" type="number" min="0" max="6" step="1"></div><p class="help" data-slot="dec-example"></p></div>
+        <div class="field"><span class="label">Units</span>
+          <div class="seg block" role="radiogroup" aria-label="Units"><label><input type="radio" name="units" value="us"><span>US (miles, gallons)</span></label><label><input type="radio" name="units" value="metric"><span>Metric</span></label></div>
+          <p class="help">Starting units for the fuel, tire and unit calculators.</p></div>
+      </form>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Look</h2></div>
+      <p class="muted">Colours, fonts and corners come from the style chosen for {{business}}. Ask your assistant to try another style; the calculators keep working the same.</p>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Your data</h2></div>
+      <p class="muted small" data-slot="data-line"></p>
+      <div class="btns stack-btns">
+        <button type="button" class="btn soft" data-act="backup"><i data-icon="download"></i>Save a backup</button>
+        <label class="btn soft file-btn"><i data-icon="upload"></i>Restore a backup<input type="file" accept=".json,application/json" class="file-in" id="restore-in"></label>
+        <button type="button" class="btn ghost danger-text" data-act="reset-all"><i data-icon="undo"></i>Reset every calculator</button>
+      </div>
+    </section>
+  </div>
+</template>
+<!-- /section:view-settings -->
+
+<!-- section:doc-loan -->
+<!-- Printable loan schedule (letterhead from the owner's facts). -->
+<template id="doc-loan">
+  <article class="doc">
+    <div class="doc-head">
+      <div><h2>{{business}}</h2><p class="muted small">{{address}}<br>{{phone}} · {{email}}</p></div>
+      <div class="right"><p class="eyebrow">Loan schedule</p><p data-slot="date"></p></div>
+    </div>
+    <dl class="doc-meta" data-slot="meta"></dl>
+    <table><thead><tr><th data-slot="col-1">Year</th><th class="num">Payment</th><th class="num">Principal</th><th class="num">Interest</th><th class="num">Balance</th></tr></thead><tbody data-slot="rows"></tbody></table>
+    <p class="doc-foot">An estimate for planning. The lender's figures may differ slightly because of rounding, fees and payment dates.</p>
+  </article>
+</template>
+<!-- /section:doc-loan -->
+
+<!-- section:doc-tire -->
+<template id="doc-tire">
+  <article class="doc">
+    <div class="doc-head">
+      <div><h2>{{business}}</h2><p class="muted small">{{address}}<br>{{phone}} · {{email}}</p></div>
+      <div class="right"><p class="eyebrow">Tire size comparison</p><p data-slot="date"></p></div>
+    </div>
+    <div data-slot="body"></div>
+    <p class="doc-foot">Figures are worked out from the size printed on the tire; real tires vary a little by brand and wear.</p>
+  </article>
+</template>
+<!-- /section:doc-tire -->
+
+<script src="appkit.js"></script>
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+  "id": "high-contrast-sport",
+  "name": "High-Contrast Sport",
+  "signature": "Off-white page, black diagonal blocks, volt-lime highlights, giant numerals, ticker.",
+  "mood": ["fast", "athletic", "aggressive", "competitive"],
+  "bestFor": [
+    "performance tuning",
+    "wheel and tire shops",
+    "motorsport",
+    "gyms and trainers",
+    "bike shops",
+    "driving schools",
+    "sports retailers"
+  ],
+  "fonts": "bebas-inter",
+  "colors": {
+    "bg": "#F5F5F2",
+    "surface": "#E8E8E3",
+    "ink": "#0A0A0A",
+    "muted": "#3F3F3F",
+    "accent": "#C8F000",
+    "onAccent": "#0A0A0A"
+  },
+  "contrast": {
+    "ink/bg": 18.12,
+    "ink/surface": 16.1,
+    "muted/bg": 9.64,
+    "muted/surface": 8.56,
+    "onAccent/accent": 15,
+    "accent/bg": 1.2,
+    "accent/surface": 1.07,
+    "accentAsText": false,
+    "note": "Light page with black hero blocks (bg-colored text on ink is the same ratio as ink on bg). Volt lime is a fill only and always carries a 2px ink border; never use it as text on a light background."
+  },
+  "radius": {"sm": 0, "md": 2, "lg": 4, "button": 0},
+  "shadow": {"card": "none", "pop": "0 16px 32px -16px rgba(10,10,10,.5)"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 80, "gutter": 16, "maxWidth": 1160},
+  "type": {
+    "scaleRatio": 1.333,
+    "basePx": 18,
+    "bodyLeading": 1.55,
+    "h1": "clamp(3.5rem,16vw,9.5rem)",
+    "h2": "clamp(2.5rem,9vw,5.5rem)",
+    "h3": "1.75rem",
+    "headingCase": "uppercase",
+    "headingWeight": 400,
+    "headingLeading": 0.9,
+    "headingTracking": "0.01em",
+    "eyebrow": "0.875rem, Inter weight 800, uppercase, 0.14em tracking, ink on a volt label"
+  },
+  "motion": {
+    "rule": "Sprint: blocks slide in from the right 36px in 380ms with a 50ms stagger, big numerals count up, and a black ticker scrolls at 80px per second.",
+    "reveal": "right",
+    "staggerMs": 50,
+    "durationMs": 380,
+    "ease": "cubic-bezier(.1,.9,.2,1)",
+    "use": ["data-reveal", "data-stagger", "data-count-to", "marquee with data-speed 80", "data-press"],
+    "avoid": ["slow fades", "data-tilt"]
+  },
+  "hero": {
+    "treatment": "diagonal-block",
+    "layout": "A black block with a diagonal bottom edge (clip-path polygon 0 0,100% 0,100% 90%,0 100%) holds a giant condensed headline in the page color with one word highlighted on a volt label. A real action photo overlaps the diagonal. Giant numerals row below only if real.",
+    "photo": "Real action or product photo, high contrast, cropped tight."
+  },
+  "background": "Off-white page with full-bleed black bands. Diagonal cuts between bands via clip-path. A single 2px ink rule can mark sections.",
+  "button": {
+    "shape": "Parallelogram via transform: skewX(-8deg), label counter-skewed; 52px tall.",
+    "fill": "Accent fill, ink label, 2px ink border.",
+    "label": "Display font (Bebas Neue), uppercase, 0.06em tracking, 1.25rem.",
+    "hover": "Press moves 2px with data-press; no color animation.",
+    "minHeightPx": 48
+  },
+  "banned": ["serif fonts", "pastels", "soft shadows", "centered paragraphs", "rounded buttons", "lime text on light backgrounds"]
+}

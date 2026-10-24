@@ -1,0 +1,30 @@
+{
+  "id": "event-invite",
+  "kind": "site",
+  "name": "Event Invite",
+  "summary": "One-screen-at-a-time celebration page: a full-screen photo with an invitation card and gentle confetti, a live countdown on a full-bleed accent screen, an alternating schedule timeline, a drawn venue map with Maps and copy buttons, framed photo prints with a viewer, good-to-know tiles and an RSVP builder that opens a pre-written text or email.",
+  "best_for": ["wedding", "engagement party", "birthday", "birthday party", "anniversary", "baby shower", "bridal shower", "graduation", "party", "launch event", "product launch", "opening night", "grand opening", "reunion", "class reunion", "family reunion", "fundraiser", "gala", "charity event", "retirement party", "memorial gathering"],
+  "mood": ["celebratory", "warm", "joyful", "elegant", "personal", "festive"],
+  "files": ["index.html", "style.css", "app.js"],
+  "sections": [
+    {"name": "header", "what": "Floating monogram ({{initial}}) and an RSVP button; no bar, so the hero photo shows through", "edit": "Usually leave as is"},
+    {"name": "hero", "what": "Full-screen photo with a confetti canvas and a centred invitation card: 'You are invited', the event name in the h1 ({{business}}), the subtitle ({{tagline}}), the date line (filled from data-date), the address, RSVP and Getting there buttons", "edit": "{{business}} is the event or host name, e.g. 'Maya & Leo' or 'Sam turns 40'. Keep the h1 short. The date line fills itself from the countdown's data-date; the fallback text 'Date to be announced' shows until then"},
+    {"name": "countdown", "what": "Full-bleed accent screen with a live countdown (days, hours, minutes, seconds), the date line and an 'Add to my calendar' button that downloads an .ics file", "edit": "Set data-date on #countdown to the real ISO date and time, e.g. data-date=\"2027-06-12T16:00\" (or 2027-06-12 for an all-day event); data-hours-long is how many hours it lasts. Empty or past dates show 'Add the date', 'Happening now' or a thank-you instead; never put in a made-up date"},
+    {"name": "schedule", "what": "Timeline of moments (time, icon, title, one line); alternates left and right on wide screens", "edit": "One .moment per real part of the day. Times fill in from data-offset (minutes after the start) once data-date has a time; or delete data-offset and write the time. Replace the sample descriptions"},
+    {"name": "venue", "what": "A drawn, style-coloured map with a pin and the city label, the address, Open in Maps (link built from the address) and Copy address buttons, plus 'Getting there' and 'Arriving' notes", "edit": "Add the venue name above the address if the owner gave one; replace the two notes with real travel and arrival details or delete them"},
+    {"name": "photos", "what": "Inverted band with four framed, slightly tilted prints; a swipe strip on phones; tap opens a full-screen viewer (arrows, swipe, Esc)", "edit": "Use the owner's own photos when they have them; delete prints to show fewer (the viewer counts them itself)"},
+    {"name": "qa", "what": "Six good-to-know tiles with icons: dress code, parking, gifts, plus-ones and children, food and allergies, access", "edit": "Write each answer from the host's real details and delete tiles that do not apply"},
+    {"name": "rsvp", "what": "RSVP builder: accept / decline choice (a confetti burst on yes), name, guest count stepper, optional note, Send by text / Send by email (app.js writes the message), plus the host's phone and email", "edit": "No server needed. If there is a reply-by date, add it to the lead paragraph"},
+    {"name": "footer", "what": "Monogram, event name, date line and city, phone, email, back to top, copyright", "edit": "Usually leave as is"}
+  ],
+  "photo_slots": [
+    {"slot": "hero", "orientation": "landscape", "hint": "the hosts, the couple or the guest of honour, or the venue; it fills the whole first screen behind the invitation card, so a calm photo with a soft background works best"},
+    {"slot": "gallery-1", "orientation": "portrait", "hint": "a favourite photo of the hosts or the guest of honour"},
+    {"slot": "gallery-2", "orientation": "portrait", "hint": "a detail: flowers, decorations, the cake, the product or the venue"},
+    {"slot": "gallery-3", "orientation": "portrait", "hint": "a happy moment with friends or family"},
+    {"slot": "gallery-4", "orientation": "portrait", "hint": "the place or a detail that says what the day is about"}
+  ],
+  "remove_if_no_facts": ["photos", "schedule"],
+  "behaviors": ["each section is a full screen with gentle scroll snapping", "slow confetti in the hero (a still frame for reduced motion)", "live countdown from one data-date attribute, with empty, happening-now and finished states", "date lines and schedule times filled from the same date", "Add to my calendar (.ics download, no server)", "Open in Maps and Copy address", "photo viewer with arrows, swipe and Esc", "RSVP builder that opens a pre-written text or email, confetti burst on yes", "RSVP and Directions bar on phones after the first screen", "dot navigation on wide screens", "reveal on scroll"],
+  "style_notes": "Works best with: soft-pastel, warm-hospitality, editorial-serif, dark-luxury, earthy-craft (coastal too); for parties and launches also neo-brutalist and poster-bold. Tested under ten kit styles, light and dark, at 390 and 1280 px, with and without a date set. The countdown screen uses the accent colour as its background with the on accent colour for text; the photo band uses the ink colour as its background with page colour text."
+}

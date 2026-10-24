@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#161a26">
+<title>Spin and Win</title>
+</head>
+<body style="margin:0;background:#161a26">
+<canvas id="c"></canvas>
+<script src="../juice.js"></script>
+<script>
+'use strict';
+// =====================================================================
+// SPIN AND WIN - shop promo kit: a prize wheel, a scratch card, and a lobby slideshow for a waiting-room screen.
+// Free for everyone. Every prize has an EQUAL chance unless you change the weights - and the odds shown to players
+// are calculated from the weights, so what customers read is always what actually happens.
+// Open with ?mode=spin | scratch | lobby  and add &chrome=0 to hide the mode tabs (kiosk screen).
+// TO RETHEME: change CONFIG only. Every "CUSTOMIZE:" line is safe to edit.
+// =====================================================================
+const CONFIG = {
+  id: 'shop-promo',                   // CUSTOMIZE: unique short id (keeps saved plays and prizes separate)
+  title: 'SPIN & WIN',                // CUSTOMIZE: promo title (also update <title> above)
+  tagline: 'Free to play - everyone wins a prize!', // CUSTOMIZE: one line under the title
+  shop: "Mike's Auto Repair",         // CUSTOMIZE: business name
+  fineprint: 'No purchase necessary. See rules.', // CUSTOMIZE: short line shown at the bottom of the screen
+  text: {                             // CUSTOMIZE: any wording (keep it short)
+    spin: 'SPIN', scratch: 'SCRATCH', lobby: 'LOBBY', spinBtn: 'SPIN THE WHEEL!', rules: 'RULES & ODDS', close: 'CLOSE', win: 'YOU WON!', claim: 'CLAIM PRIZE', myPrize: 'MY PRIZE',
+    back: 'BACK', scratchHere: 'SCRATCH HERE', newCard: 'NEW CARD', code: 'CODE', valid: 'VALID UNTIL', show: 'Show this screen to a team member', comeBack: 'Come back tomorrow for more!', tap: 'TAP TO PLAY', paused: 'PAUSED', resume: 'Tap to resume',
+    scratchHint: 'Scratch the silver with your finger'
+  },
+  colors: { bg: '#161a26', bg2: '#222a3d', text: '#f4f6f8', accent: '#ff7a1a', gold: '#ffd23f', good: '#2ec4b6', btn: '#34405f', panel: '#1f2638' }, // CUSTOMIZE: colours
+  // CUSTOMIZE: the prizes. label = short text on the wheel, detail = full text on the coupon, weight = share of the odds (all 1 = equal chances).
+  prizes: [
+    { label: '$10 OFF',     detail: '$10 off any service over $50', color: '#ff7a1a', weight: 1 },
+    { label: 'FREE TOP-UP', detail: 'Free fluid top-up',            color: '#4895ef', weight: 1 },
+    { label: 'ROTATION',    detail: 'Free tire rotation',           color: '#2ec4b6', weight: 1 },
+    { label: '10% OFF',     detail: '10% off your next repair',     color: '#e05260', weight: 1 },
+    { label: 'CAR WASH',    detail: 'Free exterior car wash',       color: '#b583e8', weight: 1 },
+    { label: 'BRAKE CHECK', detail: 'Free brake safety check',      color: '#ffb703', weight: 1 },
+    { label: '$5 OFF',      detail: '$5 off any service',           color: '#3f8ef0', weight: 1 },
+    { label: 'FRESHENER',   detail: 'Free air freshener',           color: '#27b5a4', weight: 1 }
+  ],
+  playsPerDay: 3,                     // CUSTOMIZE: how many spins and scratch cards one device gets per day (0 = unlimited)
+  validDays: 30,                      // CUSTOMIZE: how long a prize code stays valid
+  codePrefix: 'MK',                   // CUSTOMIZE: letters at the start of every prize code
+  rulesExtra: [                       // CUSTOMIZE: extra rules lines (the odds and daily limit lines are written for you)
+    'Free to play. No purchase necessary.', 'Show your prize code to a team member to redeem it. One prize per visit.',
+    'Prizes have no cash value and cannot be combined with other offers.', 'We may end or change this promotion at any time.'
+  ],
+  idleToLobby: 0,                     // CUSTOMIZE: kiosk screens - go back to the lobby slideshow after this many idle seconds (0 = never)
+  slideSeconds: 6,                    // CUSTOMIZE: seconds per lobby slide
+  slides: [                           // CUSTOMIZE: lobby slideshow. art = oil | tire | brake | engine | wrench | car
+    { title: 'OIL CHANGE SPECIAL', body: 'Synthetic blend oil change - ask about this month\'s price.', art: 'oil', color: '#ffb703' },
+    { title: 'FREE TIRE ROTATION', body: 'Included with any oil change this month.', art: 'tire', color: '#4895ef' },
+    { title: 'BRAKE SAFETY CHECK', body: 'Quick, honest inspection. Stop worrying.', art: 'brake', color: '#e05260' },
+    { title: 'ENGINE LIGHT ON?', body: 'We read the codes - no guessing, no pressure.', art: 'engine', color: '#2ec4b6' },
+    { title: 'SPIN & WIN', body: 'Tap the screen to spin the wheel. Free for everyone!', art: 'wrench', color: '#ff7a1a' }
+  ],
+  music: { bpm: 110, tracks: [        // CUSTOMIZE: lobby music (notes like C4 F#3, "." = rest); only plays after the first tap
+    { w: 'triangle', v: .06, p: 'C4 . E4 . G4 . E4 . A3 . C4 . E4 . C4 .' }
+  ] }
+};
+
+// ---------------------------------------------------------------- setup
+const J = Juice, T = CONFIG.text, C = CONFIG.colors, PI2 = Math.PI * 2, rnd = J.rnd, PZ = CONFIG.prizes, cv = document.getElementById('c'), QS = new URLSearchParams(location.search);
+J.init({ id: CONFIG.id, title: CONFIG.title, str: { paused: T.paused, resume: T.resume } });
+J.fit(cv, { w: 360, h: 640, min: .5, max: 1.8, bg: C.bg });
+const chrome = QS.get('chrome') !== '0';
+let ui = [], uiNext = [];
+function button(c, s, x, y, w, h, fn, col, tc, size) {
+  uiNext.push({ x: x - w / 2, y: y - h / 2, w, h, fn });
+  const dn = J.pt.down && Math.abs(J.pt.x - x) < w / 2 && Math.abs(J.pt.y - y) < h / 2, k = dn ? .95 : 1;
+  c.save(); c.translate(x, y); c.scale(k, k); c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, -w / 2, -h / 2 + 4, w, h, h / 3); c.fill(); c.fillStyle = col || C.btn; J.rr(c, -w / 2, -h / 2, w, h, h / 3); c.fill();
+  J.txt(c, s, 0, 1, { size: size || Math.min(h * .42, 22), color: tc || '#fff', stroke: 0, max: w - 18 }); c.restore();
+}
+J.on('tap', (x, y) => { idle = 0; for (const b of ui) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { J.play('click'); b.fn(); return; } if (mode === 'lobby' && !J.paused) { setMode('spin'); } });
+const snd = J.btn({ x: () => J.W - 22, y: 70, r: 16, label: (c, x, y) => J.icon(c, 'snd', x, y, 18, J.opts.sound), onpress: () => { J.setOpt('sound'); J.unlock(); } });
+
+// ---------------------------------------------------------------- state, odds, plays
+const rand = () => { try { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; } catch (e) { return Math.random(); } };
+const totalW = PZ.reduce((s, p) => s + Math.max(0, p.weight), 0);
+function pickPrize() { let r = rand() * totalW; for (let i = 0; i < PZ.length; i++) { r -= Math.max(0, PZ[i].weight); if (r < 0) return i; } return PZ.length - 1; }
+function oddsLines() {
+  const eq = PZ.every(p => p.weight === PZ[0].weight), out = [];
+  out.push(eq ? 'Every prize has an equal chance: 1 in ' + PZ.length + ' (' + (100 / PZ.length).toFixed(1).replace('.0', '') + '% each).' : 'Chances: ' + PZ.map(p => p.label + ' ' + (100 * p.weight / totalW).toFixed(1).replace('.0', '') + '%').join(', ') + '.');
+  out.push(CONFIG.playsPerDay ? 'Limit: ' + CONFIG.playsPerDay + ' spins or scratch cards per device per day.' : 'No daily limit on plays.');
+  return out.concat(CONFIG.rulesExtra);
+}
+const today = () => new Date().toISOString().slice(0, 10);
+function playsLeft() { const p = J.load('plays', { d: '' }); if (p.d !== today()) return CONFIG.playsPerDay || 999; return CONFIG.playsPerDay ? Math.max(0, CONFIG.playsPerDay - p.n) : 999; }
+function usePlay() { const p = J.load('plays', { d: '' }); const n = (p.d === today() ? p.n : 0) + 1; J.save('plays', { d: today(), n }); }
+function makeCoupon(i) {
+  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; for (let k = 0; k < 4; k++) code += A[Math.floor(rand() * A.length)]; const e = new Date(Date.now() + CONFIG.validDays * 864e5);
+  const c = { i, code: CONFIG.codePrefix + '-' + code, exp: e.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) }; J.save('coupon', c); return c;
+}
+let mode = QS.get('mode') || 'spin', sub = 'idle', tt = 0, idle = 0, coupon = J.load('coupon', null), result = -1, wheel = { a: 0, v: 0 }, flap = 0, lastSeg = -1, spinning = false, ticks = 0;
+if (!['spin', 'scratch', 'lobby'].includes(mode)) mode = 'spin';
+function setMode(m) { mode = m; sub = 'idle'; J.clearFx(); if (m === 'scratch') newCard(); J.unlock(); idle = 0; }
+
+// ---------------------------------------------------------------- art
+function art(c, k, s, col) {
+  c.save(); c.scale(s / 100, s / 100); c.lineJoin = 'round';
+  const out = () => { c.lineWidth = 5; c.strokeStyle = '#15181f'; c.stroke(); };
+  if (k === 'oil') { c.fillStyle = col; c.beginPath(); c.moveTo(0, -50); c.bezierCurveTo(10, -26, 38, -8, 38, 18); c.arc(0, 18, 38, 0, Math.PI); c.bezierCurveTo(-38, -8, -10, -26, 0, -50); c.fill(); out(); c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.ellipse(-16, 14, 6, 14, .4, 0, PI2); c.fill(); }
+  else if (k === 'tire') { c.fillStyle = '#262a33'; c.beginPath(); c.arc(0, 0, 50, 0, PI2); c.fill(); out(); c.strokeStyle = '#14161b'; c.lineWidth = 6; c.beginPath(); for (let i = 0; i < 14; i++) { const t = i * .4488; c.moveTo(Math.cos(t) * 41, Math.sin(t) * 41); c.lineTo(Math.cos(t) * 49, Math.sin(t) * 49); } c.stroke(); c.fillStyle = '#b8c4d0'; c.beginPath(); c.arc(0, 0, 25, 0, PI2); c.fill(); c.fillStyle = col; c.beginPath(); c.arc(0, 0, 10, 0, PI2); c.fill(); }
+  else if (k === 'brake') { c.fillStyle = '#9fb3c8'; c.beginPath(); c.arc(0, 0, 48, 0, PI2); c.fill(); out(); c.fillStyle = '#15181f'; for (let i = 0; i < 10; i++) { c.beginPath(); c.arc(Math.cos(i * .6283) * 32, Math.sin(i * .6283) * 32, 5, 0, PI2); c.fill(); } c.fillStyle = '#6b7684'; c.beginPath(); c.arc(0, 0, 14, 0, PI2); c.fill(); c.fillStyle = col; J.rr(c, 20, -30, 34, 60, 10); c.fill(); out(); }
+  else if (k === 'engine') { c.fillStyle = '#7b8794'; J.rr(c, -52, -22, 104, 62, 10); c.fill(); out(); for (let i = 0; i < 4; i++) { const y = Math.sin(tt * 6 + i * 1.6) * 5; c.fillStyle = col; J.rr(c, -44 + i * 24, -46 + y, 18, 28, 4); c.fill(); out(); } c.fillStyle = '#15181f'; c.fillRect(-40, 24, 80, 8); }
+  else if (k === 'wrench') { c.rotate(-.7); c.fillStyle = '#c9d2dc'; c.beginPath(); c.rect(-9, -26, 18, 78); c.fill(); out(); c.beginPath(); c.arc(0, -36, 22, Math.PI * .5 + .45, Math.PI * 2.5 - .45); c.fill(); out(); c.beginPath(); c.arc(0, 58, 14, 0, PI2); c.fillStyle = col; c.fill(); out(); }
+  else { c.fillStyle = col; c.beginPath(); c.moveTo(-60, 0); c.lineTo(-60, -16); c.lineTo(-40, -22); c.lineTo(-24, -44); c.lineTo(22, -44); c.lineTo(42, -22); c.lineTo(62, -16); c.lineTo(62, 0); c.closePath(); c.fill(); out(); for (const x of [-36, 36]) { c.fillStyle = '#15181f'; c.beginPath(); c.arc(x, 2, 14, 0, PI2); c.fill(); c.fillStyle = '#b8c4d0'; c.beginPath(); c.arc(x, 2, 6, 0, PI2); c.fill(); } }
+  c.restore();
+}
+
+// ---------------------------------------------------------------- prize wheel
+const segs = (() => { let a = 0; return PZ.map(p => { const w = PI2 * Math.max(0, p.weight) / totalW, s = { a0: a, a1: a + w }; a += w; return s; }); })();
+const segAt = loc => { loc = ((loc % PI2) + PI2) % PI2; for (let i = 0; i < segs.length; i++) if (loc >= segs[i].a0 && loc < segs[i].a1) return i; return 0; };
+function startSpin() {
+  if (spinning || sub !== 'idle') return; if (playsLeft() <= 0) { sub = 'limit'; return; }
+  J.unlock(); usePlay(); result = pickPrize(); spinning = true; sub = 'spinning'; J.play('power'); J.vibe(20);
+  const s = segs[result], phi = s.a0 + (s.a1 - s.a0) * (.5 + rnd(-.32, .32)), base = wheel.a, delta = ((((-Math.PI / 2 - phi) - base) % PI2) + PI2) % PI2, turns = 5 + Math.floor(rnd(0, 3));
+  J.tween(wheel, { a: base + turns * PI2 + delta }, 5 + turns * .15, { ease: 'outCubic', onDone: () => { spinning = false; spinDone(); } });
+}
+function spinDone() {
+  sub = 'result'; coupon = makeCoupon(result); J.jingle('C5 E5 G5 C6 E6'); J.feel('large', J.W / 2, J.H * .38, PZ[result].color);
+  J.burst(J.W / 2, J.H * .3, { n: 70, color: PZ.map(p => p.color).concat(['#fff', C.gold]), grav: 280, spd: [80, 360], life: [.9, 1.8], size: [3, 7] });
+}
+let wc = null, wcK = '';
+function wheelFace(R) {      // the static wheel face is painted once and then just rotated (fast on phones)
+  const k = R + '|' + J.sc; if (wc && wcK === k) return wc; wcK = k; wc = document.createElement('canvas'); wc.width = wc.height = Math.ceil((2 * R + 4) * J.sc); const g = wc.getContext('2d'); g.scale(J.sc, J.sc); g.translate(R + 2, R + 2);
+  PZ.forEach((p, i) => { const s = segs[i]; g.fillStyle = p.color; g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, s.a0, s.a1); g.closePath(); g.fill(); g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 2; g.stroke(); });
+  PZ.forEach((p, i) => { const s = segs[i], m = (s.a0 + s.a1) / 2; g.save(); g.rotate(m); J.txt(g, p.label, R * .9, 0, { size: Math.max(11, Math.min(17, R * .13)), align: 'right', color: '#fff', max: R * .62, stroke: 'rgba(0,0,0,.45)' }); g.restore(); });
+  return wc;
+}
+function drawWheel(c, cx, cy, R) {
+  c.save(); c.translate(cx, cy);
+  c.fillStyle = '#10131b'; c.beginPath(); c.arc(0, 0, R + 16, 0, PI2); c.fill(); c.fillStyle = C.gold; c.beginPath(); c.arc(0, 0, R + 12, 0, PI2); c.fill(); c.fillStyle = '#10131b'; c.beginPath(); c.arc(0, 0, R + 5, 0, PI2); c.fill();
+  for (let i = 0; i < 24; i++) { const a = i * PI2 / 24; c.fillStyle = (i + Math.floor(tt * (spinning ? 12 : 3))) % 2 ? '#fff' : C.accent; c.beginPath(); c.arc(Math.cos(a) * (R + 9), Math.sin(a) * (R + 9), 3.2, 0, PI2); c.fill(); }
+  c.rotate(wheel.a); c.drawImage(wheelFace(R), -R - 2, -R - 2, 2 * R + 4, 2 * R + 4);
+  c.restore();
+  c.fillStyle = '#10131b'; c.beginPath(); c.arc(cx, cy, R * .17, 0, PI2); c.fill(); c.fillStyle = C.gold; c.beginPath(); c.arc(cx, cy, R * .13, 0, PI2); c.fill(); c.fillStyle = '#10131b'; c.beginPath(); c.arc(cx, cy, R * .05, 0, PI2); c.fill();
+  c.save(); c.translate(cx, cy - R - 8); c.rotate(-flap * .5); c.fillStyle = '#fff'; c.strokeStyle = '#10131b'; c.lineWidth = 4; c.beginPath(); c.moveTo(-13, -16); c.lineTo(13, -16); c.lineTo(0, 22); c.closePath(); c.fill(); c.stroke(); c.restore();
+}
+
+// ---------------------------------------------------------------- scratch card
+const CW = 300, CH = 188, foil = document.createElement('canvas'); foil.width = CW * 2; foil.height = CH * 2; const fg = foil.getContext('2d');
+let cardPrize = 0, cells = new Set(), scratching = false, prev = null, foilA = 1, cardDone = false, cardStarted = false;
+function newCard() { cardPrize = pickPrize(); cells = new Set(); foilA = 1; cardDone = false; cardStarted = false; sub = 'idle'; paintFoil(); }
+function paintFoil() {
+  fg.globalCompositeOperation = 'source-over'; const g = fg.createLinearGradient(0, 0, CW * 2, CH * 2); g.addColorStop(0, '#c9d1da'); g.addColorStop(.5, '#f3f6fa'); g.addColorStop(1, '#aab4c0'); fg.fillStyle = g; fg.fillRect(0, 0, CW * 2, CH * 2);
+  fg.fillStyle = 'rgba(0,0,0,.06)'; for (let i = 0; i < 90; i++) fg.fillRect(Math.random() * CW * 2, Math.random() * CH * 2, 40, 3); fg.fillStyle = '#7b8794'; fg.font = '800 44px "Trebuchet MS", sans-serif'; fg.textAlign = 'center'; fg.textBaseline = 'middle'; fg.fillText(T.scratchHere, CW, CH * .8); fg.font = '800 26px sans-serif'; fg.fillText('* * * * * *', CW, CH * 1.3);
+}
+function cardXY() { return { x: (J.W - CW) / 2, y: 150 }; }
+function scratchAt(x, y) {
+  const o = cardXY(), lx = x - o.x, ly = y - o.y; if (!prev && (lx < -10 || ly < -10 || lx > CW + 10 || ly > CH + 10)) return false;
+  const p0 = prev ? [prev[0] / 2, prev[1] / 2] : [lx, ly]; fg.globalCompositeOperation = 'destination-out'; fg.lineCap = fg.lineJoin = 'round'; fg.lineWidth = 44; fg.strokeStyle = '#000';
+  fg.beginPath(); fg.moveTo(p0[0] * 2, p0[1] * 2); fg.lineTo(lx * 2, ly * 2); fg.stroke(); prev = [lx * 2, ly * 2];
+  const n = Math.max(1, Math.ceil(Math.hypot(lx - p0[0], ly - p0[1]) / 8)); for (let i = 0; i <= n; i++) { const X = Math.floor((p0[0] + (lx - p0[0]) * i / n) / 20), Y = Math.floor((p0[1] + (ly - p0[1]) * i / n) / 20); if (X >= 0 && X < 15 && Y >= 0 && Y < 10) cells.add(X + ',' + Y); }
+  J.burst(x, y, { n: 1, color: ['#e9edf2', '#aab4c0'], spd: [20, 90], size: [1.5, 3], life: [.25, .5], grav: 300 }); return true;
+}
+J.on('down', (x, y) => { idle = 0; if (mode !== 'scratch' || sub !== 'idle' || cardDone || spinning) return; prev = null; if (scratchAt(x, y)) { scratching = true; if (!cardStarted) { if (playsLeft() <= 0) { scratching = false; sub = 'limit'; return; } cardStarted = true; usePlay(); } } });
+J.on('move', (x, y) => { if (scratching && !cardDone) { scratchAt(x, y); if (Math.floor(tt * 14) !== ticks) { ticks = Math.floor(tt * 14); J.play('tick', rnd(.5, .8), .3); } if (cells.size >= 150 * .42) revealCard(); } });
+J.on('up', () => { scratching = false; prev = null; });
+function revealCard() {
+  if (cardDone) return; cardDone = true; const o = { v: 1 }; J.tween(o, { v: 0 }, .45, { ease: 'linear' }); foilFade = o;
+  result = cardPrize; coupon = makeCoupon(result); J.jingle('C5 E5 G5 C6 E6'); const o2 = cardXY(); J.feel('large', o2.x + CW / 2, o2.y + CH / 2, PZ[result].color);
+  J.burst(J.W / 2, 160, { n: 60, color: PZ.map(p => p.color).concat(['#fff', C.gold]), grav: 280, spd: [80, 360], life: [.9, 1.8], size: [3, 7] }); J.after(1.1, () => { sub = 'result'; });
+}
+let foilFade = null;
+
+// ---------------------------------------------------------------- lobby slideshow
+let slide = 0, slideT = 0, slideDir = 1;
+function drawLobby(c, W, H) {
+  const S = CONFIG.slides, mx = W / 2;
+
+  const tIn = Math.min(1, slideT / .6), e = J.ease.outCubic(tIn);
+  for (let k = 0; k < 2; k++) {
+    const sd = S[(slide + S.length - (k ? 1 : 0)) % S.length], off = k ? -e * W : (1 - e) * W * .35, al = k ? 1 - e : e; if (al <= .01) continue;
+    c.save(); c.globalAlpha = al; c.translate(off, 0); c.fillStyle = sd.color; c.globalAlpha = al * .22; c.fillRect(-20, 0, W + 40, H); c.globalAlpha = al;
+    c.save(); c.translate(mx, H * .3 + Math.sin(tt * 1.5) * 6); art(c, sd.art, Math.min(190, W * .5), sd.color); c.restore();
+    J.txt(c, sd.title, mx, H * .52, { size: 34, max: W - 36, color: '#fff' }); J.wrap(c, sd.body, W - 70, 20).slice(0, 3).forEach((l, i) => J.txt(c, l, mx, H * .6 + i * 28, { size: 20, color: '#e8edf5', stroke: 0 })); c.restore();
+  }
+  for (let i = 0; i < S.length; i++) { c.fillStyle = i === slide ? C.accent : 'rgba(255,255,255,.3)'; c.beginPath(); c.arc(mx + (i - (S.length - 1) / 2) * 18, H * .79, i === slide ? 5 : 3.5, 0, PI2); c.fill(); }
+  const hy = chrome ? 72 : 28; J.txt(c, CONFIG.shop, 16, hy, { size: 18, align: 'left', color: C.gold, max: W - 130 }); J.txt(c, new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), W - 48, hy, { size: 20, align: 'right' });
+  c.fillStyle = 'rgba(255,122,26,.92)'; J.rr(c, mx - 130, H - 76, 260, 46, 23); c.fill(); J.txt(c, T.tap, mx, H - 52, { size: 20, color: '#15181f', stroke: 0 });
+}
+
+// ---------------------------------------------------------------- update + draw
+function update(dt) {
+  tt += dt; flap = Math.max(0, flap - dt * 6); idle += dt; if (foilFade) foilA = foilFade.v;
+  if (mode === 'lobby') { slideT += dt; if (slideT > CONFIG.slideSeconds) { slideT = 0; slide = (slide + 1) % CONFIG.slides.length; } }
+  if (CONFIG.idleToLobby && mode !== 'lobby' && idle > CONFIG.idleToLobby && !spinning) setMode('lobby');
+  if (spinning) { const s = segAt(-Math.PI / 2 - wheel.a); if (s !== lastSeg) { if (lastSeg >= 0) { flap = 1; J.play('tick', 1.5, .6); J.vibe(4); } lastSeg = s; } }
+}
+function draw(c) {
+  ui = uiNext; uiNext = []; const W = J.W, H = J.H, g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, C.bg2); g.addColorStop(1, C.bg); c.fillStyle = g; c.fillRect(-30, -30, W + 60, H + 60);
+  c.strokeStyle = 'rgba(255,255,255,.035)'; c.lineWidth = 12; for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(((i * 197 + tt * 12) % (W + 240)) - 120, (i * 113) % H, 40 + (i % 3) * 22, 0, PI2); c.stroke(); }
+}
+function panel(c, x, y, w, h) { c.fillStyle = C.panel; J.rr(c, x, y, w, h, 20); c.fill(); c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 2; c.stroke(); }
+function couponCard(c, mx, y, back) {
+  const p = PZ[coupon.i], w = Math.min(320, J.W - 30); panel(c, mx - w / 2, y, w, 300); c.strokeStyle = p.color; c.lineWidth = 3; c.setLineDash([10, 7]); J.rr(c, mx - w / 2 + 10, y + 10, w - 20, 280, 14); c.stroke(); c.setLineDash([]);
+  J.txt(c, CONFIG.shop, mx, y + 36, { size: 16, color: C.gold, max: w - 40 }); J.txt(c, T.win, mx, y + 74, { size: 30, color: p.color, max: w - 40 }); J.txt(c, p.label, mx, y + 118, { size: 40, max: w - 40 });
+  J.wrap(c, p.detail, w - 50, 18).slice(0, 2).forEach((l, i) => J.txt(c, l, mx, y + 158 + i * 22, { size: 18, color: '#dfe6f1', stroke: 0 }));
+  c.fillStyle = 'rgba(0,0,0,.35)'; J.rr(c, mx - 100, y + 198, 200, 46, 12); c.fill(); J.txt(c, T.code + ': ' + coupon.code, mx, y + 221, { size: 24, color: '#fff', stroke: 0, max: 190 }); J.txt(c, T.valid + ' ' + coupon.exp, mx, y + 262, { size: 13, color: '#aab4c0', stroke: 0 }); J.txt(c, T.show, mx, y + 280, { size: 12, color: C.accent, stroke: 0, max: w - 30 });
+}
+function hud(c) {
+  const W = J.W, H = J.H, mx = W / 2;
+  if (mode === 'lobby') { drawLobby(c, W, H); if (chrome) tabs(c, W); return; }
+  if (chrome) tabs(c, W);
+  J.txt(c, CONFIG.title, mx, chrome ? 86 : 40, { size: 34, max: W - 80, color: C.accent }); J.txt(c, CONFIG.tagline, mx, chrome ? 112 : 66, { size: 14, max: W - 36, color: '#cfd8e3', stroke: 0 });
+  if (mode === 'spin') {
+    const R = Math.min(W * .36, 140), cy = chrome ? 270 : 240; drawWheel(c, mx, cy, R);
+    if (sub === 'idle' || sub === 'spinning' || sub === 'limit') {
+      if (sub === 'limit' || (playsLeft() <= 0 && sub === 'idle')) { J.txt(c, T.comeBack, mx, cy + R + 52, { size: 17, max: W - 40, color: C.gold }); if (coupon) button(c, T.myPrize, mx, cy + R + 100, 200, 52, () => { sub = 'coupon'; }, C.good, '#10241f'); }
+      else button(c, T.spinBtn, mx, cy + R + 56, Math.min(300, W - 40), 64, startSpin, spinning ? '#555d70' : C.accent, '#15181f');
+      if (!spinning) button(c, T.rules, mx, H - 56, 150, 34, () => { sub = 'rules'; }, C.btn, '#cfd8e3', 13);
+    }
+    if (sub === 'result') { c.fillStyle = 'rgba(8,10,16,.72)'; c.fillRect(0, 0, W, H); couponCard(c, mx, 90, 0); button(c, T.back, mx, 440, 180, 54, () => { sub = 'idle'; }, C.btn); }
+  } else if (mode === 'scratch') {
+    const o = cardXY(); c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, o.x - 8, o.y - 8 + 6, CW + 16, CH + 16, 18); c.fill(); c.fillStyle = '#fff6df'; J.rr(c, o.x - 8, o.y - 8, CW + 16, CH + 16, 18); c.fill();
+    const p = PZ[cardPrize]; c.fillStyle = p.color; J.rr(c, o.x, o.y, CW, CH, 12); c.fill(); J.txt(c, T.win, o.x + CW / 2, o.y + 46, { size: 24, color: 'rgba(255,255,255,.9)' }); J.txt(c, p.label, o.x + CW / 2, o.y + 100, { size: 40, max: CW - 24 });
+    J.wrap(c, p.detail, CW - 30, 15).slice(0, 2).forEach((l, i) => J.txt(c, l, o.x + CW / 2, o.y + 148 + i * 18, { size: 15, stroke: 0 }));
+    if (foilA > .01) { c.save(); J.rr(c, o.x, o.y, CW, CH, 12); c.clip(); c.globalAlpha = foilA; c.drawImage(foil, o.x, o.y, CW, CH); c.restore(); }
+    if (sub === 'idle' && !cardDone) J.txt(c, T.scratchHint, mx, o.y + CH + 40, { size: 15, color: '#cfd8e3', stroke: 0 });
+    if (sub === 'limit') J.txt(c, T.comeBack, mx, o.y + CH + 40, { size: 17, color: C.gold, max: W - 40 });
+    if (sub === 'idle' || sub === 'limit') { if (playsLeft() > 0 && cardDone) button(c, T.newCard, mx, o.y + CH + 100, 200, 54, newCard, C.accent, '#15181f'); button(c, T.rules, mx, H - 56, 150, 34, () => { sub = 'rules'; }, C.btn, '#cfd8e3', 13); if (coupon && !cardStarted) button(c, T.myPrize, mx, o.y + CH + 100, 180, 48, () => { sub = 'coupon'; }, C.good, '#10241f', 17); }
+    if (sub === 'result') { c.fillStyle = 'rgba(8,10,16,.72)'; c.fillRect(0, 0, W, H); couponCard(c, mx, 90, 0); button(c, playsLeft() > 0 ? T.newCard : T.back, mx, 440, 200, 54, () => { if (playsLeft() > 0) newCard(); else { sub = 'limit'; } }, C.accent, '#15181f'); }
+  }
+  if (sub === 'rules') {
+    c.fillStyle = 'rgba(8,10,16,.88)'; c.fillRect(0, 0, W, H); const w = Math.min(W - 24, 420); panel(c, mx - w / 2, 70, w, H - 150); J.txt(c, T.rules, mx, 104, { size: 24, color: C.accent });
+    let y = 140; for (const ln of oddsLines()) { for (const l of J.wrap(c, ln, w - 50, 14)) { J.txt(c, l, mx - w / 2 + 24, y, { size: 14, align: 'left', stroke: 0, color: '#e6ebf3' }); y += 19; } y += 8; }
+    button(c, T.close, mx, H - 76, 180, 50, () => { sub = 'idle'; }, C.btn);
+  }
+  if (sub === 'coupon') { c.fillStyle = 'rgba(8,10,16,.82)'; c.fillRect(0, 0, W, H); if (coupon) couponCard(c, mx, 90); button(c, T.back, mx, 440, 180, 54, () => { sub = 'idle'; }, C.btn); }
+  J.txt(c, CONFIG.fineprint + '  ' + CONFIG.shop, mx, H - 18, { size: 11, color: '#7f8aa3', stroke: 0, max: W - 24 });
+}
+function tabs(c, W) {
+  const mx = W / 2, w = 92, ids = ['spin', 'scratch', 'lobby'];
+  ids.forEach((k, i) => button(c, T[k], mx + (i - 1) * (w + 6) - 12, 30, w, 36, () => setMode(k), mode === k ? C.gold : C.btn, mode === k ? '#15181f' : '#fff', 14));
+}
+snd.on = true;
+window.__qa.info = () => ({ mode, sub, result, plays: playsLeft(), cardPrize, cells: cells.size, foil: +foilA.toFixed(2), coupon: coupon && coupon.code, slide, odds: oddsLines()[0] });
+if (mode === 'scratch') newCard();
+J.loop({ update, draw, hud });
+</script>
+</body>
+</html>

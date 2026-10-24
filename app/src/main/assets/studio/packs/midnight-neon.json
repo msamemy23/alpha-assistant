@@ -1,0 +1,80 @@
+{
+  "id": "midnight-neon",
+  "name": "Midnight Neon",
+  "signature": "Near-black page, one mint-neon accent, grain glow, wide geometric type.",
+  "mood": ["nocturnal", "electric", "technical", "sleek"],
+  "bestFor": [
+    "car audio and tuning",
+    "EV charger installers",
+    "phone and gaming repair",
+    "IT support",
+    "vinyl wraps",
+    "24-hour locksmiths",
+    "detailing studios"
+  ],
+  "fonts": "sora-inter",
+  "colors": {
+    "bg": "#07090D",
+    "surface": "#11161F",
+    "ink": "#E8F1F2",
+    "muted": "#9FB0B5",
+    "accent": "#2CFFB3",
+    "onAccent": "#04110C"
+  },
+  "contrast": {
+    "ink/bg": 17.35,
+    "ink/surface": 15.79,
+    "muted/bg": 8.87,
+    "muted/surface": 8.07,
+    "onAccent/accent": 14.72,
+    "accent/bg": 15.24,
+    "accent/surface": 13.86,
+    "accentAsText": true,
+    "note": "Dark theme. Neon mint is safe as text on both backgrounds. Dark labels on neon buttons pass AA. Never pair with a second neon color."
+  },
+  "radius": {"sm": 6, "md": 10, "lg": 16, "button": 10},
+  "shadow": {"card": "0 0 0 1px rgba(232,241,242,.08)", "pop": "0 0 0 1px #2CFFB3, 0 0 32px -4px rgba(44,255,179,.35)"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 96, "gutter": 20, "maxWidth": 1120},
+  "type": {
+    "scaleRatio": 1.25,
+    "basePx": 17,
+    "bodyLeading": 1.65,
+    "h1": "clamp(2.5rem,8.5vw,5.25rem)",
+    "h2": "clamp(1.875rem,5vw,3rem)",
+    "h3": "1.375rem",
+    "headingCase": "none",
+    "headingWeight": 700,
+    "headingLeading": 1.05,
+    "headingTracking": "-0.03em",
+    "eyebrow": "0.75rem, weight 600, uppercase, 0.2em tracking, accent color, mono-feel digits"
+  },
+  "motion": {
+    "rule": "Glide: elements rise 28px over 650ms with a 80ms stagger, and the main button leans toward the pointer.",
+    "reveal": "up",
+    "staggerMs": 80,
+    "durationMs": 650,
+    "ease": "cubic-bezier(.2,.8,.2,1)",
+    "use": ["data-reveal", "data-stagger", "data-magnetic on the primary button", "data-count-to", "marquee"],
+    "avoid": ["bounces", "tilt on text blocks"]
+  },
+  "hero": {
+    "treatment": "grain-gradient",
+    "layout": "Large headline with the key word in accent. Behind it, a radial glow of the accent at 14% opacity from the top-right corner plus an SVG-noise grain overlay at 5%. A glowing outlined primary button and a quiet text link.",
+    "photo": "Real photo shown as a bordered 16px-radius card below the headline, not as the background."
+  },
+  "background": "Near-black with a 24px dot grid at 6% ink opacity. Surface-color cards with a 1px ink-at-8% border. Glow is static (a pseudo-element whose opacity is revealed), never animated blur.",
+  "button": {
+    "shape": "Rounded 10px, 52px tall.",
+    "fill": "Accent fill, onAccent label; secondary is a 1px accent outline.",
+    "label": "Weight 600, sentence case.",
+    "hover": "A glow ring appears (opacity change on a pseudo-element); the button leans toward the pointer with data-magnetic.",
+    "minHeightPx": 48
+  },
+  "banned": [
+    "purple or blue gradients",
+    "white backgrounds",
+    "three identical glass cards in a row",
+    "stock robot or circuit imagery",
+    "more than one neon color"
+  ]
+}

@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="{{slug}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{business}} Parts and stock</title>
+<meta name="description" content="{{business}} parts and stock: quantities, low-stock warnings, a reorder list by supplier and a log of every use and delivery.">
+<meta name="application-name" content="{{business}}">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="appkit.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript><p style="padding:24px">This stock app needs JavaScript turned on.</p></noscript>
+<!--
+  Parts and stock (blueprint inventory-tracker). Every screen is a <template> below; app.js copies it into the page and fills
+  the parts marked data-text="..." (words and numbers) and data-slot="..." (lists, show/hide). <i data-icon="name"></i> becomes
+  an appkit icon. Change words and layout here; keep the data-text / data-slot / data-act attributes so app.js can find things.
+-->
+
+<!-- section:view-stock -->
+<template id="view-stock">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow" data-text="today">Stock</p>
+      <h1>Stock</h1>
+      <p class="sub" data-text="summary"></p>
+    </div>
+  </header>
+
+  <div data-slot="sample-note" hidden>
+    <div class="note"><i data-icon="info"></i>
+      <div><strong>This is sample data.</strong> The items, suppliers and amounts are made up so you can try every screen.</div>
+      <button type="button" class="btn sm ghost" data-act="clear-sample">Clear it</button>
+    </div>
+  </div>
+
+  <!-- first visit: nothing in stock yet -->
+  <section class="welcome card" data-slot="welcome" hidden>
+    <svg class="welcome-art" viewBox="0 0 260 150" aria-hidden="true">
+      <rect class="wa-shelf" x="14" y="56" width="232" height="8" rx="4"/>
+      <rect class="wa-shelf" x="14" y="122" width="232" height="8" rx="4"/>
+      <rect class="wa-box" x="30" y="16" width="44" height="40" rx="6"/><rect class="wa-box" x="80" y="26" width="34" height="30" rx="6"/>
+      <rect class="wa-box wa-low" x="182" y="34" width="26" height="22" rx="5"/>
+      <rect class="wa-box" x="40" y="84" width="38" height="38" rx="6"/><rect class="wa-box" x="84" y="94" width="30" height="28" rx="6"/><rect class="wa-box" x="120" y="78" width="48" height="44" rx="6"/>
+      <circle class="wa-tag" cx="214" cy="30" r="13"/><path class="wa-tag-mark" d="M214 23v8M214 35v1"/>
+    </svg>
+    <div class="welcome-copy">
+      <h2>Know what is on the shelf</h2>
+      <p class="muted">Add the parts and supplies you keep. Tap minus when you use one and plus when a delivery comes in. Anything running low lands on the reorder list, sorted by supplier.</p>
+    </div>
+    <div class="welcome-foot">
+      <button type="button" class="btn" data-act="new-item"><i data-icon="plus"></i>Add your first item</button>
+      <button type="button" class="btn" data-act="go-import"><i data-icon="upload"></i>Import a list</button>
+      <button type="button" class="btn soft" data-act="load-sample"><i data-icon="zap"></i>Try it with sample data</button>
+    </div>
+  </section>
+
+  <div class="stock-area" data-slot="stock-body" hidden>
+    <!-- the low-stock story: shown when anything is low or out -->
+    <div class="note warn low-banner" data-slot="low-banner" hidden><i data-icon="alert"></i>
+      <div><strong data-text="low-title"></strong> <span data-text="low-text"></span></div>
+      <button type="button" class="btn sm" data-act="go-reorder">Reorder list<i data-icon="chevron-right"></i></button>
+    </div>
+
+    <div class="stats">
+      <div class="stat accent">
+        <span class="label"><i data-icon="dollar"></i>Stock value</span>
+        <span class="value" data-text="value"></span>
+        <span class="meta" data-text="value-meta"></span>
+      </div>
+      <div class="stat">
+        <span class="label"><i data-icon="box"></i>Items</span>
+        <span class="value" data-text="items"></span>
+        <span class="meta" data-text="items-meta"></span>
+      </div>
+      <button type="button" class="stat stat-low" data-act="filter-low">
+        <span class="label"><i data-icon="alert"></i>Low</span>
+        <span class="value" data-text="low"></span>
+        <span class="meta">at or under minimum</span>
+      </button>
+      <button type="button" class="stat stat-out" data-act="filter-out">
+        <span class="label"><i data-icon="x-circle"></i>Out of stock</span>
+        <span class="value" data-text="out"></span>
+        <span class="meta">nothing left</span>
+      </button>
+    </div>
+
+    <div class="toolbar sticky stock-tools">
+      <div class="search"><input type="search" id="stock-search" placeholder="Search name, part number, bin" aria-label="Search stock" autocomplete="off"></div>
+    </div>
+    <div class="tool-row">
+        <div class="seg" role="radiogroup" aria-label="Show">
+          <label><input type="radio" name="show" value="all"><span>All <b class="seg-n" data-text="n-all"></b></span></label>
+          <label><input type="radio" name="show" value="low"><span>Low <b class="seg-n" data-text="n-low"></b></span></label>
+          <label><input type="radio" name="show" value="out"><span>Out <b class="seg-n" data-text="n-out"></b></span></label>
+        </div>
+        <div class="sort-pick">
+          <label class="sr-only" for="stock-sort">Sort</label>
+          <select id="stock-sort">
+            <option value="name">Name A&ndash;Z</option>
+            <option value="urgent">Reorder first</option>
+            <option value="qty">Fewest first</option>
+            <option value="value">Most value</option>
+            <option value="loc">By location</option>
+            <option value="recent">Last changed</option>
+          </select>
+        </div>
+    </div>
+    <div class="chips" role="group" aria-label="Categories" data-slot="cats"></div>
+    <p class="list-count small muted" data-text="count"></p>
+    <ul class="stock-list" data-slot="list" aria-label="Items"></ul>
+    <div class="list-more" data-slot="list-more" hidden><p class="small muted" data-text="more-text"></p><button type="button" class="btn" data-act="stock-more">Show more items</button></div>
+  </div>
+</template>
+<!-- /section:view-stock -->
+
+<!-- section:view-item -->
+<!-- one item: big quantity controls, details, history -->
+<template id="view-item">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow" data-text="cat"></p>
+      <h1 data-text="name"></h1>
+      <p class="sub" data-text="sub"></p>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn soft sm" data-act="edit-item"><i data-icon="edit"></i>Edit</button>
+    </div>
+  </header>
+
+  <section class="card item-hero" data-slot="hero">
+    <div class="photo-box" data-slot="photo-box">
+      <img data-slot="photo" alt="" width="640" height="480" hidden>
+      <button type="button" class="photo-add" data-act="item-photo" data-slot="photo-add"><i data-icon="camera"></i><span>Add a photo</span></button>
+    </div>
+    <div class="qty-panel">
+      <div class="qty-big">
+        <button type="button" class="qround" data-act="dec" aria-label="Use one"><i data-icon="minus"></i></button>
+        <div class="qty-read"><span class="qty-num" data-text="qty"></span><span class="qty-unit">on hand</span></div>
+        <button type="button" class="qround" data-act="inc" aria-label="Receive one"><i data-icon="plus"></i></button>
+      </div>
+      <div class="qty-status">
+        <span class="pill" data-slot="status"></span>
+        <span class="small muted" data-text="min-text"></span>
+      </div>
+      <div class="progress" data-slot="gauge"></div>
+      <div class="btns fill">
+        <button type="button" class="btn lg" data-act="move" data-kind="use"><i data-icon="arrow-down"></i>Use</button>
+        <button type="button" class="btn lg primary" data-act="move" data-kind="receive"><i data-icon="arrow-up"></i>Receive</button>
+      </div>
+      <button type="button" class="btn ghost sm count-btn" data-act="move" data-kind="count"><i data-icon="clipboard"></i>Set the exact count</button>
+    </div>
+  </section>
+
+  <div class="stats item-stats">
+    <div class="stat"><span class="label">Value at cost</span><span class="value" data-text="value"></span><span class="meta" data-text="value-meta"></span></div>
+    <div class="stat"><span class="label">Unit cost</span><span class="value" data-text="cost"></span><span class="meta" data-text="cost-meta"></span></div>
+    <div class="stat"><span class="label">Sale price</span><span class="value" data-text="price"></span><span class="meta" data-text="margin"></span></div>
+    <div class="stat"><span class="label">Used, 30 days</span><span class="value" data-text="used"></span><span class="meta" data-text="used-meta"></span></div>
+  </div>
+
+  <div class="item-cols">
+    <section class="card">
+      <div class="card-head"><h2>Details</h2></div>
+      <dl class="details">
+        <div><dt>Part number</dt><dd data-text="sku"></dd></div>
+        <div><dt>Location</dt><dd data-text="loc"></dd></div>
+        <div><dt>Category</dt><dd data-text="cat"></dd></div>
+        <div><dt>Supplier</dt><dd data-text="supplier"></dd></div>
+        <div class="wide" data-slot="notes-row"><dt>Notes</dt><dd data-text="notes"></dd></div>
+      </dl>
+      <div class="btns contact-btns" data-slot="contact"></div>
+    </section>
+
+    <section class="section">
+      <div class="sec-head"><h2>History</h2><span class="small muted" data-text="history-count"></span></div>
+      <ul class="list" data-slot="history" aria-label="History"></ul>
+      <div class="card" data-slot="history-empty" hidden><p class="muted">No changes yet. Uses, deliveries and counts show up here.</p></div>
+    </section>
+  </div>
+
+  <div class="btns item-foot">
+    <button type="button" class="btn ghost danger-text" data-act="delete-item"><i data-icon="trash"></i>Delete item</button>
+  </div>
+</template>
+<!-- /section:view-item -->
+
+<!-- section:view-reorder -->
+<template id="view-reorder">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Reorder</p>
+      <h1>Reorder list</h1>
+      <p class="sub" data-text="summary"></p>
+    </div>
+    <div class="actions" data-slot="reorder-actions">
+      <button type="button" class="btn soft sm" data-act="print-orders"><i data-icon="printer"></i>Print</button>
+    </div>
+  </header>
+  <div class="card" data-slot="empty" hidden></div>
+  <div class="order-groups" data-slot="groups"></div>
+  <p class="small muted reorder-help" data-slot="help">Order amounts fill the shelf back up to twice the minimum. Change any amount with the minus and plus buttons.</p>
+</template>
+<!-- /section:view-reorder -->
+
+<!-- section:view-activity -->
+<template id="view-activity">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Activity</p>
+      <h1>Every change</h1>
+      <p class="sub">Uses, deliveries and counts, newest first.</p>
+    </div>
+    <div class="actions" data-slot="activity-actions">
+      <button type="button" class="btn soft sm" data-act="export-moves"><i data-icon="download"></i>Export CSV</button>
+    </div>
+  </header>
+  <div class="stats">
+    <div class="stat accent"><span class="label"><i data-icon="arrow-down"></i>Used this month</span><span class="value" data-text="used"></span><span class="meta" data-text="used-meta"></span></div>
+    <div class="stat"><span class="label"><i data-icon="arrow-up"></i>Received this month</span><span class="value" data-text="received"></span><span class="meta" data-text="received-meta"></span></div>
+  </div>
+  <div class="toolbar">
+    <div class="search"><input type="search" id="log-search" placeholder="Search items or notes" aria-label="Search activity" autocomplete="off"></div>
+  </div>
+  <div class="chips" data-single role="group" aria-label="Kind of change" data-slot="kinds">
+    <button type="button" class="chip" data-kind="all" aria-pressed="true">All</button>
+    <button type="button" class="chip" data-kind="use" aria-pressed="false">Used</button>
+    <button type="button" class="chip" data-kind="receive" aria-pressed="false">Received</button>
+    <button type="button" class="chip" data-kind="count" aria-pressed="false">Counts and edits</button>
+  </div>
+  <div class="days" data-slot="days"></div>
+  <div class="btns" data-slot="more-wrap" hidden><button type="button" class="btn" data-act="log-more">Show older changes</button></div>
+</template>
+<!-- /section:view-activity -->
+
+<!-- section:view-more -->
+<template id="view-more">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">More</p>
+      <h1>Suppliers, lists and backup</h1>
+      <p class="sub">Your stock lives only on this device. Back it up now and then.</p>
+    </div>
+  </header>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Suppliers</h2><button type="button" class="btn ghost sm" data-act="new-supplier"><i data-icon="plus"></i>Add</button></div>
+    <ul class="list" data-slot="suppliers" aria-label="Suppliers"></ul>
+    <p class="muted small" data-slot="suppliers-empty">No suppliers yet. Add one here, or type a supplier on an item. A phone number or email lets you send orders in one tap.</p>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Lists and files</h2></div>
+    <ul class="list">
+      <li><label class="item file-pick"><span class="lead"><i data-icon="upload"></i></span><span class="body"><span class="title">Import items from a CSV file</span><span class="sub">New items are added, matching part numbers are updated</span></span><i data-icon="chevron-right" class="chev"></i><input type="file" id="items-file" accept=".csv,.tsv,.txt,text/csv,text/plain,text/tab-separated-values"></label></li>
+      <li><button type="button" class="item" data-act="paste-items"><span class="lead"><i data-icon="clipboard"></i></span><span class="body"><span class="title">Paste items from a spreadsheet</span><span class="sub">Copy the cells with the header row</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><button type="button" class="item" data-act="export-items"><span class="lead"><i data-icon="download"></i></span><span class="body"><span class="title">Export items (CSV)</span><span class="sub">Opens in Excel or Google Sheets, and imports back</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><button type="button" class="item" data-act="print-count"><span class="lead"><i data-icon="clipboard"></i></span><span class="body"><span class="title">Print a count sheet</span><span class="sub">Every item by location, with a box to write the count</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><button type="button" class="item" data-act="print-orders"><span class="lead"><i data-icon="printer"></i></span><span class="body"><span class="title">Print the reorder list</span><span class="sub">Grouped by supplier, with estimated cost</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+    </ul>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Backup</h2></div>
+    <ul class="list">
+      <li><button type="button" class="item" data-act="backup-download"><span class="lead"><i data-icon="file"></i></span><span class="body"><span class="title">Download a backup</span><span class="sub">Items, history, suppliers and photos in one file</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><button type="button" class="item" data-act="backup-copy"><span class="lead"><i data-icon="copy"></i></span><span class="body"><span class="title">Copy the backup</span><span class="sub">Without photos; paste it into a note or an email to yourself</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><label class="item file-pick"><span class="lead"><i data-icon="upload"></i></span><span class="body"><span class="title">Restore from a backup file</span><span class="sub">Replaces what is on this device</span></span><i data-icon="chevron-right" class="chev"></i><input type="file" id="restore-file" accept=".json,application/json,text/plain"></label></li>
+      <li><button type="button" class="item" data-act="restore-paste"><span class="lead"><i data-icon="clipboard"></i></span><span class="body"><span class="title">Restore from pasted backup</span><span class="sub">For a backup you copied earlier</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+    </ul>
+    <div class="card storage-card">
+      <div class="storage-head"><span>Space used on this device</span><b data-text="storage"></b></div>
+      <div class="progress" data-slot="storage-bar"></div>
+      <p class="small muted" data-text="storage-note"></p>
+    </div>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Settings</h2></div>
+    <form class="card form" data-slot="settings-form" novalidate>
+      <div class="field">
+        <label for="s-cur">Currency</label>
+        <select id="s-cur" name="currency">
+          <option value="USD">US dollar (USD)</option><option value="CAD">Canadian dollar (CAD)</option><option value="MXN">Mexican peso (MXN)</option>
+          <option value="EUR">Euro (EUR)</option><option value="GBP">British pound (GBP)</option><option value="AUD">Australian dollar (AUD)</option>
+          <option value="NZD">New Zealand dollar (NZD)</option><option value="INR">Indian rupee (INR)</option><option value="ZAR">South African rand (ZAR)</option>
+          <option value="NGN">Nigerian naira (NGN)</option><option value="KES">Kenyan shilling (KES)</option><option value="PHP">Philippine peso (PHP)</option>
+          <option value="SGD">Singapore dollar (SGD)</option><option value="AED">UAE dirham (AED)</option><option value="BRL">Brazilian real (BRL)</option>
+          <option value="JPY">Japanese yen (JPY)</option><option value="CHF">Swiss franc (CHF)</option><option value="SEK">Swedish krona (SEK)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="s-note">Line at the end of every order</label>
+        <textarea id="s-note" name="orderNote" rows="2" maxlength="300"></textarea>
+        <p class="help">Added to orders you text or email to a supplier.</p>
+      </div>
+    </form>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Sample data</h2></div>
+    <div class="card sample-card">
+      <p class="muted" data-text="sample-text"></p>
+      <div class="btns">
+        <button type="button" class="btn" data-act="load-sample" data-slot="sample-load"><i data-icon="zap"></i>Try it with sample data</button>
+        <button type="button" class="btn" data-act="clear-sample" data-slot="sample-clear"><i data-icon="x"></i>Clear sample data</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Start over</h2></div>
+    <div class="card danger-card">
+      <p class="muted">Erase every item, change and supplier on this device. Settings stay. You can undo right after.</p>
+      <div class="btns"><button type="button" class="btn danger" data-act="erase-all"><i data-icon="trash"></i>Erase all data</button></div>
+    </div>
+  </section>
+
+  <p class="app-foot narrow small muted">{{business}} parts and stock · works offline · &copy; {{year}}</p>
+</template>
+<!-- /section:view-more -->
+
+<!-- section:pieces -->
+<!-- repeated pieces: a stock row, a history row, a reorder row, a supplier row, a category chip -->
+<template id="tpl-stock-row">
+  <li class="stock-row">
+    <button type="button" class="stock-main" data-act="open-item">
+      <span class="thumb" aria-hidden="true"><img alt="" width="96" height="96" hidden><span class="thumb-text" data-text="initials"></span></span>
+      <span class="stock-body">
+        <span class="stock-name" data-text="name"></span>
+        <span class="stock-sub" data-text="sub"></span>
+        <span class="stock-tags"><span class="pill" data-slot="status" hidden></span><span class="pill info" data-slot="ordered" hidden>Ordered</span><span class="progress" data-slot="gauge"></span></span>
+      </span>
+    </button>
+    <div class="qty-ctl">
+      <button type="button" class="qbtn" data-act="dec"><i data-icon="minus"></i></button>
+      <button type="button" class="qty" data-act="move"><span data-text="qty"></span></button>
+      <button type="button" class="qbtn" data-act="inc"><i data-icon="plus"></i></button>
+    </div>
+  </li>
+</template>
+<template id="tpl-move-row">
+  <li><div class="item move-row">
+    <span class="lead" data-slot="lead"></span>
+    <span class="body"><span class="title" data-text="title"></span><span class="sub" data-text="sub"></span></span>
+    <span class="trail"><span class="value" data-text="delta"></span><span class="sub" data-text="after"></span></span>
+  </div></li>
+</template>
+<template id="tpl-day"><section class="day"><h2 class="day-head" data-text="day"></h2><ul class="list" data-slot="rows"></ul></section></template>
+<template id="tpl-order-group">
+  <section class="card order-group">
+    <div class="card-head">
+      <span class="lead"><i data-icon="truck"></i></span>
+      <div class="og-title"><h2 data-text="supplier"></h2><p class="small muted" data-text="meta"></p></div>
+    </div>
+    <ul class="order-lines" data-slot="lines"></ul>
+    <div class="og-total"><span>Estimated cost</span><b data-text="total"></b></div>
+    <div class="og-actions">
+      <a class="btn soft" data-slot="sms" href="sms:"><i data-icon="message"></i>Text order</a>
+      <a class="btn" data-slot="mail" href="mailto:"><i data-icon="mail"></i>Email</a>
+      <button type="button" class="btn" data-act="share-order"><i data-icon="share"></i>Share</button>
+    </div>
+    <div class="og-actions og-actions-2">
+      <button type="button" class="btn ghost sm" data-act="mark-ordered"><i data-icon="check"></i><span data-text="mark">Mark as ordered</span></button>
+      <button type="button" class="btn ghost sm" data-act="receive-order"><i data-icon="box"></i>Delivery came in</button>
+      <button type="button" class="btn ghost sm" data-act="edit-supplier"><i data-icon="edit"></i><span data-text="contact-label">Add phone or email</span></button>
+    </div>
+  </section>
+</template>
+<template id="tpl-order-line">
+  <li class="order-line">
+    <button type="button" class="ol-main" data-act="open-item">
+      <span class="ol-name" data-text="name"></span>
+      <span class="ol-sub" data-text="sub"></span>
+      <span class="ol-tags"><span class="pill" data-slot="status"></span><span class="pill info" data-slot="ordered" hidden>Ordered</span></span>
+    </button>
+    <div class="stepper ol-qty"><input type="number" inputmode="decimal" min="1" step="1" aria-label="Order amount"></div>
+  </li>
+</template>
+<template id="tpl-supplier-row">
+  <li><button type="button" class="item" data-act="edit-supplier">
+    <span class="lead"><i data-icon="truck"></i></span>
+    <span class="body"><span class="title" data-text="name"></span><span class="sub" data-text="sub"></span></span>
+    <i data-icon="chevron-right" class="chev"></i>
+  </button></li>
+</template>
+<template id="tpl-chip"><button type="button" class="chip" aria-pressed="false"><span data-text="name"></span><span class="n" data-text="n"></span></button></template>
+<!-- /section:pieces -->
+
+<!-- section:sheet-item -->
+<template id="tpl-item-form">
+  <form class="form item-form" novalidate>
+    <div class="photo-field">
+      <div class="photo-prev" data-slot="photo-prev"><img alt="" width="160" height="120" hidden><i data-icon="image"></i></div>
+      <div class="btns">
+        <button type="button" class="btn sm" data-slot="photo-pick"><i data-icon="camera"></i><span data-text="photo-label">Add photo</span></button>
+        <button type="button" class="btn ghost sm" data-slot="photo-remove" hidden>Remove</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="if-name">Name</label>
+      <input id="if-name" name="name" required maxlength="80" autocomplete="off" placeholder="What it is, as you would say it">
+    </div>
+    <div class="two">
+      <div class="field"><label for="if-sku">Part number or SKU <span class="opt">(optional)</span></label><input id="if-sku" name="sku" maxlength="40" autocomplete="off" autocapitalize="characters"></div>
+      <div class="field"><label for="if-loc">Location or bin <span class="opt">(optional)</span></label><input id="if-loc" name="loc" list="if-locs" maxlength="40" autocomplete="off" placeholder="Shelf A2"><datalist id="if-locs"></datalist></div>
+    </div>
+    <div class="field"><label for="if-cat">Category <span class="opt">(optional)</span></label><input id="if-cat" name="cat" list="if-cats" maxlength="40" autocomplete="off"><datalist id="if-cats"></datalist></div>
+    <div class="two">
+      <div class="field"><label for="if-qty" data-text="qty-label">On hand now</label><div class="stepper"><input id="if-qty" name="qty" type="number" inputmode="decimal" min="0" step="1" value="0"></div></div>
+      <div class="field"><label for="if-min">Minimum to keep</label><div class="stepper"><input id="if-min" name="min" type="number" inputmode="decimal" min="0" step="1" value="0"></div><p class="help">At or under this, it shows as Low.</p></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="if-cost">Unit cost <span class="opt">(what you pay)</span></label><div class="affix"><span data-text="cur">$</span><input id="if-cost" name="cost" inputmode="decimal" data-money autocomplete="off"></div></div>
+      <div class="field"><label for="if-price">Sale price <span class="opt">(optional)</span></label><div class="affix"><span data-text="cur">$</span><input id="if-price" name="price" inputmode="decimal" data-money autocomplete="off"></div></div>
+    </div>
+    <div class="field"><label for="if-sup">Supplier <span class="opt">(optional)</span></label><input id="if-sup" name="supplier" list="if-sups" maxlength="60" autocomplete="off"><datalist id="if-sups"></datalist></div>
+    <div class="field"><label for="if-notes">Notes <span class="opt">(optional)</span></label><textarea id="if-notes" name="notes" rows="3" maxlength="500"></textarea></div>
+  </form>
+</template>
+<!-- /section:sheet-item -->
+
+<!-- section:sheet-move -->
+<!-- use / receive / set count for one item -->
+<template id="tpl-move">
+  <form class="form move-form" novalidate>
+    <div class="seg block" role="radiogroup" aria-label="What happened">
+      <label><input type="radio" name="kind" value="use"><span>Use</span></label>
+      <label><input type="radio" name="kind" value="receive"><span>Receive</span></label>
+      <label><input type="radio" name="kind" value="count"><span>Set count</span></label>
+    </div>
+    <div class="move-amount">
+      <label for="mv-n" data-text="amount-label">How many?</label>
+      <div class="stepper big-stepper"><input id="mv-n" name="n" type="number" inputmode="decimal" min="0" step="1" value="1"></div>
+      <div class="chips quick" role="group" aria-label="Quick amounts">
+        <button type="button" class="chip" data-n="1">1</button><button type="button" class="chip" data-n="2">2</button><button type="button" class="chip" data-n="5">5</button>
+        <button type="button" class="chip" data-n="10">10</button><button type="button" class="chip" data-n="25">25</button>
+      </div>
+    </div>
+    <p class="move-result" data-slot="result"></p>
+    <div class="field">
+      <label for="mv-note">Note <span class="opt">(optional)</span></label>
+      <input id="mv-note" name="note" maxlength="120" autocomplete="off" placeholder="Job, customer, invoice or delivery">
+    </div>
+  </form>
+</template>
+<!-- /section:sheet-move -->
+
+<!-- section:sheet-supplier -->
+<template id="tpl-supplier-form">
+  <form class="form" novalidate>
+    <div class="field"><label for="sf-name">Supplier name</label><input id="sf-name" name="name" required maxlength="60" autocomplete="off"></div>
+    <div class="field"><label for="sf-phone">Phone for texting orders <span class="opt">(optional)</span></label><input id="sf-phone" name="phone" type="tel" autocomplete="off"></div>
+    <div class="field"><label for="sf-email">Email for orders <span class="opt">(optional)</span></label><input id="sf-email" name="email" type="email" autocomplete="off"></div>
+    <div class="field"><label for="sf-notes">Notes <span class="opt">(optional)</span></label><textarea id="sf-notes" name="notes" rows="2" maxlength="300" placeholder="Account number, delivery days, contact person"></textarea></div>
+  </form>
+</template>
+<!-- /section:sheet-supplier -->
+
+<!-- section:sheet-receive -->
+<template id="tpl-receive">
+  <form class="form" novalidate>
+    <p class="muted">Check what came in. Each amount is added to the shelf and written to the history.</p>
+    <ul class="receive-lines" data-slot="lines"></ul>
+    <div class="field"><label for="rc-note">Note <span class="opt">(optional)</span></label><input id="rc-note" name="note" maxlength="120" autocomplete="off" placeholder="Delivery or invoice number"></div>
+  </form>
+</template>
+<template id="tpl-receive-line">
+  <li class="receive-line"><span class="rl-name"><b data-text="name"></b><span class="small muted" data-text="sub"></span></span><div class="stepper"><input type="number" inputmode="decimal" min="0" step="1"></div></li>
+</template>
+<!-- /section:sheet-receive -->
+
+<!-- section:sheet-mapping -->
+<!-- after a paste or a CSV of items: the owner checks which column is which -->
+<template id="tpl-mapping">
+  <form class="form mapping" novalidate>
+    <p class="map-lead" data-text="found"></p>
+    <div class="map-fields" data-slot="fields"></div>
+    <div class="map-preview">
+      <h3>Preview</h3>
+      <div class="preview-scroll" data-allow-overflow>
+        <table class="preview-table">
+          <thead><tr><th scope="col">Name</th><th scope="col">Part number</th><th scope="col" class="num">On hand</th><th scope="col" class="num">Min</th><th scope="col" class="num">Cost</th></tr></thead>
+          <tbody data-slot="preview"></tbody>
+        </table>
+      </div>
+      <p class="map-result" data-slot="result"></p>
+    </div>
+  </form>
+</template>
+<template id="tpl-map-field"><div class="field"><label data-text="label"></label><select></select></div></template>
+<template id="tpl-paste">
+  <form class="form" novalidate>
+    <div class="field">
+      <label for="pt-text" data-text="label">Paste here</label>
+      <textarea id="pt-text" name="text" rows="7" spellcheck="false" autocomplete="off"></textarea>
+      <p class="help" data-text="help"></p>
+    </div>
+  </form>
+</template>
+<!-- /section:sheet-mapping -->
+
+<!-- section:print -->
+<!-- printable documents with the business letterhead -->
+<template id="tpl-print">
+  <article class="doc stock-doc">
+    <header class="doc-head">
+      <div>
+        <h2>{{business}}</h2>
+        <p class="muted small">{{address}}<br>{{phone}} · {{email}}</p>
+      </div>
+      <div class="right">
+        <p class="eyebrow" data-text="kind">Reorder list</p>
+        <p class="doc-title" data-text="title"></p>
+        <p class="small" data-text="date"></p>
+      </div>
+    </header>
+    <div data-slot="body"></div>
+    <p class="doc-foot" data-text="foot"></p>
+  </article>
+</template>
+<!-- /section:print -->
+
+<script src="appkit.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "title": "Cheerful ringtone (5 s, seamless loop)",
+  "tempo": 144,
+  "timeSignature": [4, 4],
+  "lengthBars": 3,
+  "loop": { "times": 1 },
+  "master": { "reverb": { "decay": 1.2 }, "targetLufs": -12 },
+  "tracks": [
+    { "name": "marimba motif", "instrument": "Marimba", "volume": 1, "fx": { "reverb": 0.12 },
+      "notes": [
+        ["G5",0,0.5,0.9],["B5",0.5,0.5,0.8],["D6",1,0.5,0.85],["G6",1.5,0.5,0.95],["D6",2,0.5,0.8],["B5",2.5,0.5,0.8],["G5",3,1,0.85],
+        ["A5",4,0.5,0.9],["C6",4.5,0.5,0.8],["E6",5,0.5,0.85],["A6",5.5,0.5,0.95],["E6",6,0.5,0.8],["C6",6.5,0.5,0.8],["A5",7,1,0.85],
+        ["B5",8,0.5,0.9],["D6",8.5,0.5,0.8],["G6",9,0.5,0.85],["B6",9.5,0.5,0.95],["G6",10,1,0.9],["D6",11,0.5,0.8],["G5",11.5,0.5,0.8]
+      ] },
+    { "name": "bell accents", "instrument": "synth:bell", "volume": 0.6, "fx": { "reverb": 0.3 },
+      "notes": [["G6",0,1,0.6],["A6",4,1,0.6],["B6",8,1,0.6]] },
+    { "name": "bass", "instrument": "Acoustic Bass", "volume": 0.8,
+      "notes": [["G2",0,1.5,0.8],["G2",2,1.5,0.7],["A2",4,1.5,0.8],["A2",6,1.5,0.7],["G2",8,1.5,0.8],["D3",10,1.5,0.7]] },
+    { "name": "shaker", "instrument": "drums", "volume": 0.6,
+      "steps": { "shaker": "x.x.x.x.x.x.x.x.", "kick": "5...5...5...5..." }, "repeat": { "times": 3 } }
+  ]
+}

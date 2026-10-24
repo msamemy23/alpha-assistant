@@ -1,0 +1,37 @@
+{
+  "id": "inventory-tracker",
+  "kind": "app",
+  "name": "Parts and stock",
+  "summary": "A fast counter-top stock app: every item is a row with big minus / count / plus buttons (each tap is logged, quick taps merge into one line, Undo in a toast), low and out-of-stock rows get a coloured edge, a pill and a fill gauge, a warning banner and a Reorder badge; the Reorder tab groups what to buy by supplier with editable amounts, Text / Email / Share order buttons, 'mark as ordered' and 'delivery came in'; item pages have a huge quantity, Use / Receive / Set count, value, margin, days of stock left and full history; plus an Activity log, suppliers with phone/email, CSV import/export with a column check, printable count sheet and reorder list with the letterhead, photos, and JSON backup. Starts empty with a welcome card and 'Try it with sample data'.",
+  "best_for": ["auto parts", "workshop supplies", "salon products", "cafe or kitchen stock", "cleaning supplies", "spare parts", "small shop inventory", "consumables", "tool crib"],
+  "mood": ["fast", "practical", "sturdy", "clear"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "view-stock", "what": "Stock tab: date eyebrow, h1 Stock, summary, sample note, welcome card (add first item / import / sample), low-stock banner with Reorder button, 4 stats (stock value at cost with retail, items + units, Low and Out cards that filter), sticky search, All / Low / Out switch + sort, category chips, the item rows", "edit": "Rewrite the welcome card's words for this trade (for example 'Know which parts are on the shelf'). Keep every data-text / data-slot / data-act attribute"},
+    {"name": "view-item", "what": "One item (route #/stock/ID): category eyebrow, name, part number and location, Edit; hero card with photo or 'Add a photo', big - / quantity / +, status pill, minimum, gauge, Use and Receive buttons, 'Set the exact count'; stats (value at cost, unit cost, sale price + margin, used in 30 days + days left); details with supplier Call / Text / Email; history; Delete", "edit": "Usually no change; rename labels such as 'Location' to the owner's words ('Bin', 'Van')"},
+    {"name": "view-reorder", "what": "Reorder tab: summary with estimated cost, Print, one card per supplier with order lines (status, ordered pill, amount stepper), estimated cost, Text order / Email / Share, Mark as ordered, Delivery came in, Add phone or email; empty state when nothing is low", "edit": "Usually no change. The order message is built by orderText() in app.js; the closing line is a setting"},
+    {"name": "view-activity", "what": "Activity tab: used and received this month (units and cost), Export CSV, search, kind chips, changes grouped by day", "edit": "No change needed"},
+    {"name": "view-more", "what": "More tab: suppliers list (+ Add), import from CSV or paste, export items, print count sheet, print reorder list, backup download/copy and restore from file or paste, space used, settings (currency, line at the end of every order), sample data, erase all, footer", "edit": "Set the default currency and order line in app.js SETTINGS if the owner told you"},
+    {"name": "pieces", "what": "Repeated templates: stock row, history row, day group, supplier order card, order line, supplier row, category chip", "edit": "Restyle freely; keep data-text / data-slot names"},
+    {"name": "sheet-item", "what": "Add / edit item form: photo, name, part number, location, category, on hand (stepper), minimum (stepper), unit cost, sale price, supplier, notes", "edit": "Rename fields to the owner's words; do not remove name, on hand or minimum"},
+    {"name": "sheet-move", "what": "Use / Receive / Set count sheet: big stepper, quick amounts 1-25, live 'now / after' line, note", "edit": "Change the quick amounts if the owner works in other pack sizes"},
+    {"name": "sheet-supplier", "what": "Supplier form: name, phone for texting orders, email for orders, notes", "edit": "No change needed"},
+    {"name": "sheet-receive", "what": "Delivery sheet: one amount per item of a supplier's order, note", "edit": "No change needed"},
+    {"name": "sheet-mapping", "what": "Column check for item imports (10 fields), preview, new vs updated counts; paste form", "edit": "No change needed"},
+    {"name": "print", "what": "Printable document with the business letterhead ({{business}}, {{address}}, {{phone}}, {{email}}) used by the reorder list and the count sheet", "edit": "Delete the address line if the owner has no public address"}
+  ],
+  "photo_slots": [],
+  "remove_if_no_facts": [],
+  "behaviors": [
+    "all data in the phone's browser storage (AK.store 'inventory-tracker' for items/history/suppliers/settings, 'inventory-tracker-ui' for filters, 'inventory-tracker-photos' for photos and thumbnails), namespaced by {{slug}}; survives reloads",
+    "low = at or under the minimum, out = 0; reorder amount fills back up to twice the minimum unless the owner changes it; a delivery that lifts an item above its minimum clears 'ordered'",
+    "every change writes a history line (use, receive, count, added, imported) with time, note and unit cost; quick +/- taps within 2 minutes merge; stock never goes below 0; Undo on every change",
+    "orders to suppliers: sms: and mailto: links with the order text (AK.sms / AK.mail), native share sheet (AK.share), copy",
+    "CSV import from file or paste with a column check (English plus common German/Spanish/French headers), matches by part number then name, updates or adds; sample items are removed by the first real import; CSV export imports back unchanged",
+    "photos via AK.photo, resized, with a small thumbnail for the list; space used is shown and new photos are refused before storage is full",
+    "printable count sheet (by location, with boxes) and reorder list with estimated totals",
+    "backup download (with photos) or copy (without), restore from file or pasted text, checked and cleaned before it replaces anything",
+    "index.html?sample opens with the sample data (for previews); window.StockApp exposes the data and helpers for scripting"
+  ],
+  "style_notes": "Works with every style, light or dark. Tested at 320, 390 and 1280 with midnight-neon, clinical-clean, workshop-industrial, soft-pastel, neo-brutalist, editorial-serif, poster-bold and high-contrast-sport. Status uses appkit's contrast-tuned ok/warn/bad colours plus words (Low, Out) and an edge stripe, never colour alone. The only lint warning is appkit's expected 'more than one accent colour family'."
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Alpha Audio Harness</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!--
+  Alpha Audio harness: renders a JSON "score" (see SCORE-SCHEMA.md) to a 44.1 kHz 16-bit stereo WAV, fully offline and faster than real time.
+  No network access, relative paths only, classic <script> tags only (no ES modules, so it also runs from file:// and file:///android_asset/).
+  Full documentation: HARNESS-API.md.   Libraries and licences: LIBS.md.
+
+  Public API (all on window):
+    renderScore(scoreJsonOrObject, opts?)  -> Promise<{wavBase64, durationSec, peak, rms, lufs, ...}>   offline render of a score
+    renderToneCode(jsString, opts?)         -> Promise<same>   trusted bot-written Tone.js code in an offline context (time limited)
+    renderMidi(midiBase64, opts?)           -> Promise<same>   standard MIDI file rendered with the bundled SoundFont
+    validateScore(scoreJsonOrObject)        -> {ok, errors[], warnings[], summary}   never throws
+    AlphaAudioHarness.{version, preloadSoundFont, setSoundFont, listInstruments, listSynthPresets, listSfxPresets, formatValidation}
+  Host callbacks (optional; an Android @JavascriptInterface object named AlphaAudio may provide any of them):
+    AlphaAudio.postResult(base64Wav)   AlphaAudio.postMeta(jsonString)   AlphaAudio.postError(message)
+    AlphaAudio.postProgress(percent, stage)   AlphaAudio.postChunk(index, count, piece)  (only with opts.chunkSize)   AlphaAudio.onReady(version)
+-->
+<script>window.TONE_SILENCE_LOGGING = true;</script>
+<script src="lib/tone/Tone.js"></script>
+<script src="lib/spessasynth/stb-vorbis.classic.js"></script>
+<script src="lib/spessasynth/spessasynth_core.classic.js"></script>
+<script src="score-core.js"></script>
+<script src="audio-synth.js"></script>
+<script src="audio-engine.js"></script>
+</head>
+<body>
+<p>Alpha Audio harness. Nothing to see here: call <code>renderScore(json)</code> from script.</p>
+</body>
+</html>

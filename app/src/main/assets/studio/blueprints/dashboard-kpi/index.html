@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="{{slug}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{business}} Numbers dashboard</title>
+<meta name="description" content="{{business}} numbers dashboard: paste a table or import a CSV, then see totals, trends and the best categories at a glance.">
+<meta name="application-name" content="{{business}}">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="appkit.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript><p style="padding:24px">This dashboard needs JavaScript turned on.</p></noscript>
+<!--
+  Numbers dashboard (blueprint dashboard-kpi). Every screen is a <template> below; app.js copies it into the page and fills
+  the parts marked data-text="..." (words and numbers) and data-slot="..." (lists, charts). <i data-icon="name"></i> becomes an
+  appkit icon. Change words and layout here; keep the data-text / data-slot / data-act attributes so app.js can find things.
+-->
+
+<!-- section:view-overview -->
+<template id="view-overview">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow" data-text="period">Last 30 days</p>
+      <h1 data-text="metric">Sales</h1>
+      <p class="sub" data-text="insight"></p>
+    </div>
+  </header>
+
+  <div data-slot="sample-note" hidden>
+    <div class="note"><i data-icon="info"></i>
+      <div><strong>This is sample data.</strong> The categories and amounts are made up so you can try every screen.</div>
+      <button type="button" class="btn sm ghost" data-act="clear-sample">Clear it</button>
+    </div>
+  </div>
+
+  <!-- first visit: no numbers yet -->
+  <section class="welcome card" data-slot="welcome" hidden>
+    <svg class="welcome-art" viewBox="0 0 260 150" aria-hidden="true">
+      <rect class="wa-card" x="6" y="8" width="248" height="134" rx="16"/>
+      <rect class="wa-soft" x="24" y="26" width="58" height="8" rx="4"/>
+      <rect class="wa-ink" x="24" y="42" width="92" height="16" rx="6"/>
+      <rect class="wa-soft" x="176" y="26" width="58" height="26" rx="8"/>
+      <path class="wa-area" d="M24 122C44 112 58 116 76 104S104 80 124 90 158 66 178 62 210 44 236 38V128H24Z"/>
+      <path class="wa-line" d="M24 122C44 112 58 116 76 104S104 80 124 90 158 66 178 62 210 44 236 38"/>
+      <circle class="wa-dot" cx="236" cy="38" r="5"/>
+    </svg>
+    <div class="welcome-copy">
+      <h2>See your numbers at a glance</h2>
+      <p class="muted">Bring in sales, costs, jobs or anything you count. Totals, trends and your best categories appear here. Everything stays on this device.</p>
+    </div>
+    <div class="ways">
+      <button type="button" class="way" data-act="start-paste"><span class="way-ico"><i data-icon="clipboard"></i></span><span class="way-body"><b>Paste a table</b><span>From Excel, Google Sheets or a web page</span></span></button>
+      <button type="button" class="way" data-act="start-file"><span class="way-ico"><i data-icon="upload"></i></span><span class="way-body"><b>Import a CSV file</b><span>An export from your till, bank or bookkeeping app</span></span></button>
+      <button type="button" class="way" data-act="new-entry"><span class="way-ico"><i data-icon="edit"></i></span><span class="way-body"><b>Type it in</b><span>Add a date, a category and an amount</span></span></button>
+    </div>
+    <div class="welcome-foot"><button type="button" class="btn soft" data-act="load-sample"><i data-icon="zap"></i>Try it with sample data</button></div>
+  </section>
+
+  <div data-slot="filters"></div>
+  <div class="views-row" data-slot="views-row" hidden>
+    <span class="views-label">Saved views</span>
+    <div class="chips" role="group" aria-label="Saved views" data-slot="views"></div>
+  </div>
+
+  <!-- the chosen dates have no entries -->
+  <div class="note warn" data-slot="no-match" hidden><i data-icon="calendar"></i>
+    <div><strong>Nothing in these dates.</strong> <span data-text="span-note"></span></div>
+    <button type="button" class="btn sm" data-act="show-all-dates">Show all dates</button>
+  </div>
+
+  <div class="dash" data-slot="dash" hidden>
+    <!-- KPI cards: the first one is the hero number -->
+    <div class="stats kpis">
+      <div class="stat accent kpi-total">
+        <span class="label"><i data-icon="chart"></i><span data-text="total-label">Total</span></span>
+        <span class="value" data-text="total"></span>
+        <span class="delta" data-slot="total-delta"></span>
+        <div class="spark" data-slot="spark"></div>
+      </div>
+      <div class="stat kpi-change" data-slot="change-card">
+        <span class="label"><i data-icon="trend-up"></i>Change</span>
+        <span class="value" data-text="change"></span>
+        <span class="meta" data-text="change-meta"></span>
+      </div>
+      <div class="stat">
+        <span class="label"><i data-icon="receipt"></i>Average</span>
+        <span class="value" data-text="avg"></span>
+        <span class="meta" data-text="avg-meta"></span>
+      </div>
+      <div class="stat">
+        <span class="label"><i data-icon="list"></i>Entries</span>
+        <span class="value" data-text="count"></span>
+        <span class="meta" data-text="count-meta"></span>
+      </div>
+      <div class="stat kpi-best">
+        <span class="label"><i data-icon="star"></i><span data-text="best-label">Best category</span></span>
+        <span class="value" data-text="best"></span>
+        <span class="meta" data-text="best-meta"></span>
+      </div>
+    </div>
+
+    <div class="board">
+      <section class="card chart-card trend-card">
+        <div class="card-head">
+          <h2 data-text="trend-title">Over time</h2>
+          <div class="seg" role="radiogroup" aria-label="Chart style">
+            <label><input type="radio" name="chart" value="area"><span>Line</span></label>
+            <label><input type="radio" name="chart" value="bar"><span>Bars</span></label>
+          </div>
+        </div>
+        <div class="chart-box" data-slot="trend"></div>
+        <div class="chart-foot">
+          <ul class="legend row" data-slot="trend-legend">
+            <li><span class="k k-now"></span><span data-text="legend-now">This period</span></li>
+            <li data-slot="legend-prev"><span class="k k-prev"></span><span data-text="legend-prev">Previous period</span></li>
+          </ul>
+          <label class="check compare"><input type="checkbox" name="compare"><span>Compare</span></label>
+        </div>
+      </section>
+
+      <section class="card chart-card share-card">
+        <div class="card-head"><h2>Share</h2></div>
+        <div class="chart-box" data-slot="share"></div>
+        <p class="muted small" data-slot="share-empty" hidden>Your entries have no categories yet. Import with a category column, or add one when you edit an entry.</p>
+      </section>
+
+      <section class="card chart-card split-card">
+        <div class="card-head">
+          <h2>Breakdown</h2>
+          <div class="seg" role="radiogroup" aria-label="Break down by" data-slot="split-seg">
+            <label><input type="radio" name="split" value="cat"><span>Category</span></label>
+            <label><input type="radio" name="split" value="day"><span>Weekday</span></label>
+          </div>
+        </div>
+        <div class="hscroll" data-allow-overflow><div class="chart-box" data-slot="split"></div></div>
+      </section>
+
+      <section class="card recent-card">
+        <div class="card-head"><h2>Latest entries</h2><button type="button" class="btn ghost sm" data-act="go-entries">See all<i data-icon="chevron-right"></i></button></div>
+        <ul class="list" data-slot="recent"></ul>
+      </section>
+    </div>
+  </div>
+</template>
+<!-- /section:view-overview -->
+
+<!-- section:view-entries -->
+<template id="view-entries">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow" data-text="period">Last 30 days</p>
+      <h1>Entries</h1>
+      <p class="sub" data-text="summary"></p>
+    </div>
+    <div class="actions" data-slot="entry-actions">
+      <button type="button" class="btn soft sm" data-act="export-csv"><i data-icon="download"></i>Export CSV</button>
+    </div>
+  </header>
+  <div data-slot="filters"></div>
+  <div class="toolbar entries-tools" data-slot="tools">
+    <div class="search"><input type="search" id="entry-search" placeholder="Search entries" aria-label="Search entries" autocomplete="off"></div>
+    <div class="entry-sort">
+      <label class="sr-only" for="entry-sort">Sort</label>
+      <select id="entry-sort">
+        <option value="date:desc">Newest first</option><option value="date:asc">Oldest first</option>
+        <option value="amount:desc">Largest amount</option><option value="amount:asc">Smallest amount</option>
+        <option value="cat:asc">Category A to Z</option><option value="what:asc">Entry A to Z</option>
+      </select>
+    </div>
+  </div>
+  <!-- the table becomes a stack of cards on phones (appkit .table); tap a row to edit it -->
+  <div class="entries table-wrap" data-slot="table">
+    <table class="table">
+      <caption class="sr-only">Entries</caption>
+      <thead><tr>
+        <th scope="col" aria-sort="none"><button type="button" data-sort="what">Entry<i data-icon="sort"></i></button></th>
+        <th scope="col" aria-sort="none"><button type="button" data-sort="date">Date<i data-icon="sort"></i></button></th>
+        <th scope="col" aria-sort="none"><button type="button" data-sort="cat">Category<i data-icon="sort"></i></button></th>
+        <th scope="col" class="num" aria-sort="none"><button type="button" data-sort="amount">Amount<i data-icon="sort"></i></button></th>
+      </tr></thead>
+      <tbody data-slot="rows"></tbody>
+    </table>
+  </div>
+  <div class="card" data-slot="none" hidden></div>
+  <div class="more-row" data-slot="more" hidden>
+    <p class="small muted" data-text="shown"></p>
+    <button type="button" class="btn" data-act="entries-more">Show more</button>
+  </div>
+</template>
+<template id="tpl-entry-tr"><tr tabindex="0" data-act="edit-entry"><td class="primary" data-label="Entry" data-text="what"></td><td data-label="Date" data-text="date"></td><td data-label="Category" data-text="cat"></td><td class="num" data-label="Amount" data-text="amount"></td></tr></template>
+<!-- /section:view-entries -->
+
+<!-- section:view-import -->
+<template id="view-import">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Add data</p>
+      <h1>Bring in your numbers</h1>
+      <p class="sub">Paste a table, pick a CSV file or type rows. Nothing leaves this device.</p>
+    </div>
+  </header>
+
+  <div class="import-grid">
+    <section class="card paste-card">
+      <div class="card-head"><h2>Paste a table</h2></div>
+      <form class="form" data-slot="paste-form" novalidate>
+        <div class="field">
+          <label for="paste-box">Copy the cells, header row included, then paste them here</label>
+          <textarea id="paste-box" name="text" rows="7" spellcheck="false" autocomplete="off" placeholder="Date, Category, Amount&#10;10/01/2026, Repairs, 120.00"></textarea>
+          <p class="help">Works with Excel, Google Sheets, Numbers and CSV text. Commas, tabs and semicolons are all fine.</p>
+        </div>
+        <div class="btns">
+          <button type="submit" class="btn primary"><i data-icon="check"></i>Read this table</button>
+          <button type="button" class="btn ghost" data-act="paste-clipboard"><i data-icon="clipboard"></i>Paste</button>
+        </div>
+      </form>
+    </section>
+
+    <div class="stack import-side">
+      <section class="card">
+        <div class="card-head"><h2>Import a CSV file</h2></div>
+        <p class="muted card-text">Most apps can export a .csv file: your till or card reader, bank, bookkeeping or booking app.</p>
+        <label class="btn file-pick"><i data-icon="upload"></i>Choose a CSV file<input type="file" id="csv-file" accept=".csv,.tsv,.txt,text/csv,text/plain,text/tab-separated-values"></label>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>Type it in</h2></div>
+        <p class="muted card-text">Add one entry at a time: a date, an amount and, if you like, a category.</p>
+        <button type="button" class="btn" data-act="new-entry"><i data-icon="edit"></i>Add an entry</button>
+      </section>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="sec-head"><h2>Your data</h2></div>
+    <div class="card data-card" data-slot="data-summary">
+      <dl class="facts">
+        <div><dt>Entries</dt><dd data-text="rows"></dd></div>
+        <div><dt>Dates</dt><dd data-text="span"></dd></div>
+        <div><dt>Categories</dt><dd data-text="cats"></dd></div>
+      </dl>
+      <p class="muted small sample-hint" data-slot="sample-hint" hidden>Only sample data so far. It is removed when you import your own.</p>
+    </div>
+    <ul class="list" data-slot="imports" aria-label="Imports"></ul>
+  </section>
+
+  <div class="note"><i data-icon="help"></i><div><strong>Tip:</strong> one row per sale, job or expense works best, with a date column and an amount column. Totals rows are skipped automatically because they have no date.</div></div>
+</template>
+<!-- /section:view-import -->
+
+<!-- section:view-settings -->
+<template id="view-settings">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">Settings</p>
+      <h1>Settings and backup</h1>
+      <p class="sub">Your numbers live only on this device. Back them up now and then.</p>
+    </div>
+  </header>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>About your numbers</h2></div>
+    <form class="card form" data-slot="settings-form" novalidate>
+      <div class="field">
+        <label for="s-name">What do these numbers show?</label>
+        <input id="s-name" name="name" maxlength="40" autocomplete="off" placeholder="Sales">
+        <p class="help">The dashboard title, for example Sales, Costs or Jobs done.</p>
+      </div>
+      <div class="field">
+        <span class="label" id="s-unit-l">Amounts are</span>
+        <div class="seg block" role="radiogroup" aria-labelledby="s-unit-l">
+          <label><input type="radio" name="unit" value="money"><span>Money</span></label>
+          <label><input type="radio" name="unit" value="number"><span>Plain numbers</span></label>
+        </div>
+      </div>
+      <div class="field" data-slot="currency-field">
+        <label for="s-cur">Currency</label>
+        <select id="s-cur" name="currency">
+          <option value="USD">US dollar (USD)</option><option value="CAD">Canadian dollar (CAD)</option><option value="MXN">Mexican peso (MXN)</option>
+          <option value="EUR">Euro (EUR)</option><option value="GBP">British pound (GBP)</option><option value="AUD">Australian dollar (AUD)</option>
+          <option value="NZD">New Zealand dollar (NZD)</option><option value="INR">Indian rupee (INR)</option><option value="ZAR">South African rand (ZAR)</option>
+          <option value="NGN">Nigerian naira (NGN)</option><option value="KES">Kenyan shilling (KES)</option><option value="PHP">Philippine peso (PHP)</option>
+          <option value="SGD">Singapore dollar (SGD)</option><option value="AED">UAE dirham (AED)</option><option value="BRL">Brazilian real (BRL)</option>
+          <option value="JPY">Japanese yen (JPY)</option><option value="CHF">Swiss franc (CHF)</option><option value="SEK">Swedish krona (SEK)</option>
+        </select>
+      </div>
+      <label class="check between"><span>Higher is better<span class="sub">Turn this off for costs, so a rise shows as a warning.</span></span><input type="checkbox" class="switch" name="higher"></label>
+      <div class="field">
+        <span class="label" id="s-week-l">Weeks start on</span>
+        <div class="seg block" role="radiogroup" aria-labelledby="s-week-l">
+          <label><input type="radio" name="weekStart" value="0"><span>Sunday</span></label>
+          <label><input type="radio" name="weekStart" value="1"><span>Monday</span></label>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Saved views</h2></div>
+    <ul class="list" data-slot="views" aria-label="Saved views"></ul>
+    <p class="muted small" data-slot="views-empty">No saved views yet. On the Overview, pick dates and categories, then tap Save view.</p>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Reports and backup</h2></div>
+    <ul class="list">
+      <li><button type="button" class="item" data-act="open-report"><span class="lead"><i data-icon="printer"></i></span><span class="body"><span class="title">Print or copy a report</span><span class="sub">Totals and categories for the dates you picked</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><button type="button" class="item" data-act="export-all"><span class="lead"><i data-icon="download"></i></span><span class="body"><span class="title">Export all entries (CSV)</span><span class="sub">Opens in Excel or Google Sheets</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><button type="button" class="item" data-act="backup-download"><span class="lead"><i data-icon="file"></i></span><span class="body"><span class="title">Download a backup</span><span class="sub">One file with every entry, view and setting</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><button type="button" class="item" data-act="backup-copy"><span class="lead"><i data-icon="copy"></i></span><span class="body"><span class="title">Copy the backup</span><span class="sub">Paste it into a note or an email to yourself</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+      <li><label class="item file-pick"><span class="lead"><i data-icon="upload"></i></span><span class="body"><span class="title">Restore from a backup file</span><span class="sub">Replaces what is on this device</span></span><i data-icon="chevron-right" class="chev"></i><input type="file" id="restore-file" accept=".json,application/json,text/plain"></label></li>
+      <li><button type="button" class="item" data-act="restore-paste"><span class="lead"><i data-icon="clipboard"></i></span><span class="body"><span class="title">Restore from pasted backup</span><span class="sub">For a backup you copied earlier</span></span><i data-icon="chevron-right" class="chev"></i></button></li>
+    </ul>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Sample data</h2></div>
+    <div class="card sample-card">
+      <p class="muted" data-text="sample-text">Fill the dashboard with made-up entries to see how it works.</p>
+      <div class="btns">
+        <button type="button" class="btn" data-act="load-sample" data-slot="sample-load"><i data-icon="zap"></i>Try it with sample data</button>
+        <button type="button" class="btn" data-act="clear-sample" data-slot="sample-clear"><i data-icon="x"></i>Clear sample data</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section narrow">
+    <div class="sec-head"><h2>Start over</h2></div>
+    <div class="card danger-card">
+      <p class="muted">Erase every entry, import and saved view on this device. Your settings stay. You can undo right after.</p>
+      <div class="btns"><button type="button" class="btn danger" data-act="erase-all"><i data-icon="trash"></i>Erase all data</button></div>
+    </div>
+  </section>
+
+  <p class="app-foot narrow small muted">{{business}} numbers dashboard · works offline · &copy; {{year}}</p>
+</template>
+<!-- /section:view-settings -->
+
+<!-- section:filters -->
+<!-- shared by Overview and Entries: date range + category chips -->
+<template id="part-filters">
+  <div class="filters">
+    <div class="filter-row">
+      <div class="range-pick">
+        <i data-icon="calendar"></i>
+        <label class="sr-only" for="f-range">Dates</label>
+        <select id="f-range" data-slot="range">
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+          <option value="mtd">This month</option>
+          <option value="lm">Last month</option>
+          <option value="12m">Last 12 months</option>
+          <option value="ytd">This year</option>
+          <option value="all">All dates</option>
+          <option value="custom">Pick dates</option>
+        </select>
+      </div>
+      <div class="custom-range" data-slot="custom" hidden>
+        <label class="sr-only" for="f-from">From</label><input type="date" id="f-from" data-slot="from">
+        <span class="muted" aria-hidden="true">to</span>
+        <label class="sr-only" for="f-to">To</label><input type="date" id="f-to" data-slot="to">
+      </div>
+      <button type="button" class="btn soft sm save-view" data-act="save-view" data-slot="save-view"><i data-icon="star"></i>Save view</button>
+    </div>
+    <div class="chips" role="group" aria-label="Categories" data-slot="cats"></div>
+  </div>
+</template>
+<!-- /section:filters -->
+
+<!-- section:pieces -->
+<!-- small repeated pieces: a category chip, an entry row, an import row, a saved view row -->
+<template id="tpl-chip"><button type="button" class="chip" aria-pressed="false"><span data-text="name"></span><span class="n" data-text="n"></span></button></template>
+<template id="tpl-cat-sheet"><div class="checks cat-checks" data-slot="list"></div></template>
+<template id="tpl-cat-check"><label class="check between"><span><span data-text="name"></span><span class="sub" data-text="n"></span></span><input type="checkbox" name="cat"></label></template>
+<template id="tpl-entry-row">
+  <li><button type="button" class="item" data-act="edit-entry">
+    <span class="lead date-chip" aria-hidden="true"><span data-text="mon"></span><b data-text="day"></b></span>
+    <span class="body"><span class="title" data-text="title"></span><span class="sub" data-text="sub"></span></span>
+    <span class="trail"><span class="value" data-text="amount"></span></span>
+  </button></li>
+</template>
+<template id="tpl-import-row">
+  <li><div class="item">
+    <span class="lead"><i data-icon="file-text"></i></span>
+    <span class="body"><span class="title" data-text="name"></span><span class="sub" data-text="sub"></span></span>
+    <button type="button" class="btn ghost sm" data-act="remove-import">Remove</button>
+  </div></li>
+</template>
+<template id="tpl-view-row">
+  <li><div class="item">
+    <span class="lead"><i data-icon="star"></i></span>
+    <span class="body"><span class="title" data-text="name"></span><span class="sub" data-text="sub"></span></span>
+    <span class="trail row">
+      <button type="button" class="btn icon ghost sm" data-act="rename-view" aria-label="Rename view"><i data-icon="edit"></i></button>
+      <button type="button" class="btn icon ghost sm" data-act="delete-view" aria-label="Delete view"><i data-icon="trash"></i></button>
+    </span>
+  </div></li>
+</template>
+<!-- /section:pieces -->
+
+<!-- section:sheet-entry -->
+<template id="tpl-entry-form">
+  <form class="form entry-form" novalidate>
+    <div class="two">
+      <div class="field">
+        <label for="ef-date">Date</label>
+        <input id="ef-date" name="date" type="date" required>
+      </div>
+      <div class="field">
+        <label for="ef-amount">Amount</label>
+        <div class="affix"><span data-text="cur">$</span><input id="ef-amount" name="amount" inputmode="decimal" autocomplete="off" data-money required></div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ef-cat">Category <span class="opt">(optional)</span></label>
+      <input id="ef-cat" name="cat" list="ef-cats" maxlength="60" autocomplete="off" placeholder="For example: Repairs">
+      <datalist id="ef-cats"></datalist>
+      <p class="help">Group entries so you can compare them.</p>
+    </div>
+    <div class="field">
+      <label for="ef-label">Description <span class="opt">(optional)</span></label>
+      <input id="ef-label" name="label" maxlength="80" autocomplete="off">
+    </div>
+    <label class="check" data-slot="again"><input type="checkbox" name="again"><span>Add another after this one</span></label>
+  </form>
+</template>
+<!-- /section:sheet-entry -->
+
+<!-- section:sheet-mapping -->
+<!-- shown after a paste or a CSV: the owner checks which column is which -->
+<template id="tpl-mapping">
+  <form class="form mapping" novalidate>
+    <p class="map-lead" data-text="found"></p>
+    <div class="map-fields">
+      <div class="field">
+        <label for="m-date">Date column</label>
+        <select id="m-date" name="date"></select>
+        <p class="help" data-text="date-eg"></p>
+      </div>
+      <div class="field">
+        <label for="m-amount">Amount column</label>
+        <select id="m-amount" name="amount"></select>
+        <p class="help" data-text="amount-eg"></p>
+      </div>
+      <div class="field">
+        <label for="m-cat">Category column <span class="opt">(optional)</span></label>
+        <select id="m-cat" name="cat"></select>
+        <p class="help" data-text="cat-eg"></p>
+      </div>
+      <div class="field">
+        <label for="m-label">Description column <span class="opt">(optional)</span></label>
+        <select id="m-label" name="label"></select>
+        <p class="help" data-text="label-eg"></p>
+      </div>
+      <div class="field" data-slot="order-field" hidden>
+        <label for="m-order">Dates are written</label>
+        <select id="m-order" name="order">
+          <option value="mdy">Month first: 03/04 is March 4</option>
+          <option value="dmy">Day first: 03/04 is 3 April</option>
+        </select>
+      </div>
+    </div>
+    <div class="map-preview">
+      <h3>Preview</h3>
+      <div class="preview-scroll" data-allow-overflow>
+        <table class="preview-table">
+          <thead><tr><th scope="col">Date</th><th scope="col">Category</th><th scope="col">Description</th><th scope="col" class="num">Amount</th></tr></thead>
+          <tbody data-slot="preview"></tbody>
+        </table>
+      </div>
+      <p class="map-result" data-slot="result"></p>
+    </div>
+    <fieldset class="field" data-slot="mode-field" hidden>
+      <legend>You already have entries</legend>
+      <div class="seg block">
+        <label><input type="radio" name="mode" value="add" checked><span>Add these</span></label>
+        <label><input type="radio" name="mode" value="replace"><span>Replace all</span></label>
+      </div>
+      <p class="help">Rows you already have are skipped, so importing the same file twice is safe.</p>
+    </fieldset>
+  </form>
+</template>
+<!-- /section:sheet-mapping -->
+
+<!-- section:sheet-paste-backup -->
+<template id="tpl-paste-backup">
+  <form class="form" novalidate>
+    <div class="field">
+      <label for="pb-text">Paste the backup text</label>
+      <textarea id="pb-text" name="text" rows="6" spellcheck="false" autocomplete="off"></textarea>
+      <p class="help">This replaces the entries, views and settings on this device. You can undo right after.</p>
+    </div>
+  </form>
+</template>
+<!-- /section:sheet-paste-backup -->
+
+<!-- section:report -->
+<!-- the printable report (letterhead uses the business details) -->
+<template id="tpl-report">
+  <article class="doc report">
+    <header class="doc-head">
+      <div>
+        <h2>{{business}}</h2>
+        <p class="muted small">{{address}}<br>{{phone}} · {{email}}</p>
+      </div>
+      <div class="right">
+        <p class="eyebrow">Numbers report</p>
+        <p class="rep-title" data-text="metric"></p>
+        <p class="small" data-text="period"></p>
+      </div>
+    </header>
+    <dl class="doc-meta">
+      <div><dt>Total</dt><dd data-text="total"></dd></div>
+      <div><dt>Entries</dt><dd data-text="count"></dd></div>
+      <div><dt>Average</dt><dd data-text="avg"></dd></div>
+      <div><dt>Change</dt><dd data-text="change"></dd></div>
+    </dl>
+    <h3>By category</h3>
+    <table>
+      <thead><tr><th scope="col">Category</th><th scope="col" class="num">Entries</th><th scope="col" class="num">Share</th><th scope="col" class="num">Amount</th></tr></thead>
+      <tbody data-slot="cats"></tbody>
+    </table>
+    <h3 data-text="time-title">Over time</h3>
+    <table>
+      <thead><tr><th scope="col" data-text="time-col">Period</th><th scope="col" class="num">Entries</th><th scope="col" class="num">Amount</th></tr></thead>
+      <tbody data-slot="time"></tbody>
+    </table>
+    <p class="doc-foot" data-text="foot"></p>
+  </article>
+</template>
+<!-- /section:report -->
+
+<script src="appkit.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

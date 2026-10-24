@@ -1,0 +1,35 @@
+{
+  "id": "dashboard-kpi",
+  "kind": "app",
+  "name": "Numbers dashboard",
+  "summary": "A Stripe-style analytics app for the owner's own numbers: paste a table, import a CSV or type rows; a column check auto-detects the date, amount, category and description columns; then a hero total with sparkline, change versus the period before, average, count and best category, a line or bar chart over time (with the previous period dashed), a donut share, a scrollable bar breakdown by category or weekday, date-range presets and category chips, saved views, a sortable searchable entries table, a printable report with the letterhead, CSV export and JSON backup. Starts empty with a welcome screen and a 'Try it with sample data' button.",
+  "best_for": ["sales dashboard", "daily takings", "job totals", "expense tracking", "card reader or till exports", "bank statement exports", "any business numbers", "KPI report"],
+  "mood": ["clear", "calm", "professional", "data-rich"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "view-overview", "what": "Overview tab: eyebrow with the date range, h1 = what the numbers show (Settings: Sales, Costs, Jobs...), one-sentence insight, sample-data note, welcome card for an empty dashboard (paste / CSV / type / sample), filters, saved-view chips, 'nothing in these dates' note, 5 KPI cards (hero total with sparkline + change, change, average, entries, best category or largest entry) and the board (trend chart with Line/Bars + Compare, share donut, breakdown bars by category or weekday, latest entries)", "edit": "Rewrite the welcome card's words for this business (keep the three ways). Rename KPI labels if the owner uses other words. Keep every data-text / data-slot / data-act attribute; app.js fills them"},
+    {"name": "view-entries", "what": "Entries tab: summary line, Export CSV, the shared filters and a sortable, searchable table (cards on phones); tap a row to edit or delete", "edit": "Usually no change. Column names live in app.js renderEntries()"},
+    {"name": "view-import", "what": "Add data tab: paste box with 'Read this table', CSV file picker, 'Add an entry', the data summary and the list of imports (each removable), and a tip", "edit": "Change the example in the paste placeholder and the tip to match where this owner's numbers come from (for example their card reader's export)"},
+    {"name": "view-settings", "what": "Settings tab: what the numbers show, money or plain numbers, currency, 'higher is better', week start; saved views (rename/delete); report, CSV export, backup download/copy, restore from file or pasted text; sample data load/clear; erase all; footer with business and year", "edit": "Set the default name/currency in app.js SETTINGS if the owner told you (for example name 'Jobs done', currency 'CAD')"},
+    {"name": "filters", "what": "Shared filter bar: date range select (7/30/90 days, this/last month, 12 months, this year, all, picked dates with two date inputs), Save view button, category chips (top 8 + More sheet)", "edit": "Keep as is; the option values are used by app.js"},
+    {"name": "pieces", "what": "Small repeated templates: category chip, category sheet + checkbox row, latest-entry row, import row, saved-view row", "edit": "Restyle freely; keep data-text names"},
+    {"name": "sheet-entry", "what": "Add / edit entry form: date, amount (money field), category with suggestions, description, 'add another'", "edit": "Change the category placeholder to a real category of this business"},
+    {"name": "sheet-mapping", "what": "Column check after a paste or CSV: four column pickers with examples, date-order picker when 03/04 is ambiguous, preview table, rows ready / skipped, add vs replace", "edit": "Usually no change"},
+    {"name": "sheet-paste-backup", "what": "Restore-from-pasted-backup form", "edit": "No change needed"},
+    {"name": "report", "what": "Printable report (.doc) with the business letterhead ({{business}}, {{address}}, {{phone}}, {{email}}), KPI summary, table by category and table by day/week/month", "edit": "Delete the address line in the letterhead if the owner has no public address"}
+  ],
+  "photo_slots": [],
+  "remove_if_no_facts": [],
+  "behaviors": [
+    "all data in the phone's browser storage (AK.store 'dashboard-kpi' for entries/views/settings, 'dashboard-kpi-ui' for the chosen dates and chart style), namespaced by {{slug}}; survives reloads",
+    "reads pasted tables and CSV files: commas, tabs, semicolons, quotes, line breaks inside quotes, Windows line endings, BOM, sep= lines, UTF-8 / UTF-16 / Windows-1252 files",
+    "auto-detects date, amount, category and description columns from headers and values; dates in ISO, 10/03/2026 (month or day first, detected or chosen), 31.12.2025, Oct 1 2026, 1 Oct 2026, Excel day numbers; amounts like $1,250.00, (45.00), 45.00-, 12,50 EUR, 1.234,56; totals rows without a date are skipped; re-importing the same rows skips duplicates; sample rows are removed by the first real import",
+    "KPIs per date range with change versus the matching previous period; 'higher is better' switch colours rises good or bad",
+    "charts via AK.chart: area/line or bars by day/week/month/year (automatic), previous period dashed, donut top 5 + Other, breakdown bars scroll sideways on phones",
+    "saved views (dates + categories + chart style) as chips",
+    "add, edit, delete with confirm and Undo; money rounded to cents; dates in local time",
+    "CSV export of what is shown or of everything; printable report sheet with Copy summary; backup download or copy, restore from file or pasted text (checked and cleaned before it replaces anything)",
+    "index.html?sample opens with the sample data (for previews); window.NumbersApp exposes the parser and data for scripting"
+  ],
+  "style_notes": "Works with every style, light or dark. Tested at 320, 390 and 1280 with midnight-neon, clinical-clean, workshop-industrial, soft-pastel, neo-brutalist, editorial-serif, poster-bold and high-contrast-sport. All colours come from appkit's --ak-* tokens (derived from theme.css); status colours are contrast-tuned by appkit. The only lint warning is appkit's expected 'more than one accent colour family' in styles whose accent is red or orange."
+}

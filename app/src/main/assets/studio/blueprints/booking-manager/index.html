@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="{{slug}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{business}} Bookings</title>
+<meta name="description" content="{{business}} bookings: a day agenda with big time slots, week and month views, services, opening hours, clash checks and one-tap reminder texts. Works offline.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="appkit.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript><p class="noscript">{{business}} Bookings needs JavaScript turned on.</p></noscript>
+
+<!--
+  Bookings (blueprint booking-manager). app.js builds the app shell (appkit AK.app) and copies these <template> blocks into the page.
+  - Text inside templates is safe to rewrite. Keep every data-f="..." (app.js fills those), data-act="..." (buttons that do things) and name="..." (form fields).
+  - <i data-icon="name"></i> becomes an appkit icon (names: AK.icons in appkit.js).
+  - The facts below feed the header, the reminder text, the printed day sheet and the first opening hours (from {{hours}}) until the owner saves their own in Settings.
+-->
+
+<!-- section:facts -->
+<div id="facts" hidden data-business="{{business}}" data-phone="{{phone}}" data-email="{{email}}" data-address="{{address}}" data-hours="{{hours}}" data-year="{{year}}"></div>
+<!-- /section:facts -->
+
+<!-- section:view-today -->
+<template id="view-today">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow" data-f="date"></p>
+      <h1>Today</h1>
+      <p class="sub" data-f="sub"></p>
+    </div>
+  </header>
+
+  <div class="welcome card" data-f="welcome" hidden>
+    <svg class="illus welcome-art" viewBox="0 0 240 150" aria-hidden="true">
+      <circle class="il-a" cx="120" cy="80" r="68"/>
+      <rect class="il-s" x="44" y="26" width="152" height="108" rx="12"/>
+      <path class="il-l" d="M44 52h152M78 18v18M162 18v18"/>
+      <rect class="il-s" x="58" y="64" width="34" height="24" rx="5"/>
+      <rect class="il-x" x="103" y="64" width="34" height="24" rx="5"/>
+      <rect class="il-s" x="148" y="64" width="34" height="24" rx="5"/>
+      <rect class="il-s" x="58" y="98" width="34" height="24" rx="5"/>
+      <rect class="il-s" x="103" y="98" width="34" height="24" rx="5"/>
+      <circle class="il-x" cx="190" cy="118" r="16"/>
+      <path class="il-k" d="M190 110v8l5 4"/>
+    </svg>
+    <div class="welcome-copy">
+      <h2>Your day, one tap at a time</h2>
+      <p class="muted">Book customers into big, clear time slots. Clashes and closed hours are flagged before you save, and a reminder text is one tap away.</p>
+      <ol class="welcome-steps">
+        <li><span class="step-n">1</span><span><strong>Add your services</strong> with how long they take and the price.</span></li>
+        <li><span class="step-n">2</span><span><strong>Tap a free time</strong> on the calendar to book someone in.</span></li>
+        <li><span class="step-n">3</span><span><strong>Send a reminder</strong> the day before, prefilled for you.</span></li>
+      </ol>
+      <div class="btns">
+        <button type="button" class="btn primary" data-act="new-appt"><i data-icon="plus"></i>Book an appointment</button>
+        <button type="button" class="btn soft" data-act="load-sample"><i data-icon="zap"></i>Try it with sample data</button>
+      </div>
+      <p class="small muted">Everything stays on this device. Set your opening hours in Settings.</p>
+    </div>
+  </div>
+
+  <div class="note sample-note" data-f="samplenote" hidden><i data-icon="info"></i><div><strong>This is sample data.</strong> The names, services and prices are made up so you can try things.</div><button type="button" class="btn sm ghost" data-act="clear-sample">Clear</button></div>
+
+  <div class="today-main" data-f="main">
+    <section class="hero" data-f="hero" aria-label="Next appointment"></section>
+    <div class="stats">
+      <div class="stat"><span class="label"><i data-icon="calendar"></i>Bookings today</span><span class="value" data-f="s-count">0</span><span class="meta" data-f="s-count-m"></span></div>
+      <div class="stat"><span class="label"><i data-icon="clock"></i>Booked time</span><span class="value" data-f="s-time">0m</span><div class="ring-row"><span class="ring" data-f="s-ring" style="--value:0"><span data-f="s-pct">0%</span></span><span class="meta" data-f="s-time-m"></span></div></div>
+      <div class="stat"><span class="label"><i data-icon="dollar"></i>Expected today</span><span class="value" data-f="s-money">0</span><span class="meta" data-f="s-money-m"></span></div>
+      <div class="stat"><span class="label"><i data-icon="trend-up"></i>This week</span><span class="value" data-f="s-week">0</span><span class="meta" data-f="s-week-m"></span></div>
+    </div>
+    <div class="today-grid">
+      <section class="section">
+        <div class="sec-head"><h2>Today's agenda</h2><button type="button" class="btn ghost sm" data-act="go-day" data-f="dayl">Day view<i data-icon="chevron-right"></i></button></div>
+        <div data-f="agenda"></div>
+      </section>
+      <section class="section">
+        <div class="sec-head"><h2 data-f="freeh">Free times left today</h2></div>
+        <div data-f="free"></div>
+        <div class="soon" data-f="soonwrap" hidden>
+          <h3 class="mini-head">Coming up</h3>
+          <ul class="list agenda" data-f="soon"></ul>
+        </div>
+      </section>
+    </div>
+  </div>
+</template>
+<!-- /section:view-today -->
+
+<!-- section:view-calendar -->
+<template id="view-calendar">
+  <header class="page-head cal-head">
+    <div class="head-main">
+      <p class="eyebrow" data-f="rel">Today</p>
+      <h1 data-f="title">Calendar</h1>
+    </div>
+    <div class="seg cal-seg" role="radiogroup" aria-label="Calendar view" data-f="view">
+      <label><input type="radio" name="calview" value="day"><span>Day</span></label>
+      <label><input type="radio" name="calview" value="week"><span>Week</span></label>
+      <label><input type="radio" name="calview" value="month"><span>Month</span></label>
+    </div>
+  </header>
+  <div class="cal-nav">
+    <button type="button" class="btn icon sm" data-act="cal-prev" data-f="prev" aria-label="Previous day"><i data-icon="chevron-left"></i></button>
+    <button type="button" class="btn icon sm" data-act="cal-next" data-f="next" aria-label="Next day"><i data-icon="chevron-right"></i></button>
+    <button type="button" class="btn sm" data-act="cal-today" data-f="todaybtn">Today</button>
+    <p class="cal-info" data-f="info"></p>
+    <button type="button" class="btn icon sm ghost" data-act="print-day" data-f="print" aria-label="Print this day"><i data-icon="printer"></i></button>
+  </div>
+  <div class="strip" role="group" aria-label="Pick a day" data-f="strip"></div>
+  <div class="note sample-note" data-f="samplenote" hidden><i data-icon="info"></i><div><strong>Sample data is on.</strong> Clear it in Settings when you are ready.</div></div>
+  <div class="cal-out" data-f="out"></div>
+</template>
+<!-- /section:view-calendar -->
+
+<!-- section:view-services -->
+<template id="view-services">
+  <header class="page-head">
+    <div>
+      <h1>Services</h1>
+      <p class="sub" data-f="sub">What you offer, how long it takes and what it costs.</p>
+    </div>
+  </header>
+  <div data-f="out"></div>
+  <p class="muted small svc-help" data-f="help">Drag the handle to change the order. Prices here fill in new bookings; you can change the price on any booking.</p>
+</template>
+<!-- /section:view-services -->
+
+<!-- section:view-settings -->
+<template id="view-settings">
+  <header class="page-head">
+    <div>
+      <h1>Settings</h1>
+      <p class="sub">Opening hours, blocked time, booking rules, reminders and backups.</p>
+    </div>
+  </header>
+  <div class="settings-grid">
+    <section class="card">
+      <div class="card-head"><h2>Opening hours</h2></div>
+      <p class="muted small card-lead">Times outside these hours are greyed on the calendar and flagged when you book.</p>
+      <form class="hours-form" data-f="hoursform" novalidate>
+        <div data-f="hours"></div>
+        <div class="btns end"><button type="submit" class="btn primary">Save hours</button></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Blocked time</h2><button type="button" class="btn soft sm" data-act="new-block"><i data-icon="plus"></i>Add</button></div>
+      <p class="muted small card-lead">Lunch, a day off, a supplier visit. Nobody gets booked over it without a warning.</p>
+      <div data-f="blocks"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Booking rules</h2></div>
+      <form class="form" data-f="rulesform" novalidate>
+        <div class="cols" style="--min:150px">
+          <div class="field"><label for="s-step">Time slots every</label><select id="s-step" name="step"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">60 minutes</option></select></div>
+          <div class="field"><label for="s-buffer">Gap after each booking</label><select id="s-buffer" name="buffer"><option value="0">No gap</option><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option></select></div>
+        </div>
+        <div class="field"><label for="s-cap">How many at the same time</label><div class="stepper"><input id="s-cap" name="capacity" type="number" min="1" max="20" step="1"></div><p class="help">For example 2 if you have two bays, chairs or people working.</p></div>
+        <div class="cols" style="--min:150px">
+          <div class="field"><label for="s-cur">Currency</label><select id="s-cur" name="currency"><option value="">Automatic</option><option value="USD">US dollar</option><option value="CAD">Canadian dollar</option><option value="EUR">Euro</option><option value="GBP">British pound</option><option value="AUD">Australian dollar</option><option value="NZD">New Zealand dollar</option><option value="MXN">Mexican peso</option><option value="INR">Indian rupee</option><option value="ZAR">South African rand</option></select></div>
+          <div class="field"><label for="s-week">Week starts on</label><select id="s-week" name="weekStart"><option value="">Automatic</option><option value="0">Sunday</option><option value="1">Monday</option></select></div>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Reminder text</h2></div>
+      <p class="muted small card-lead">Sent from your own phone with one tap. These words are swapped in: {name} {service} {day} {time} {business}.</p>
+      <form class="form" data-f="tplform" novalidate>
+        <div class="field"><label for="s-tpl">Message</label><textarea id="s-tpl" name="template" maxlength="600"></textarea></div>
+        <div class="tpl-preview"><p class="label">Preview</p><p class="bubble" data-f="preview"></p></div>
+        <div class="btns end"><button type="button" class="btn ghost" data-f="tplreset">Use the standard text</button><button type="submit" class="btn primary">Save text</button></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Business details</h2></div>
+      <p class="muted small card-lead">Used in reminder texts and at the top of a printed day.</p>
+      <form class="form" data-f="bizform" novalidate>
+        <div class="field"><label for="s-biz">Business name</label><input id="s-biz" name="business" maxlength="80" autocomplete="organization"></div>
+        <div class="cols" style="--min:180px">
+          <div class="field"><label for="s-phone">Phone</label><input id="s-phone" name="phone" type="tel" autocomplete="tel"></div>
+          <div class="field"><label for="s-email">Email</label><input id="s-email" name="email" type="email" autocomplete="email"></div>
+        </div>
+        <div class="field"><label for="s-addr">Address</label><input id="s-addr" name="address" maxlength="160" autocomplete="street-address"></div>
+        <div class="btns end"><button type="submit" class="btn primary">Save details</button></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Your data</h2></div>
+      <p class="muted small card-lead" data-f="storage"></p>
+      <ul class="list">
+        <li><button type="button" class="item" data-act="export-csv"><span class="lead"><i data-icon="file-text"></i></span><span class="body"><span class="title">Export appointments</span><span class="sub">A spreadsheet file (CSV) with every booking</span></span></button></li>
+        <li><button type="button" class="item" data-act="backup"><span class="lead"><i data-icon="download"></i></span><span class="body"><span class="title">Back up everything</span><span class="sub">One file with bookings, services and settings</span></span></button></li>
+        <li><button type="button" class="item" data-act="copy-backup"><span class="lead"><i data-icon="copy"></i></span><span class="body"><span class="title">Copy the backup</span><span class="sub">Paste it into a note or an email to yourself</span></span></button></li>
+        <li><button type="button" class="item" data-act="restore"><span class="lead"><i data-icon="upload"></i></span><span class="body"><span class="title">Restore from a file</span><span class="sub">Replaces what is here now</span></span></button></li>
+        <li><button type="button" class="item" data-act="restore-paste"><span class="lead"><i data-icon="clipboard"></i></span><span class="body"><span class="title">Paste a backup</span><span class="sub">For a backup you copied as text</span></span></button></li>
+      </ul>
+      <div class="sample-zone">
+        <p class="label">Sample data</p>
+        <p class="muted small" data-f="sampletext">Load a few made-up services and bookings to see how everything works.</p>
+        <div class="btns">
+          <button type="button" class="btn soft" data-act="load-sample" data-f="loadsample"><i data-icon="zap"></i>Load sample data</button>
+          <button type="button" class="btn" data-act="clear-sample" data-f="clearsample"><i data-icon="x"></i>Clear sample data</button>
+          <button type="button" class="btn danger" data-act="erase"><i data-icon="trash"></i>Erase all bookings</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="section">
+    <div class="sec-head"><h2>Help</h2></div>
+    <div class="accs" data-single>
+      <details class="acc"><summary>How do I book someone?</summary><p>Tap Book, or tap an empty time on the Day view. Pick the service and the time. If it clashes with another booking, blocked time or your hours, you see it straight away with the next free time to tap.</p></details>
+      <details class="acc"><summary>How do reminders work?</summary><p>Open a booking and tap Text reminder. Your messages app opens with the text ready, addressed to the customer. You press send. Change the words in Settings.</p></details>
+      <details class="acc"><summary>How do I move a booking?</summary><p>Open it and tap Reschedule. Pick a day, then tap one of the free times shown. Undo is offered right after.</p></details>
+      <details class="acc"><summary>Where is my data saved?</summary><p>Only on this device, inside this app. Nothing is sent anywhere. Back up now and then, and restore the file to move to another phone or computer.</p></details>
+      <details class="acc"><summary>Shortcuts on a computer</summary><p>N books an appointment, / opens search, the left and right arrow keys move the calendar, T jumps to today.</p></details>
+    </div>
+  </section>
+  <p class="foot muted small">{{business}} Bookings · {{year}}</p>
+</template>
+<!-- /section:view-settings -->
+
+<!-- section:sheet-appt -->
+<template id="sheet-appt">
+  <div class="quick-acts" data-f="quick" hidden>
+    <a class="btn sm" data-f="call"><i data-icon="phone"></i>Call</a>
+    <a class="btn sm soft" data-f="remind" data-act="reminded"><i data-icon="message"></i>Text reminder</a>
+    <button type="button" class="btn sm" data-f="move"><i data-icon="calendar"></i>Reschedule</button>
+    <button type="button" class="btn sm" data-f="again"><i data-icon="refresh"></i>Book again</button>
+  </div>
+  <p class="reminded small muted" data-f="reminded" hidden></p>
+  <form class="form appt-form" novalidate>
+    <div class="cols" style="--min:170px">
+      <div class="field"><label for="a-name">Customer</label><input id="a-name" name="name" required maxlength="80" autocomplete="off" list="a-names" placeholder="Name"><datalist id="a-names" data-f="names"></datalist></div>
+      <div class="field"><label for="a-phone">Phone</label><input id="a-phone" name="phone" type="tel" autocomplete="off" placeholder="For the reminder text"></div>
+    </div>
+    <div class="field"><label for="a-svc">Service</label><select id="a-svc" name="serviceId" data-f="svc"></select></div>
+    <div class="field" data-f="otherf" hidden><label for="a-other">What is it for?</label><input id="a-other" name="service" maxlength="80" autocomplete="off" placeholder="Describe the visit"></div>
+    <div class="cols" style="--min:150px">
+      <div class="field"><label for="a-date">Day</label><input id="a-date" name="date" type="date" required></div>
+      <div class="field"><label for="a-time">Start time</label><input id="a-time" name="start" type="time" step="300" required></div>
+    </div>
+    <div class="free-row" data-f="freerow"><span class="label small">Free times that day</span><div class="slot-chips" data-f="slots"></div></div>
+    <div class="cols" style="--min:150px">
+      <div class="field"><label for="a-dur">How long</label><select id="a-dur" name="dur" data-f="dur"></select></div>
+      <div class="field"><label for="a-price">Price</label><div class="affix"><span data-f="cur">$</span><input id="a-price" name="price" data-money inputmode="decimal" placeholder="0.00" autocomplete="off"></div></div>
+    </div>
+    <div class="clash" data-f="clash" aria-live="polite"></div>
+    <fieldset class="field">
+      <legend>Status</legend>
+      <div class="status-pick" role="radiogroup" aria-label="Status" data-f="status"></div>
+    </fieldset>
+    <div class="field"><label for="a-notes">Notes</label><textarea id="a-notes" name="notes" maxlength="2000" placeholder="Anything to remember for this visit"></textarea></div>
+  </form>
+  <p class="meta-line small muted" data-f="meta"></p>
+</template>
+<!-- /section:sheet-appt -->
+
+<!-- section:sheet-service -->
+<template id="sheet-service">
+  <form class="form" novalidate>
+    <div class="field"><label for="v-name">Service name</label><input id="v-name" name="name" required maxlength="80" autocomplete="off" placeholder="What the customer books"></div>
+    <div class="cols" style="--min:150px">
+      <div class="field"><label for="v-dur">How long it takes</label><select id="v-dur" name="dur" data-f="dur"></select></div>
+      <div class="field"><label for="v-price">Price</label><div class="affix"><span data-f="cur">$</span><input id="v-price" name="price" data-money inputmode="decimal" placeholder="0.00" autocomplete="off"></div><p class="help">Leave empty if it varies.</p></div>
+    </div>
+  </form>
+</template>
+<!-- /section:sheet-service -->
+
+<!-- section:sheet-block -->
+<template id="sheet-block">
+  <form class="form" novalidate>
+    <div class="field"><label for="b-label">What is it?</label><input id="b-label" name="label" required maxlength="60" autocomplete="off" placeholder="For example: Lunch"></div>
+    <div class="field"><span class="label" id="b-rep">When</span>
+      <div class="seg block" role="radiogroup" aria-labelledby="b-rep"><label><input type="radio" name="repeat" value="weekly"><span>Every week</span></label><label><input type="radio" name="repeat" value="once"><span>One day</span></label></div></div>
+    <fieldset class="field" data-f="days"><legend>On these days</legend><div class="day-pick" data-f="daypick"></div></fieldset>
+    <div class="field" data-f="datef" hidden><label for="b-date">Day</label><input id="b-date" name="date" type="date"></div>
+    <div class="cols" style="--min:140px">
+      <div class="field"><label for="b-from">From</label><input id="b-from" name="from" type="time" required></div>
+      <div class="field"><label for="b-to">Until</label><input id="b-to" name="to" type="time" required></div>
+    </div>
+  </form>
+</template>
+<!-- /section:sheet-block -->
+
+<!-- section:doc-day -->
+<template id="doc-day">
+  <article class="doc day-doc">
+    <header class="doc-head">
+      <div>
+        <h2 data-f="biz">{{business}}</h2>
+        <p class="muted" data-f="addr">{{address}}</p>
+        <p class="muted" data-f="contact"><span data-f="phone">{{phone}}</span> <span data-f="email">{{email}}</span></p>
+      </div>
+      <div class="right">
+        <p class="eyebrow">Day sheet</p>
+        <p class="doc-day-title" data-f="day"></p>
+        <p class="muted" data-f="hours"></p>
+      </div>
+    </header>
+    <table>
+      <thead><tr><th>Time</th><th>Customer</th><th>Service</th><th class="num">Price</th><th>Status</th></tr></thead>
+      <tbody data-f="rows"></tbody>
+    </table>
+    <div class="doc-total"><div><span>Bookings</span><span data-f="count"></span></div><div><span>Booked time</span><span data-f="time"></span></div><div class="grand"><span>Expected</span><span data-f="total"></span></div></div>
+    <p class="doc-foot" data-f="foot">Printed from {{business}} Bookings.</p>
+  </article>
+</template>
+<!-- /section:doc-day -->
+
+<script src="appkit.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>

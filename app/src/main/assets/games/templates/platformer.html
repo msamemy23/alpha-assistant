@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1c2230">
+<title>Garage Dash</title>
+</head>
+<body style="margin:0;background:#1c2230">
+<canvas id="c"></canvas>
+<script src="../juice.js"></script>
+<script>
+'use strict';
+// =====================================================================
+// GARAGE DASH - tile-map platformer. Left/right buttons run, big button jumps (tap and hold for a higher jump).
+// TO RETHEME: change CONFIG only. Every "CUSTOMIZE:" line is safe to edit.
+// =====================================================================
+const CONFIG = {
+  id: 'garage-dash',                   // CUSTOMIZE: unique short id (keeps saved scores separate per game)
+  title: 'GARAGE DASH',                // CUSTOMIZE: game title (also update <title> above)
+  tagline: 'Run the shop floor, grab the bolts!', // CUSTOMIZE: one line under the title
+  shop: "Mike's Auto Repair",          // CUSTOMIZE: business name
+  cta: 'Fast, friendly service. Call us to book!', // CUSTOMIZE: message on the end screens
+  player: 'MECHANIC',                  // CUSTOMIZE: name on the high-score board
+  text: {                              // CUSTOMIZE: any wording (keep it short)
+    play: 'PLAY', again: 'PLAY AGAIN', over: 'OUT OF ORDER', win: 'SHOP RESCUED!', bolts: 'BOLTS', best: 'BEST', score: 'SCORE',
+    level: 'LEVEL', clear: 'LEVEL CLEAR!', top: 'TOP SCORES', paused: 'PAUSED', resume: 'Tap to resume', hint: 'Hold RUN buttons, tap JUMP', jump: 'JUMP'
+  },
+  colors: {                            // CUSTOMIZE: any CSS colours
+    skyTop: '#2a3347', skyBottom: '#171b26', block: '#4a5568', blockTop: '#718096', text: '#f4f6f8', accent: '#ff7a1a',
+    bolt: '#ffd23f', hurt: '#e63946', shirt: '#2f6fed', hat: '#ffd23f', tire: '#2b2f3a', spring: '#2ec4b6', flag: '#2ec4b6'
+  },
+  hp: 3,                               // CUSTOMIZE: health (hits you can take in total)
+  runSpeed: 190,                       // CUSTOMIZE: run speed (px/s, one tile = 32 px)
+  jumpPower: 640,                      // CUSTOMIZE: jump strength (keep gaps in levels at most 3 tiles wide and steps at most 3 tiles high)
+  levels: [                            // CUSTOMIZE: add a level = add { name, map }. All rows in a map must be the same length.
+    // legend: # solid block   . empty   o bolt (coin)   ^ spikes   E rolling-tire enemy   S spring   P player start   F finish flag
+    { name: 'Tire Alley', map: [
+      '................................................',
+      '................................................',
+      '................................................',
+      '................................................',
+      '................................................',
+      '................................................',
+      '................ooo............ooo..............',
+      '..............#####...........####..............',
+      '........ooo.........................o.o.o.......',
+      '..P...........E.....o..oo.....E...........E..F..',
+      '############..######.########..#####.###########',
+      '############..######.########..#####.###########'
+    ] },
+    { name: 'Oil Slick Lane', map: [
+      '................................................',
+      '................................................',
+      '................................................',
+      '................................................',
+      '................................................',
+      '..........................ooo...........ooo.....',
+      '.........................#####.........#####....',
+      '................................................',
+      '.....ooo...............................ooo......',
+      '..P.............^^..E...S......^^.....E.....S..F',
+      '##########.#################.############.######',
+      '##########.#################.############.######'
+    ] },
+    { name: 'Engine Block Run', map: [
+      '........................................................',
+      '........................................................',
+      '........................................................',
+      '........................................................',
+      '........................................................',
+      '..............ooo...........ooo............ooo..........',
+      '............#####..........#####..........#####........',
+      '........................................................',
+      '......ooo.......o.o.o.........................ooo.......',
+      '..P.........E...^^......E....^^.....E..^^....E.......F..',
+      '............#####..........#####..........#####..........',
+      '########..#############.#########..############...######'
+    ] }
+  ],
+  music: { bpm: 144, tracks: [         // CUSTOMIZE: tune (notes like C4 F#3, "." = rest)
+    { w: 'square', v: .04, p: 'C4 . E4 G4 . E4 C4 . D4 . F4 A4 . F4 D4 .' },
+    { w: 'triangle', v: .17, p: 'C2 . . C2 . . C2 . G1 . . G1 . . G1 .' },
+    { w: 'noise', v: .03, len: .35, p: 'x . . . x . . . x . . . x . x .' }
+  ] }
+};
+
+// ---------------------------------------------------------------- setup
+const J = Juice, T = CONFIG.text, C = CONFIG.colors, PI2 = Math.PI * 2, TS = 32, rnd = J.rnd, cv = document.getElementById('c');
+J.init({ id: CONFIG.id, title: CONFIG.title, player: CONFIG.player, str: { paused: T.paused, resume: T.resume } });
+J.fit(cv, { w: 360, h: 640, min: .5, max: 1.8, bg: C.skyBottom });
+
+let ui = [], uiNext = [];
+function button(c, s, x, y, w, h, fn, col) {
+  uiNext.push({ x: x - w / 2, y: y - h / 2, w, h, fn });
+  const dn = J.pt.down && Math.abs(J.pt.x - x) < w / 2 && Math.abs(J.pt.y - y) < h / 2, k = dn ? .95 : 1;
+  c.save(); c.translate(x, y); c.scale(k, k);
+  c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, -w / 2, -h / 2 + 5, w, h, h / 3); c.fill();
+  c.fillStyle = col || C.accent; J.rr(c, -w / 2, -h / 2, w, h, h / 3); c.fill();
+  J.txt(c, s, 0, 1, { size: h * .42, color: '#15181f', stroke: 0, max: w - 20 }); c.restore();
+}
+J.on('tap', (x, y) => { for (const b of ui) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { J.play('click'); b.fn(); return; } });
+
+const arrow = d => (c, x, y) => { c.fillStyle = '#fff'; c.beginPath(); c.moveTo(x + d * 14, y); c.lineTo(x - d * 10, y - 16); c.lineTo(x - d * 10, y + 16); c.fill(); };
+const btnL = J.btn({ x: 58, y: () => J.H - 72, r: 42, label: arrow(-1) }), btnR = J.btn({ x: 156, y: () => J.H - 72, r: 42, label: arrow(1) });
+const btnJ = J.btn({ x: () => J.W - 66, y: () => J.H - 78, r: 50, label: T.jump, size: 20, color: C.accent });
+const snd = J.btn({ x: () => J.W - 62, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'snd', x, y, 20, J.opts.sound), onpress: () => J.setOpt('sound'), key: 'KeyM' });
+const pause = J.btn({ x: () => J.W - 24, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'pause', x, y, 18), onpress: () => J.pause(), key: 'KeyP' });
+function ctrlOn(v) { for (const b of [btnL, btnR, btnJ, snd, pause]) { b.on = v; if (!v) b.down = 0; } }
+ctrlOn(false);
+
+// ---------------------------------------------------------------- state
+let st = 'title', tt = 0, lvl = 0, hp = 0, bolts = 0, kills = 0, score = 0, rank = 0, grid = [], mw = 0, mh = 0, spawn = { x: 0, y: 0 }, mobs = [], Z = 1.02;
+const cam = { x: 0, y: 0 }, pl = { x: 0, y: 0, w: 20, h: 28, vx: 0, vy: 0, ground: 0, coy: 0, buf: 0, jh: 0, face: 1, inv: 0, run: 0, sq: 0 };
+J.on('resize', () => { Z = J.clamp(J.W / (11 * TS), 1, 1.6); }); Z = J.clamp(J.W / (11 * TS), 1, 1.6);
+const S = (x, y) => [(x - cam.x) * Z, (y - cam.y) * Z];       // world -> screen (particles and text live in screen space)
+
+function loadLevel(n) {
+  const L = CONFIG.levels[n], gw = Math.max(...L.map.map(r => r.length)); grid = L.map.map(r => [...r.padEnd(gw, '.')]); mh = grid.length * TS; mw = grid[0].length * TS; mobs = [];
+  grid.forEach((row, r) => row.forEach((ch, c) => {
+    if (ch === 'P') { spawn = { x: c * TS + 6, y: r * TS + 4 }; row[c] = '.'; }
+    if (ch === 'E') { mobs.push({ x: c * TS + 3, y: r * TS + 6, w: 26, h: 26, vx: -55, rot: 0, dead: 0 }); row[c] = '.'; }
+  }));
+  safe = null; respawn(); cam.x = Math.max(0, pl.x - 100); st = 'play'; ctrlOn(true); J.clearFx(); lvlBanner = 2.2;
+}
+let lvlBanner = 0;
+let safe = null, safeT = 0;
+function respawn() { const s = safe || spawn; pl.x = s.x; pl.y = s.y; pl.vx = pl.vy = 0; pl.inv = 1.5; pl.ground = 0; }
+function newGame() { hp = CONFIG.hp; bolts = 0; kills = 0; lvl = 0; rank = 0; loadLevel(0); J.music.start(CONFIG.music); }
+function finish(won) {
+  st = won ? 'win' : 'over'; ctrlOn(false); score = bolts * 10 + kills * 50 + (won ? hp * 100 : 0); rank = J.hs.add(score); J.music.stop();
+  if (won) { J.jingle('C5 E5 G5 C6 G5 C6 E6', 'square'); J.burst(J.W / 2, J.H * .3, { n: 60, color: [C.accent, C.bolt, C.flag, '#fff'], grav: 260, spd: [80, 340], life: [.8, 1.6], size: [3, 7] }); } else { J.play('lose'); J.vibe([60, 40, 100]); }
+}
+function hurt(respawnNow) {
+  if (pl.inv > 0 && !respawnNow) return;
+  hp--; const [sx, sy] = S(pl.x + pl.w / 2, pl.y + pl.h / 2);
+  J.shake(.55); J.flash(C.hurt, .3); J.vibe([30, 30, 30]); J.play('hit', .7); J.burst(sx, sy, { n: 14, color: [C.hurt, C.shirt], spd: [60, 240], grav: 300 });
+  if (hp <= 0) { finish(0); return; }
+  if (respawnNow) respawn(); else { pl.inv = 1.3; pl.vy = -360; pl.vx = -pl.face * 200; }
+}
+function tileAt(c, r) { return r < 0 || c < 0 || c >= grid[0].length ? (c < 0 || c >= grid[0].length ? '#' : '.') : r >= grid.length ? '.' : grid[r][c]; }
+function solids(x, y, w, h) {
+  const o = [], c0 = Math.floor(x / TS) - 1, c1 = Math.floor((x + w) / TS) + 1, r0 = Math.floor(y / TS) - 1, r1 = Math.floor((y + h) / TS) + 1;
+  for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) if (tileAt(c, r) === '#') o.push({ x: c * TS, y: r * TS, w: TS, h: TS });
+  return o;
+}
+
+function update(dt) {
+  tt += dt; lvlBanner = Math.max(0, lvlBanner - dt);
+  if (st !== 'play') return;
+  const K = J.keys, L = btnL.down || K.ArrowLeft || K.KeyA, R = btnR.down || K.ArrowRight || K.KeyD, JP = btnJ.down || K.Space || K.ArrowUp || K.KeyW;
+  const dir = (R ? 1 : 0) - (L ? 1 : 0), acc = (pl.ground ? 1900 : 1200) * dt, tgt = dir * CONFIG.runSpeed;
+  pl.vx += J.clamp(tgt - pl.vx, -acc * (dir ? 1 : 1.3), acc * (dir ? 1 : 1.3)); if (dir) pl.face = dir;
+  pl.inv = Math.max(0, pl.inv - dt); pl.sq = Math.max(0, pl.sq - dt * 3);
+  pl.coy = pl.ground ? .09 : pl.coy - dt; if (JP && !pl.jh) pl.buf = .12; pl.jh = JP; pl.buf -= dt;
+  if (pl.buf > 0 && pl.coy > 0) {
+    pl.vy = -CONFIG.jumpPower; pl.coy = pl.buf = 0; pl.sq = 1; J.play('jump', rnd(.95, 1.1)); const [sx, sy] = S(pl.x + 10, pl.y + pl.h);
+    J.burst(sx, sy, { n: 5, color: '#cbd5e0', spd: [20, 80], angle: -Math.PI / 2, spread: 1.4, size: [2, 4], shape: 'c', life: [.2, .4] });
+  }
+  pl.vy = Math.min(900, pl.vy + 1800 * dt * (pl.vy < 0 && !JP ? 2.3 : 1));
+  const was = pl.ground, vyBefore = pl.vy, r = J.move(pl, pl.vx * dt, pl.vy * dt, solids(pl.x, pl.y, pl.w, pl.h));
+  if (r.x) pl.vx = 0;
+  if (r.y) { pl.vy = 0; pl.ground = r.ground ? 1 : 0; if (r.ground && !was && vyBefore > 380) { pl.sq = 1; J.shake(.12); const [sx, sy] = S(pl.x + 10, pl.y + pl.h); J.burst(sx, sy, { n: 6, color: '#cbd5e0', spd: [20, 90], angle: -Math.PI / 2, spread: 1.5, size: [2, 4], shape: 'c', life: [.2, .4] }); } }
+  else pl.ground = 0;
+  pl.x = J.clamp(pl.x, 0, mw - pl.w); pl.run += Math.abs(pl.vx) * dt * .09;
+  const sc = Math.floor((pl.x + 10) / TS), sr = Math.floor((pl.y + pl.h) / TS);   // remember the last safe standing spot for respawns
+  if (pl.ground && tileAt(sc, sr) === '#' && ![-2, -1, 0, 1, 2].some(k => tileAt(sc + k, sr - 1) === '^') && !mobs.some(m => !m.dead && Math.abs(m.x - pl.x) < 90)) { if ((safeT += dt) > .35) safe = { x: pl.x, y: pl.y }; } else safeT = 0;
+  // tiles under the player: bolts, spikes, springs, flag
+  const c0 = Math.floor(pl.x / TS), c1 = Math.floor((pl.x + pl.w) / TS), r0 = Math.floor(pl.y / TS), r1 = Math.floor((pl.y + pl.h) / TS);
+  for (let rr = r0; rr <= r1; rr++) for (let cc = c0; cc <= c1; cc++) {
+    const t = tileAt(cc, rr), tx = cc * TS, ty = rr * TS;
+    if (t === 'o') { grid[rr][cc] = '.'; bolts++; const [sx, sy] = S(tx + 16, ty + 16); J.feel('small', sx, sy, C.bolt, '+10'); J.tone(J.hz(['E5', 'G5', 'C6'][bolts % 3]), .12, 'triangle', .12); }
+    else if (t === '^' && J.overlap(pl, { x: tx + 4, y: ty + 16, w: 24, h: 16 })) hurt(1);
+    else if (t === 'S' && pl.vy >= 0 && J.overlap(pl, { x: tx, y: ty + 14, w: 32, h: 18 })) { pl.vy = -980; pl.ground = 0; pl.sq = 1; J.play('power'); J.vibe(15); const [sx, sy] = S(tx + 16, ty + 20); J.burst(sx, sy, { n: 10, color: C.spring, angle: -Math.PI / 2, spread: .6, spd: [80, 220] }); }
+    else if ((t === 'F' || tileAt(cc, rr + 1) === 'F' || tileAt(cc, rr + 2) === 'F') && st === 'play') { levelDone(); return; }
+  }
+  if (pl.y > mh + 60) hurt(1);
+  // enemies
+  for (const m of mobs) {
+    if (m.dead) continue;
+    const sol = solids(m.x, m.y, m.w, m.h), mr = J.move(m, m.vx * dt, 0, sol); J.move(m, 0, 600 * dt, sol); m.rot += m.vx * dt * .07;
+    const ahead = tileAt(Math.floor((m.x + m.w / 2 + Math.sign(m.vx) * (m.w / 2 + 4)) / TS), Math.floor((m.y + m.h + 6) / TS));
+    if (mr.x || ahead !== '#') m.vx = -m.vx;
+    if (J.overlap(pl, m)) {
+      if (pl.vy > 120 && pl.y + pl.h - m.y < 16) {
+        m.dead = 1; kills++; pl.vy = -430; pl.ground = 0; const [sx, sy] = S(m.x + 13, m.y + 13); J.feel('medium', sx, sy, '#8892a6', '+50'); J.burst(sx, sy, { n: 10, color: C.tire, spd: [60, 220], grav: 400 });
+      } else hurt(0);
+    }
+  }
+  // camera
+  const vw = J.W / Z, vh = J.H / Z, tx = J.clamp(pl.x + 10 + pl.face * 50 - vw / 2, 0, Math.max(0, mw - vw)), ty = mh <= vh ? mh - vh * (mh <= vh * .8 ? .78 : 1) : J.clamp(pl.y - vh * .55, 0, mh - vh);
+  cam.x += (tx - cam.x) * Math.min(1, dt * 7); cam.y += (ty - cam.y) * Math.min(1, dt * 5);
+}
+function levelDone() {
+  st = 'clear'; ctrlOn(false); const [sx, sy] = S(pl.x, pl.y); J.feel('large', sx, sy, C.flag); J.jingle('C5 E5 G5 C6');
+  J.after(1.8, () => { if (lvl + 1 >= CONFIG.levels.length) finish(1); else { lvl++; loadLevel(lvl); } });
+}
+
+// ---------------------------------------------------------------- drawing
+function drawBg(c) {
+  const g = c.createLinearGradient(0, 0, 0, J.H); g.addColorStop(0, C.skyTop); g.addColorStop(1, C.skyBottom); c.fillStyle = g; c.fillRect(-30, -30, J.W + 60, J.H + 60);
+  c.fillStyle = 'rgba(255,255,255,.045)';
+  for (let i = -1; i < J.W / 240 + 2; i++) { const x = i * 240 - (cam.x * .2) % 240, y = J.H * .3 + (i % 2) * 90, r = 70 + (i % 3) * 20; c.save(); c.translate(x, y); c.rotate(tt * .1 * (i % 2 ? 1 : -1)); c.beginPath(); for (let k = 0; k < 16; k++) { const a = k * .3927, rr = k % 2 ? r * .86 : r; c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } c.fill(); c.restore(); }
+  c.fillStyle = 'rgba(0,0,0,.22)';
+  for (let i = -1; i < J.W / 150 + 2; i++) { const x = i * 150 - (cam.x * .5) % 150, y = J.H - (mh <= J.H / Z ? 0 : 0) - 150 - (i % 3) * 20; c.fillRect(x, y, 70, 12); for (let k = 0; k < 2 + (i % 2); k++) { c.beginPath(); c.arc(x + 20 + k * 30, y - 16, 16, 0, PI2); c.fill(); } }
+}
+function drawTile(c, t, x, y, below) {
+  if (t === '#') {
+    c.fillStyle = C.block; c.fillRect(x, y, TS, TS); if (below !== '#') { c.fillStyle = C.blockTop; c.fillRect(x, y, TS, 6); }
+    c.fillStyle = 'rgba(0,0,0,.22)'; c.fillRect(x, y + TS - 3, TS, 3); c.fillRect(x + TS - 3, y, 3, TS); c.fillStyle = 'rgba(255,255,255,.2)';
+    c.beginPath(); c.arc(x + 6, y + 12, 2, 0, PI2); c.arc(x + TS - 8, y + 12, 2, 0, PI2); c.fill();
+  } else if (t === 'o') {
+    const b = Math.sin(tt * 4 + x * .1) * 3; c.save(); c.translate(x + 16, y + 16 + b); c.rotate(tt * 2 + x); c.fillStyle = C.bolt; c.beginPath();
+    for (let i = 0; i < 6; i++) c.lineTo(Math.cos(i * 1.0472) * 9, Math.sin(i * 1.0472) * 9); c.fill(); c.fillStyle = 'rgba(0,0,0,.5)'; c.beginPath(); c.arc(0, 0, 3.4, 0, PI2); c.fill(); c.restore();
+  } else if (t === '^') {
+    c.fillStyle = '#c9d2dc'; for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(x + i * 10.6 + 1, y + TS); c.lineTo(x + i * 10.6 + 5.3, y + 14); c.lineTo(x + i * 10.6 + 9.6, y + TS); c.fill(); }
+    c.fillStyle = C.hurt; c.fillRect(x, y + TS - 4, TS, 4);
+  } else if (t === 'S') {
+    c.fillStyle = '#2d3748'; c.fillRect(x + 3, y + TS - 6, TS - 6, 6); c.strokeStyle = C.spring; c.lineWidth = 3; c.beginPath(); c.moveTo(x + 8, y + TS - 6); for (let i = 0; i < 4; i++) c.lineTo(x + (i % 2 ? 8 : 24), y + TS - 8 - i * 4); c.stroke();
+    c.fillStyle = C.spring; J.rr(c, x + 3, y + 9, TS - 6, 6, 3); c.fill();
+  } else if (t === 'F') {
+    c.fillStyle = '#cbd5e0'; c.fillRect(x + 6, y - 64, 4, TS + 64); const w = Math.sin(tt * 5) * 3; c.fillStyle = '#fff'; c.fillRect(x + 10, y - 64, 36, 28);
+    c.fillStyle = '#15181f'; for (let i = 0; i < 6; i++) for (let k = 0; k < 4; k++) if ((i + k) % 2 === 0) c.fillRect(x + 10 + i * 6, y - 64 + k * 7 + (i % 2 ? w * .3 : 0), 6, 7);
+  }
+}
+function drawTire(c, m) {
+  c.save(); c.translate(m.x + 13, m.y + 13); c.rotate(m.rot); c.fillStyle = C.tire; c.beginPath(); c.arc(0, 0, 13, 0, PI2); c.fill(); c.strokeStyle = '#14161b'; c.lineWidth = 3; c.beginPath();
+  for (let i = 0; i < 10; i++) { c.moveTo(Math.cos(i * .628) * 10, Math.sin(i * .628) * 10); c.lineTo(Math.cos(i * .628) * 13, Math.sin(i * .628) * 13); } c.stroke();
+  c.fillStyle = '#b8c4d0'; c.beginPath(); c.arc(0, 0, 6.5, 0, PI2); c.fill(); c.restore();
+  c.fillStyle = '#fff'; c.beginPath(); c.arc(m.x + 9, m.y + 9, 3.5, 0, PI2); c.arc(m.x + 18, m.y + 9, 3.5, 0, PI2); c.fill(); c.fillStyle = '#e63946'; c.beginPath(); c.arc(m.x + 9 + Math.sign(m.vx), m.y + 10, 1.6, 0, PI2); c.arc(m.x + 18 + Math.sign(m.vx), m.y + 10, 1.6, 0, PI2); c.fill();
+}
+function drawPlayer(c) {
+  if (pl.inv > 0 && Math.floor(tt * 18) % 2) return;
+  const sq = 1 + Math.sin(pl.sq * 3) * .12 * pl.sq; c.save(); c.translate(pl.x + 10, pl.y + 28); c.scale(pl.face / sq, sq); const w = Math.sin(pl.run) * (pl.ground ? 5 : 2);
+  c.fillStyle = '#1f2a44'; c.fillRect(-7 + w, -8, 6, 8); c.fillRect(1 - w, -8, 6, 8);
+  c.fillStyle = C.shirt; J.rr(c, -9, -22, 18, 16, 4); c.fill(); c.fillStyle = '#f1c27d'; c.beginPath(); c.arc(0, -24, 7, 0, PI2); c.fill();
+  c.fillStyle = C.hat; c.beginPath(); c.arc(0, -26, 7.5, Math.PI, 0); c.fill(); c.fillRect(-1, -27, 11, 3); c.fillStyle = '#111'; c.beginPath(); c.arc(3, -24, 1.4, 0, PI2); c.fill();
+  c.strokeStyle = '#cbd5e0'; c.lineWidth = 3; c.beginPath(); c.moveTo(8, -14); c.lineTo(15 + Math.sin(pl.run) * 2, -20); c.stroke(); c.restore();
+}
+function draw(c) {
+  ui = uiNext; uiNext = [];
+  drawBg(c);
+  if (st === 'title' || st === 'over' || st === 'win') return;
+  c.save(); c.scale(Z, Z); c.translate(-Math.round(cam.x), -Math.round(cam.y));
+  const vw = J.W / Z, vh = J.H / Z, c0 = Math.max(0, Math.floor(cam.x / TS) - 1), c1 = Math.min(grid[0].length - 1, Math.floor((cam.x + vw) / TS) + 1), r0 = Math.max(0, Math.floor(cam.y / TS)), r1 = Math.min(grid.length - 1, Math.floor((cam.y + vh) / TS) + 1);
+  for (let r = r0; r <= r1; r++) for (let cc = c0; cc <= c1; cc++) { const t = grid[r][cc]; if (t !== '.') drawTile(c, t, cc * TS, r * TS, tileAt(cc, r - 1)); }
+  for (const m of mobs) if (!m.dead) drawTire(c, m);
+  drawPlayer(c); c.restore();
+}
+function hud(c) {
+  const W = J.W, H = J.H;
+  if (st === 'title') {
+    c.fillStyle = 'rgba(10,12,18,.5)'; c.fillRect(0, 0, W, H); c.save(); c.translate(W / 2, H * .27); c.scale(2.6, 2.6); const m = { x: -13, y: -13, rot: tt * 2, vx: 1 }; drawTire(c, m); c.restore();
+    J.txt(c, CONFIG.title, W / 2, H * .46, { size: 42, max: W - 30, color: C.accent }); J.txt(c, CONFIG.tagline, W / 2, H * .46 + 34, { size: 16, max: W - 40 });
+    button(c, T.play, W / 2, H * .62, 230, 64, newGame); J.txt(c, T.best + ' ' + J.hs.best(), W / 2, H * .62 + 56, { size: 16, color: C.bolt }); J.txt(c, CONFIG.shop, W / 2, H - 30, { size: 15, max: W - 40, color: '#aab4c0' });
+  } else if (st === 'over' || st === 'win') {
+    c.fillStyle = 'rgba(10,12,18,.9)'; c.fillRect(0, 0, W, H); J.txt(c, st === 'win' ? T.win : T.over, W / 2, H * .13, { size: 38, color: st === 'win' ? C.flag : C.hurt, max: W - 30 });
+    J.txt(c, T.bolts + ' ' + bolts + '    ' + T.score + ' ' + score, W / 2, H * .21, { size: 19, max: W - 30 }); if (rank === 1) J.txt(c, 'NEW BEST!', W / 2, H * .27, { size: 21, color: C.bolt });
+    J.txt(c, T.top, W / 2, H * .36, { size: 15, color: '#aab4c0' }); J.hs.draw(c, W / 2, H * .41, { size: 17, w: 210, n: 4, hi: C.bolt });
+    J.wrap(c, CONFIG.cta, W - 60, 17).forEach((l, i) => J.txt(c, l, W / 2, H * .64 + i * 22, { size: 17, color: C.accent }));
+    button(c, T.again, W / 2, H * .82, 240, 62, newGame); J.txt(c, CONFIG.shop, W / 2, H - 28, { size: 14, max: W - 40, color: '#aab4c0' });
+  } else {
+    for (let i = 0; i < CONFIG.hp; i++) { c.globalAlpha = i < hp ? 1 : .25; c.fillStyle = C.tire; c.beginPath(); c.arc(20 + i * 24, 28, 10, 0, PI2); c.fill(); c.fillStyle = '#b8c4d0'; c.beginPath(); c.arc(20 + i * 24, 28, 5, 0, PI2); c.fill(); } c.globalAlpha = 1;
+    J.txt(c, T.bolts + ' ' + bolts, 12, 56, { size: 15, align: 'left', color: C.bolt });
+    if (lvlBanner > 0) { J.txt(c, T.level + ' ' + (lvl + 1), W / 2, H * .28, { size: 24, color: '#aab4c0' }); J.txt(c, CONFIG.levels[lvl].name, W / 2, H * .28 + 40, { size: 38, color: C.accent, max: W - 30 }); }
+    if (st === 'clear') J.txt(c, T.clear, W / 2, H * .38, { size: 40, color: C.flag, max: W - 30 });
+  }
+}
+window.__qa.info = () => ({ st, lvl, hp, bolts, kills, x: Math.round(pl.x), y: Math.round(pl.y), ground: pl.ground, mobs: mobs.filter(m => !m.dead).length });
+J.loop({ update, draw, hud });
+</script>
+</body>
+</html>

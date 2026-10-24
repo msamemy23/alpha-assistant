@@ -1,0 +1,13 @@
+{
+  "_note": "Font pairings shipped in fonts.css. 'files' = the woff2 files in fonts/ a site needs for that pairing (copy only these to keep a site light). 'weights' = usable font-weight values.",
+  "oswald-inter":    {"display": "Oswald",           "body": "Inter",         "feel": "condensed, sturdy, workmanlike", "weights": {"Oswald": "200-700", "Inter": "100-900"}, "files": ["oswald-var.woff2", "inter-var.woff2"]},
+  "barlow":          {"display": "Barlow Condensed", "body": "Barlow",        "feel": "highway-sign, industrial, honest", "weights": {"Barlow Condensed": "600,700", "Barlow": "400,600"}, "files": ["barlow-condensed-600.woff2", "barlow-condensed-700.woff2", "barlow-400.woff2", "barlow-600.woff2"]},
+  "bebas-inter":     {"display": "Bebas Neue",       "body": "Inter",         "feel": "poster caps, loud, athletic", "weights": {"Bebas Neue": "400", "Inter": "100-900"}, "files": ["bebas-neue-400.woff2", "inter-var.woff2"]},
+  "archivo":         {"display": "Archivo",          "body": "Archivo Narrow","feel": "neutral grotesque, grid-friendly, heavy weights hit hard", "weights": {"Archivo": "100-900", "Archivo Narrow": "400-700"}, "files": ["archivo-var.woff2", "archivo-narrow-var.woff2"]},
+  "playfair-source": {"display": "Playfair Display","body": "Source Sans 3", "feel": "high-contrast serif, editorial, premium", "weights": {"Playfair Display": "400-900", "Source Sans 3": "200-900"}, "files": ["playfair-var.woff2", "source-sans-3-var.woff2"]},
+  "grotesk-dm":      {"display": "Space Grotesk",    "body": "DM Sans",       "feel": "quirky geometric, modern, friendly", "weights": {"Space Grotesk": "300-700", "DM Sans": "100-1000"}, "files": ["space-grotesk-var.woff2", "dm-sans-var.woff2"]},
+  "sora-inter":      {"display": "Sora",             "body": "Inter",         "feel": "wide geometric, clean, techy-calm", "weights": {"Sora": "100-800", "Inter": "100-900"}, "files": ["sora-var.woff2", "inter-var.woff2"]},
+  "fraunces-work":   {"display": "Fraunces",         "body": "Work Sans",     "feel": "soft old-style serif, warm, crafted", "weights": {"Fraunces": "100-900", "Work Sans": "100-900"}, "files": ["fraunces-var.woff2", "work-sans-var.woff2"]},
+  "dmserif-dm":      {"display": "DM Serif Display", "body": "DM Sans",       "feel": "friendly display serif, welcoming", "weights": {"DM Serif Display": "400", "DM Sans": "100-1000"}, "files": ["dm-serif-display-400.woff2", "dm-sans-var.woff2"]},
+  "mono-grotesk":    {"display": "Space Mono",       "body": "Space Grotesk", "feel": "typewriter mono headings, raw, technical", "weights": {"Space Mono": "400,700", "Space Grotesk": "300-700"}, "files": ["space-mono-400.woff2", "space-mono-700.woff2", "space-grotesk-var.woff2"]}
+}

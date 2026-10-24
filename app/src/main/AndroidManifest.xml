@@ -1,0 +1,89 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Texts the owner approves are sent from their own number. -->
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+    <!-- Away mode keeps the phone awake for the minute or two it takes to answer a text. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- Lets Alpha ask Termux (a free command line app) to run commands for the bots. Android asks the owner before this works. -->
+    <uses-permission android:name="com.termux.permission.RUN_COMMAND"/>
+    <!-- Lets the owner exempt Alpha from battery limits so bots keep working while they use other apps (they approve it in Android's own dialog). -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <!-- Phone data the bots can read when the owner allows it (asked only the first time a bot needs it): the calendar and the contacts. Alarms and timers go through the Clock app. -->
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+    <queries>
+        <package android:name="com.termux"/>
+        <!-- Every app with a launcher icon: phone control opens apps by name (and apps_list lists them). -->
+        <intent><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent>
+        <intent><action android:name="android.speech.action.RECOGNIZE_SPEECH"/></intent>
+        <intent><action android:name="android.speech.RecognitionService"/></intent>
+        <intent><action android:name="android.intent.action.SET_ALARM"/></intent>
+        <intent><action android:name="android.intent.action.SET_TIMER"/></intent>
+    </queries>
+    <application android:name=".AlphaApplication" android:allowBackup="false" android:fullBackupContent="false" android:dataExtractionRules="@xml/data_extraction_rules"
+        android:label="${appLabel}" android:icon="@drawable/ic_alpha" android:theme="@style/Theme.Alpha"
+        android:usesCleartextTraffic="false" android:networkSecurityConfig="@xml/network_security_config" android:supportsRtl="true">
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+                <data android:mimeType="image/*"/>
+                <data android:mimeType="application/pdf"/>
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.presentationml.presentation"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="alphaassistant" android:host="signin" android:path="/complete"/>
+            </intent-filter>
+        </activity>
+        <service android:name=".CallService" android:exported="false" android:foregroundServiceType="microphone|mediaPlayback"/>
+        <service android:name=".TaskService" android:exported="false" android:foregroundServiceType="dataSync"/>
+        <!-- Phone control: bots use the owner's other apps (read the screen, tap, type, scroll). Works only after the owner switches it on in Android's Accessibility settings. -->
+        <service android:name=".PhoneControlService" android:exported="true" android:label="@string/phone_control_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter><action android:name="android.accessibilityservice.AccessibilityService"/></intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/phone_control"/>
+        </service>
+        <!-- Away mode: hears new texts through the Messages app's notification once the owner turns on Notification access. -->
+        <service android:name=".AwayListener" android:exported="true" android:label="Alpha Away mode"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter><action android:name="android.service.notification.NotificationListenerService"/></intent-filter>
+        </service>
+        <receiver android:name=".AwayReceiver" android:exported="false"/>
+        <receiver android:name=".TelnyxReceiver" android:exported="false"/>
+        <!-- The button on a "Alpha noticed something" notification, and swiping it away. -->
+        <receiver android:name=".ProactiveReceiver" android:exported="false"/>
+        <!-- Front doors: the home-screen widget, its Away button, and the Quick Settings tile "Ask Alpha". -->
+        <receiver android:name=".AlphaWidget" android:exported="true" android:label="@string/widget_label">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/alpha_widget_info"/>
+        </receiver>
+        <receiver android:name=".WidgetReceiver" android:exported="false"/>
+        <service android:name=".AlphaTile" android:exported="true" android:label="@string/tile_label" android:icon="@drawable/ic_glyph_ask"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE"/></intent-filter>
+        </service>
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.files"
+            android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths"/>
+        </provider>
+    </application>
+</manifest>

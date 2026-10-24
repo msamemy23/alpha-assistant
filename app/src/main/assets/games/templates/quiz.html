@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#171c2b">
+<title>Garage Quiz Night</title>
+</head>
+<body style="margin:0;background:#171c2b">
+<canvas id="c"></canvas>
+<script src="../juice.js"></script>
+<script>
+'use strict';
+// =====================================================================
+// GARAGE QUIZ NIGHT - trivia with a Solo mode and a Party lobby (2-4 teams pass the phone).
+// TO RETHEME: change CONFIG only (questions are plain JSON). Every "CUSTOMIZE:" line is safe to edit.
+// =====================================================================
+const CONFIG = {
+  id: 'garage-quiz',                  // CUSTOMIZE: unique short id (keeps saved scores separate per game)
+  title: 'GARAGE QUIZ NIGHT',         // CUSTOMIZE: game title (also update <title> above)
+  tagline: 'How much do you know about cars?', // CUSTOMIZE: one line under the title
+  shop: "Mike's Auto Repair",         // CUSTOMIZE: business name
+  cta: 'Know your stuff? Bring this score in for a free multi-point inspection!', // CUSTOMIZE: message on the final screen
+  player: 'MECHANIC',                 // CUSTOMIZE: name on the solo high-score board
+  text: {                             // CUSTOMIZE: any wording (keep it short)
+    play: 'PLAY', solo: 'SOLO', party: 'PARTY (2-4 TEAMS)', start: 'START', again: 'PLAY AGAIN', next: 'NEXT', fifty: '50/50', skip: 'SKIP', question: 'QUESTION', score: 'SCORE',
+    correct: 'CORRECT!', wrong: 'NOT QUITE', timeUp: 'TIME UP!', teams: 'HOW MANY TEAMS?', pass: 'PASS THE PHONE TO', ready: 'TAP WHEN READY', final: 'FINAL SCORE', winner: 'WINNER', best: 'BEST', top: 'TOP SCORES',
+    right: 'right', paused: 'PAUSED', resume: 'Tap to resume'
+  },
+  colors: { bg: '#171c2b', bg2: '#232b42', card: '#2b3552', text: '#f4f6f8', accent: '#ff7a1a', good: '#2ec4b6', bad: '#e63946', gold: '#ffd23f', btn: '#3a4668' }, // CUSTOMIZE: colours
+  teams: [                            // CUSTOMIZE: team names and colours for Party mode (4 entries)
+    { name: 'Team Wrench', color: '#ff7a1a' }, { name: 'Team Torque', color: '#4895ef' }, { name: 'Team Piston', color: '#2ec4b6' }, { name: 'Team Gasket', color: '#e05260' }
+  ],
+  roundSize: 8,                       // CUSTOMIZE: questions in a Solo round
+  partyRounds: 3,                     // CUSTOMIZE: questions each team answers in Party mode
+  timeLimit: 15,                      // CUSTOMIZE: seconds per question
+  // CUSTOMIZE: add a question = add one { q, a: [4 answers], c: index of the right answer (0-3), fact: optional fun fact } line. Answers are shuffled automatically.
+  questions: [
+    { q: 'How often should you change oil in a modern car that uses synthetic oil?', a: ['Every 500 miles', 'Every 5,000 to 7,500 miles', 'Every 50,000 miles', 'Only when it turns black'], c: 1, fact: 'Check your owner manual - many modern engines go 5,000 to 7,500 miles.' },
+    { q: 'What does a flashing check engine light usually mean?', a: ['Time for a car wash', 'A serious misfire - slow down and get it checked', 'Low washer fluid', 'Perfect tire pressure'], c: 1, fact: 'A flashing light can mean unburned fuel is damaging the catalytic converter.' },
+    { q: 'What does the alternator do?', a: ['Cools the engine', 'Charges the battery while the engine runs', 'Filters the oil', 'Steers the wheels'], c: 1 },
+    { q: 'What is the legal minimum tire tread depth in most US states?', a: ['1/32 inch', '2/32 inch', '4/32 inch', '6/32 inch'], c: 1, fact: 'Penny test: if you can see all of Lincoln\'s head, it is time for new tires.' },
+    { q: 'Which fluid helps your brakes work?', a: ['Brake fluid', 'Washer fluid', 'Antifreeze', 'Gear oil'], c: 0 },
+    { q: 'What does PSI stand for on a tire?', a: ['Pounds per square inch', 'Pressure safety index', 'Pump system indicator', 'Power steering input'], c: 0, fact: 'The right PSI is on the sticker inside your driver door.' },
+    { q: 'Which part ignites the fuel and air mixture in a gasoline engine?', a: ['Spark plug', 'Radiator', 'Piston ring', 'Fuel filter'], c: 0 },
+    { q: 'About how often should tires be rotated?', a: ['Every 5,000 to 8,000 miles', 'Every 500 miles', 'Every 40,000 miles', 'Never'], c: 0, fact: 'Rotating evens out wear so tires last longer.' },
+    { q: 'What is a torque wrench used for?', a: ['Tightening bolts to an exact spec', 'Cutting pipes', 'Measuring tread depth', 'Jump-starting a car'], c: 0 },
+    { q: 'What does coolant (antifreeze) do?', a: ['Keeps the engine from overheating and freezing', 'Cleans the windshield', 'Lubricates the tires', 'Powers the radio'], c: 0 },
+    { q: 'What should hold a car up when you work underneath it?', a: ['Jack stands', 'Only the jack', 'A stack of books', 'A garden hose'], c: 0, fact: 'Never rely on a jack alone - always use jack stands.' },
+    { q: 'What does the catalytic converter do?', a: ['Reduces harmful exhaust gases', 'Boosts horsepower', 'Cools the brakes', 'Stores fuel'], c: 0 },
+    { q: 'A tire that keeps losing air most likely has...', a: ['A slow leak or puncture', 'Too much oil', 'New brake pads', 'A strong battery'], c: 0 },
+    { q: 'Your car will not start and the dash lights are dim. What do you check first?', a: ['The battery', 'The tires', 'The wiper blades', 'The mud flaps'], c: 0, fact: 'Dim lights usually mean a weak battery or loose terminals.' }
+  ],
+  music: { bpm: 100, tracks: [        // CUSTOMIZE: tune (notes like C4 F#3, "." = rest)
+    { w: 'triangle', v: .1, p: 'C4 . G3 . E4 . G3 . D4 . A3 . F4 . A3 .' },
+    { w: 'sine', v: .2, p: 'C3 . . . . . . . F2 . . . . . . .' }
+  ] }
+};
+
+// ---------------------------------------------------------------- setup
+const J = Juice, T = CONFIG.text, C = CONFIG.colors, PI2 = Math.PI * 2, cv = document.getElementById('c');
+J.init({ id: CONFIG.id, title: CONFIG.title, player: CONFIG.player, str: { paused: T.paused, resume: T.resume } });
+J.fit(cv, { w: 360, h: 640, min: .5, max: 1.8, bg: C.bg });
+
+let ui = [], uiNext = [];
+function button(c, s, x, y, w, h, fn, col, tc, k0) {
+  uiNext.push({ x: x - w / 2, y: y - h / 2, w, h, fn });
+  const dn = J.pt.down && Math.abs(J.pt.x - x) < w / 2 && Math.abs(J.pt.y - y) < h / 2, k = (dn ? .96 : 1) * (k0 || 1);
+  c.save(); c.translate(x, y); c.scale(k, k);
+  c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, -w / 2, -h / 2 + 5, w, h, h / 3); c.fill();
+  c.fillStyle = col || C.accent; J.rr(c, -w / 2, -h / 2, w, h, h / 3); c.fill();
+  J.txt(c, s, 0, 1, { size: Math.min(h * .42, 22), color: tc || '#15181f', stroke: 0, max: w - 24 }); c.restore();
+}
+J.on('tap', (x, y) => { for (const b of ui) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { J.play('click'); b.fn(); return; } });
+const snd = J.btn({ x: () => J.W - 62, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'snd', x, y, 20, J.opts.sound), onpress: () => J.setOpt('sound'), key: 'KeyM' });
+const pause = J.btn({ x: () => J.W - 24, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'pause', x, y, 18), onpress: () => J.pause(), key: 'KeyP' });
+function ctrlOn(v) { snd.on = pause.on = v; }
+ctrlOn(false);
+
+// ---------------------------------------------------------------- game state
+let st = 'title', mode = 'solo', nTeams = 2, teams = [], cur = 0, qi = 0, total = 0, deck = [], q = null, opts = [], picked = -1, tLeft = 0, tt = 0, rank = 0;
+let streak = 0, correctN = 0, life50 = true, lifeSkip = true, off = new Set(), popK = {}, lastBonus = 0;
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+function begin(m) {
+  mode = m; J.clearFx(); total = m === 'solo' ? Math.min(CONFIG.roundSize, CONFIG.questions.length) : nTeams * CONFIG.partyRounds; qi = 0; cur = 0; streak = 0; correctN = 0; life50 = lifeSkip = true; rank = 0;
+  teams = m === 'solo' ? [{ name: CONFIG.player, color: C.accent, score: 0 }] : CONFIG.teams.slice(0, nTeams).map(t => ({ name: t.name, color: t.color, score: 0, ok: 0 }));
+  deck = []; while (deck.length < total + 2) deck = deck.concat(shuffle(CONFIG.questions));
+  J.music.start(CONFIG.music); ctrlOn(true); nextQ(true);
+}
+function nextQ(first) {
+  if (!first) qi++;
+  if (qi >= total) return finish();
+  q = deck[qi]; opts = shuffle(q.a.map((t, i) => ({ t, ok: i === q.c }))); picked = -1; off = new Set(); tLeft = CONFIG.timeLimit; popK = {};
+  if (mode === 'party') { cur = qi % nTeams; st = 'pass'; } else st = 'ask';
+}
+function answer(i) {
+  if (st !== 'ask') return; picked = i; const ok = i >= 0 && opts[i].ok, T0 = teams[cur]; st = 'reveal';
+  if (i >= 0) popK[i] = 1.12;
+  if (ok) {
+    streak++; correctN++; T0.ok = (T0.ok || 0) + 1; lastBonus = Math.round(tLeft / CONFIG.timeLimit * 50); const pts = 100 + lastBonus + (mode === 'solo' ? Math.min(streak - 1, 5) * 10 : 0); T0.score += pts; q.pts = pts;
+    const y = rowY(i); J.feel(streak >= 3 ? 'large' : 'medium', J.W / 2, y, C.good, '+' + pts); J.burst(J.W / 2, y, { n: 30, color: [C.good, C.gold, '#fff', C.accent], grav: 260, spd: [80, 280], life: [.6, 1.2], size: [3, 6] }); J.tone(J.hz(['C5', 'E5', 'G5', 'C6'][Math.min(streak - 1, 3)]), .2, 'triangle', .15);
+  } else { streak = 0; J.shake(.4); J.play('lose'); J.vibe([30, 40, 30]); J.flash(C.bad, .25); q.pts = 0; }
+}
+function finish() {
+  st = 'final'; ctrlOn(false); J.music.stop();
+  if (mode === 'solo') { rank = J.hs.add(teams[0].score); } else { teams.sort((a, b) => b.score - a.score); }
+  J.jingle('C5 E5 G5 C6 E6'); J.burst(J.W / 2, J.H * .25, { n: 70, color: [C.good, C.gold, C.accent, '#fff'], grav: 260, spd: [80, 340], life: [.8, 1.6], size: [3, 7] });
+}
+
+// layout helpers (centered column, max 440 wide)
+const colX = () => (J.W - Math.min(J.W - 24, 440)) / 2, colW = () => Math.min(J.W - 24, 440);
+const rowH = () => 52, rowY = i => 250 + i * (rowH() + 10) + rowH() / 2;
+function fitWrap(c, s, w, h, max, min) { let z = max, ls; do { ls = J.wrap(c, s, w, z); z -= 1; } while (z > min && ls.length * (z + 1) * 1.25 > h); return { ls, z: z + 1 }; }
+
+function update(dt) {
+  tt += dt; for (const k in popK) popK[k] += (1 - popK[k]) * Math.min(1, dt * 10);
+  if (st === 'ask') { tLeft -= dt; if (tLeft <= 0) { tLeft = 0; answer(-1); } else if (tLeft < 5 && Math.floor(tLeft * 2) !== Math.floor((tLeft + dt) * 2)) J.play('tick', 1.3, .5); }
+}
+
+// ---------------------------------------------------------------- drawing
+function bg(c) {
+  const g = c.createLinearGradient(0, 0, 0, J.H); g.addColorStop(0, C.bg2); g.addColorStop(1, C.bg); c.fillStyle = g; c.fillRect(-30, -30, J.W + 60, J.H + 60);
+  c.strokeStyle = 'rgba(255,255,255,.035)'; c.lineWidth = 10; for (let i = 0; i < 6; i++) { c.beginPath(); c.arc(((i * 211 + tt * 10) % (J.W + 200)) - 100, (i * 131) % J.H, 40 + (i % 3) * 25, 0, PI2); c.stroke(); }
+}
+function gauge(c, x, y, r, v) {
+  c.save(); c.translate(x, y); c.strokeStyle = '#3a4668'; c.lineWidth = r * .16; c.lineCap = 'round'; c.beginPath(); c.arc(0, 0, r, Math.PI * .8, Math.PI * 2.2); c.stroke();
+  c.strokeStyle = C.accent; c.beginPath(); c.arc(0, 0, r, Math.PI * .8, Math.PI * (.8 + 1.4 * v)); c.stroke();
+  for (let i = 0; i <= 10; i++) { const a = Math.PI * (.8 + 1.4 * i / 10); c.strokeStyle = i > 7 ? C.bad : '#9fb3c8'; c.lineWidth = 3; c.beginPath(); c.moveTo(Math.cos(a) * r * .74, Math.sin(a) * r * .74); c.lineTo(Math.cos(a) * r * .88, Math.sin(a) * r * .88); c.stroke(); }
+  const a = Math.PI * (.8 + 1.4 * v); c.strokeStyle = '#fff'; c.lineWidth = 5; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a) * r * .7, Math.sin(a) * r * .7); c.stroke(); c.fillStyle = C.accent; c.beginPath(); c.arc(0, 0, r * .1, 0, PI2); c.fill(); c.restore();
+}
+function draw(c) { ui = uiNext; uiNext = []; bg(c); }
+function hud(c) {
+  const W = J.W, H = J.H, X = colX(), CW = colW(), mx = W / 2;
+  if (st === 'title') {
+    gauge(c, mx, H * .24, 62, .5 + .45 * Math.sin(tt * 1.7)); J.txt(c, CONFIG.title, mx, H * .45, { size: 40, max: W - 30, color: C.accent }); J.txt(c, CONFIG.tagline, mx, H * .45 + 34, { size: 16, max: W - 40 });
+    button(c, T.play, mx, H * .62, 230, 64, () => { st = 'lobby'; J.unlock(); }); J.txt(c, T.best + ' ' + J.hs.best(), mx, H * .62 + 56, { size: 16, color: C.gold }); J.txt(c, CONFIG.shop, mx, H - 30, { size: 15, max: W - 40, color: '#aab4c0' });
+    return;
+  }
+  if (st === 'lobby') {
+    J.txt(c, CONFIG.title, mx, 70, { size: 28, max: W - 30, color: C.accent }); button(c, T.solo, mx, 170, Math.min(280, CW), 70, () => begin('solo'), C.good);
+    J.txt(c, T.teams, mx, 262, { size: 16, color: '#aab4c0' });
+    for (let i = 2; i <= 4; i++) { const bx = mx + (i - 3) * 76, sel = nTeams === i; button(c, String(i), bx, 316, 64, 60, () => { nTeams = i; }, sel ? C.gold : C.btn, sel ? '#15181f' : '#fff'); }
+    for (let i = 0; i < nTeams; i++) { const t = CONFIG.teams[i]; c.fillStyle = t.color; J.rr(c, mx - 120, 372 + i * 38, 240, 30, 15); c.fill(); J.txt(c, t.name, mx, 387 + i * 38, { size: 17, color: '#15181f', stroke: 0, max: 220 }); }
+    button(c, T.party.split(' (')[0] + ' - ' + T.start, mx, 372 + nTeams * 38 + 46, Math.min(300, CW), 66, () => begin('party'), C.accent); return;
+  }
+  if (st === 'final') {
+    J.txt(c, T.final, mx, 70, { size: 34, color: C.gold, max: W - 30 });
+    if (mode === 'solo') {
+      J.txt(c, teams[0].score, mx, 140, { size: 60 }); J.txt(c, correctN + ' / ' + total + ' ' + T.right, mx, 190, { size: 20, color: '#cfd8e3' }); if (rank === 1) J.txt(c, 'NEW BEST!', mx, 222, { size: 22, color: C.gold });
+      J.txt(c, T.top, mx, 262, { size: 15, color: '#aab4c0' }); J.hs.draw(c, mx, 292, { size: 17, w: 210, n: 4, hi: C.gold });
+    } else {
+      J.txt(c, T.winner + ': ' + teams[0].name, mx, 112, { size: 24, color: teams[0].color, max: W - 30 });
+      teams.forEach((t, i) => { const y = 160 + i * 52; c.fillStyle = t.color; J.rr(c, mx - 140, y - 20, 280, 42, 14); c.fill(); J.txt(c, (i + 1) + '. ' + t.name, mx - 128, y + 1, { size: 18, align: 'left', color: '#15181f', stroke: 0, max: 170 }); J.txt(c, t.score, mx + 128, y + 1, { size: 22, align: 'right', color: '#15181f', stroke: 0 }); });
+    }
+    J.wrap(c, CONFIG.cta, W - 60, 17).forEach((l, i) => J.txt(c, l, mx, H * .66 + i * 22, { size: 17, color: C.accent })); button(c, T.again, mx, H * .84, 240, 62, () => { st = 'lobby'; }); return;
+  }
+  // in-game header
+  const t0 = teams[cur]; c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(0, 0, W, 56);
+  J.txt(c, T.question + ' ' + Math.min(qi + 1, total) + '/' + total, 14, 22, { size: 14, align: 'left', color: '#aab4c0' }); J.txt(c, mode === 'party' ? t0.name : T.score, 14, 42, { size: 15, align: 'left', color: mode === 'party' ? t0.color : '#aab4c0', max: 150 });
+  J.txt(c, t0.score, W - 112, 32, { size: 26, align: 'right' });
+  if (st === 'pass') {
+    J.txt(c, T.pass, mx, H * .3, { size: 20, color: '#cfd8e3' }); c.fillStyle = t0.color; J.rr(c, mx - 150, H * .38, 300, 80, 24); c.fill(); J.txt(c, t0.name, mx, H * .38 + 41, { size: 34, color: '#15181f', stroke: 0, max: 280 });
+    button(c, T.ready, mx, H * .6, 260, 66, () => { st = 'ask'; tLeft = CONFIG.timeLimit; J.play('click', 1); }, C.good); return;
+  }
+  // timer bar
+  const f = tLeft / CONFIG.timeLimit; c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, X, 64, CW, 10, 5); c.fill(); c.fillStyle = f > .3 ? C.good : C.bad; J.rr(c, X, 64, Math.max(10, CW * f), 10, 5); c.fill();
+  // question card
+  c.fillStyle = C.card; J.rr(c, X, 84, CW, 152, 20); c.fill(); const fw = fitWrap(c, q.q, CW - 36, 124, 24, 13); J.font(c, fw.z); fw.ls.forEach((l, i) => J.txt(c, l, mx, 160 - fw.ls.length * (fw.z * 1.25) / 2 + i * fw.z * 1.25 + fw.z * .62, { size: fw.z, stroke: 0 }));
+  if (st === 'ask' && streak >= 2 && mode === 'solo') J.txt(c, 'STREAK x' + streak, X + CW - 12, 98, { size: 13, align: 'right', color: C.gold, stroke: 0 });
+  const rh = rowH();
+  opts.forEach((o, i) => {
+    const y = rowY(i); let col = C.btn, tc = '#fff';
+    if (off.has(i)) { col = '#222a40'; tc = '#5d6785'; }
+    if (st === 'reveal') { if (o.ok) { col = C.good; tc = '#10241f'; } else if (i === picked) { col = C.bad; tc = '#fff'; } else { col = '#262e46'; tc = '#7f8aa8'; } }
+    const k = popK[i] || 1, lab = String.fromCharCode(65 + i) + '   ' + o.t;
+    if (st === 'ask' && !off.has(i)) button(c, '', mx, y, CW, rh, () => answer(i), col, tc, k); else { c.save(); c.translate(mx, y); c.scale(k, k); c.fillStyle = 'rgba(0,0,0,.35)'; J.rr(c, -CW / 2, -rh / 2 + 5, CW, rh, rh / 3); c.fill(); c.fillStyle = col; J.rr(c, -CW / 2, -rh / 2, CW, rh, rh / 3); c.fill(); c.restore(); }
+    const lw = J.wrap(c, o.t, CW - 70, 17); J.txt(c, String.fromCharCode(65 + i), X + 24, y + 1, { size: 20, color: tc, stroke: 0, weight: 900 });
+    lw.slice(0, 2).forEach((l, j) => J.txt(c, l, X + 46, y + 1 + (j - (Math.min(2, lw.length) - 1) / 2) * 19, { size: 17, align: 'left', color: tc, stroke: 0, max: CW - 64 }));
+  });
+  if (st === 'ask' && mode === 'solo') {
+    const y = rowY(3) + rh / 2 + 34;
+    button(c, T.fifty, mx - 70, y, 124, 46, () => { if (!life50) return; life50 = false; const w = opts.map((o, i) => i).filter(i => !opts[i].ok); shuffle(w).slice(0, 2).forEach(i => off.add(i)); J.play('power'); }, life50 ? C.btn : '#222a40', life50 ? '#fff' : '#5d6785');
+    button(c, T.skip, mx + 70, y, 124, 46, () => { if (!lifeSkip) return; lifeSkip = false; J.play('click', .8); deck.splice(qi, 1); nextQ(true); }, lifeSkip ? C.btn : '#222a40', lifeSkip ? '#fff' : '#5d6785');
+  }
+  if (st === 'reveal') {
+    const ok = picked >= 0 && opts[picked].ok, y = rowY(3) + rh / 2 + 22;
+    J.txt(c, picked < 0 ? T.timeUp : ok ? T.correct : T.wrong, mx, y - 4, { size: 22, color: ok ? C.good : C.bad });
+    if (q.fact) J.wrap(c, q.fact, CW - 20, 14).slice(0, 2).forEach((l, i) => J.txt(c, l, mx, y + 20 + i * 17, { size: 14, color: '#cfd8e3', stroke: 0 }));
+    button(c, qi + 1 >= total ? T.final : T.next, mx, H - 38, 200, 48, () => nextQ(), C.accent);
+  }
+}
+window.__qa.info = () => ({ st, mode, qi, total, cur, score: teams[cur] && teams[cur].score, tLeft: +tLeft.toFixed(1), streak, opts: opts.map(o => o.ok ? 1 : 0).join('') });
+J.loop({ update, draw, hud });
+</script>
+</body>
+</html>

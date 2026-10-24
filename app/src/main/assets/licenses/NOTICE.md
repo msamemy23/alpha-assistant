@@ -1,0 +1,23 @@
+# Third-party components
+
+Alpha Assistant's original source is available under MIT. Dependencies retain their own licenses.
+
+- Chatterbox Turbo and its official ONNX model conversion: Resemble AI, MIT. Model repository: https://huggingface.co/ResembleAI/chatterbox-turbo-ONNX. Pinned commit: d21799bd0354adb85e348b8a0442a8405110a2cf. The app downloads the q4 models and tokenizer from this public repository and checks SHA-256 against its bundled manifest. See licenses/Chatterbox-MIT.txt.
+- ONNX Runtime Android: Microsoft Corporation, MIT. https://github.com/microsoft/onnxruntime. See licenses/ONNX-Runtime-MIT.txt.
+- AndroidX/Jetpack Compose/WorkManager and Kotlin libraries retain their Apache 2.0 or applicable published licenses.
+- Google Play Services Auth is provided under Google's applicable SDK terms; it is not part of Alpha's original MIT code.
+
+The active default voice uses Resemble AI's official pretrained Chatterbox Turbo conditioning from https://huggingface.co/ResembleAI/chatterbox-turbo (commit dfcb1eb). Source conds.pt SHA-256: b1852099306fd6a7814eb9d0bd10186caba7249596cc23868f78a0eefbfa5033. The Android tensor asset chatterbox-default.bin has SHA-256 384008aac0d9fb7cff798e83711a1e8fb4a09d4c9f512688d1454c53e6f28783. It is exported using the official model's speaker projection and speech embeddings, under MIT. No user's voice recording is bundled. The old synthetic reference WAV is retained as a legacy asset and is not used by the default voice. This Android implementation does not apply the optional Python PerTh watermark step shown in the ONNX example.
+
+The application uses service APIs under the user's grants. It is an independent personal application.
+
+- Animated emoji that bots send: Noto Emoji Animation by Google, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Source: https://googlefonts.github.io/noto-emoji-animation/. The app bundles only the list of names (animated-emoji.tsv, taken from that page's data/api.json); each animated WebP is downloaded from fonts.gstatic.com when a bot sends it. The animations are not modified.
+- AndroidSVG: Paul LeBeau (Caverock), Apache License 2.0. https://github.com/BigBadaboom/androidsvg. It draws the SVG pictures bots make (logos, diagrams) on the phone.
+- Free photos that bots find with image_search come from Wikimedia Commons; each photo has its own license (usually Creative Commons) and the bot is told to credit the photographer when the license asks for it.
+
+- Android Media3 (Transformer, Effect, Common): Google, Apache License 2.0. https://github.com/androidx/media. It cuts, joins and exports the videos the bots make, using the phone's own video hardware.
+- Website studio: the self-hosted fonts are open-source (SIL Open Font License; see licenses/Studio-Fonts-OFL.txt) and the 98 inline icons are from open-source icon sets (see licenses/Studio-Icons.txt). The bundled catalog of free auto-repair photos (assets/studio/auto-photos.json) lists photos from Unsplash, Pexels and Pixabay by link only; each one is downloaded when a bot uses it, under that site's free license, and the photographer is credited where the catalog says so.
+- Chat typography (res/font): Inter (SIL Open Font License 1.1, The Inter Project Authors), Source Serif 4 (SIL Open Font License 1.1, Adobe), and JetBrains Mono (SIL Open Font License 1.1, JetBrains). They are bundled as variable fonts and used unmodified for the words in the app; their licenses are in assets/licenses (OFL-Inter.txt, OFL-SourceSerif4.txt, OFL-JetBrainsMono.txt).
+- Game kit (assets/games): Phaser (MIT, Richard Davey / Phaser Studio Inc.), Howler.js (MIT, James Simpson and GoldFire Studios), three.js (MIT, three.js authors) with their license files beside them in assets/games/lib; juice.js and the game templates are original to this app (MIT), and juice.js includes the ZzFX sound generator (MIT, Frank Force).
+- Audio engine (assets/audio): Tone.js (MIT, Yotam Mann), SpessaSynth core and its stb-vorbis decoder (Apache License 2.0), ZzFX (MIT, Frank Force), and the FluidR3 Mono GM SoundFont (MIT; Frank Wen, Michael Cowgill and contributors; see assets/audio/lib/soundfont/FluidR3Mono_License.md). They run inside a hidden page on the phone and make music and sound effects as .wav files.
+- Video captions: OpenAI Whisper speech recognition (MIT, OpenAI), as the ONNX conversion by the Hugging Face community (https://huggingface.co/onnx-community/whisper-base_timestamped, pinned to commit 608c49e), run with the ONNX Runtime above. It is a one-time 78 MB download the owner starts in Settings; each file is checked against a built-in SHA-256 and it then works offline. Word timing follows OpenAI's cross-attention alignment method.

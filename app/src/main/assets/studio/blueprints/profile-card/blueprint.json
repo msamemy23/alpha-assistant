@@ -1,0 +1,36 @@
+{
+  "id": "profile-card",
+  "kind": "site",
+  "name": "Profile Card",
+  "summary": "Phone-first link-in-bio and digital business card: a softly moving colour cover, photo with an animated ring, name and one-line role, Call / Text / Email / Directions buttons, a Save contact button that downloads a real .vcf, big tappable link rows, a swipeable four-photo strip, hours and address with directions, and a Save bar that slides up after scrolling. On a computer it is a phone-width card floating over the moving shapes.",
+  "best_for": ["link in bio", "digital business card", "QR code landing page", "freelancer", "real estate agent", "personal trainer", "stylist", "consultant", "musician", "creator", "small shop owner", "event contact"],
+  "mood": ["friendly", "modern", "personal", "quick"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "profile", "what": "Cover with a city chip and Share button, photo with animated ring, {{business}} as the h1, {{tagline}} as the role line, four quick actions (Call, Text, Email, Directions) and the Save contact button", "edit": "Keep every token. Rewrite only if the owner wants a different role line; keep one h1. Do not add a fifth action; the row is sized for four"},
+    {"name": "links", "what": "Large tappable rows with an icon, a title and a short line (the first one is highlighted in the accent colour)", "edit": "One row per real service or link (3 to 7). hrefs must be tokens ({{email_href}}?subject=..., {{phone_href}}), #gallery / #visit, or real URLs the owner gave (website, booking page, social profile). Never href=\"#\". Swap icons with inline svg from studio_icons"},
+    {"name": "gallery", "what": "Swipeable strip of four photos with arrow buttons and dots", "edit": "Use real photos. To show fewer, delete a whole figure and one dot span. Remove the section if there are no photos"},
+    {"name": "visit", "what": "Small drawn map, hours (app.js turns 'Mon-Fri 8-6, Sat 9-3' into rows), address, Get directions and Copy address", "edit": "Keep the tokens. Remove the hours row if the owner works by appointment only; remove the section if there is no address"},
+    {"name": "footer", "what": "Name, year, city, back to top", "edit": "Usually leave as is"}
+  ],
+  "photo_slots": [
+    {"slot": "portrait", "orientation": "square", "hint": "a friendly head-and-shoulders photo of the owner, or the logo on a plain background; face near the top third"},
+    {"slot": "gallery-1", "orientation": "portrait", "hint": "the best example of the owner's work or product, 4:5 crop"},
+    {"slot": "gallery-2", "orientation": "portrait", "hint": "another example of the work, a detail or the place"},
+    {"slot": "gallery-3", "orientation": "portrait", "hint": "the owner at work, or a happy finished result"},
+    {"slot": "gallery-4", "orientation": "portrait", "hint": "the shop, studio or a behind-the-scenes shot"}
+  ],
+  "remove_if_no_facts": ["gallery", "visit"],
+  "behaviors": [
+    "Save contact builds a .vcf from what the page shows (name, role, phone, email, address, hours and the photo) and downloads it with Blob + a download link",
+    "Text button becomes an sms: link from the phone token; Directions opens Google Maps with the address encoded",
+    "Share uses the phone's share sheet, or copies the link with a toast",
+    "Copy address with a toast",
+    "hours text split into neat day / time rows",
+    "scroll-snap photo strip with arrows, dots and keyboard arrows",
+    "Save bar slides up from the bottom once the main Save button is scrolled away",
+    "slowly drifting colour shapes, dot grid and grain in the background (still for reduced motion)",
+    "avatar shape follows the style: round for soft styles, rounded or square for sharp ones"
+  ],
+  "style_notes": "Owns the single-column card archetype; every colour, font, radius and shadow comes from the style kit, so hard-shadow styles get brutalist rows and soft styles get pills and circles. Tested with editorial-serif, midnight-neon, neo-brutalist, poster-bold, soft-pastel, minimal-mono and dark-luxury at 390 and 1280. Best with soft-pastel, midnight-neon, coastal, warm-hospitality, clinical-clean, neo-brutalist."
+}

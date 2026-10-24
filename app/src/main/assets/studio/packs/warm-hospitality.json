@@ -1,0 +1,66 @@
+{
+  "id": "warm-hospitality",
+  "name": "Warm Hospitality",
+  "signature": "Cream and terracotta, friendly display serif, big rounded photo cards, soft shadows.",
+  "mood": ["welcoming", "friendly", "family-run", "comforting"],
+  "bestFor": ["family auto shops", "restaurants", "bakeries", "salons and barbers", "cleaners", "bed and breakfasts", "florists"],
+  "fonts": "dmserif-dm",
+  "colors": {
+    "bg": "#FFF8EE",
+    "surface": "#FBE8CF",
+    "ink": "#2A1B12",
+    "muted": "#6A5444",
+    "accent": "#B4401A",
+    "onAccent": "#FFFFFF"
+  },
+  "contrast": {
+    "ink/bg": 15.75,
+    "ink/surface": 13.88,
+    "muted/bg": 6.71,
+    "muted/surface": 5.91,
+    "onAccent/accent": 5.69,
+    "accent/bg": 5.39,
+    "accent/surface": 4.75,
+    "accentAsText": true,
+    "note": "Light theme. Terracotta is safe as text on both backgrounds. White labels on terracotta buttons pass AA."
+  },
+  "radius": {"sm": 12, "md": 20, "lg": 32, "button": 16},
+  "shadow": {"card": "0 18px 40px -20px rgba(42,27,18,.35)", "pop": "0 24px 48px -20px rgba(42,27,18,.45)"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 96, "gutter": 20, "maxWidth": 1120},
+  "type": {
+    "scaleRatio": 1.25,
+    "basePx": 18,
+    "bodyLeading": 1.65,
+    "h1": "clamp(2.5rem,8vw,4.75rem)",
+    "h2": "clamp(1.875rem,5vw,3rem)",
+    "h3": "1.5rem",
+    "headingCase": "none",
+    "headingWeight": 400,
+    "headingLeading": 1.08,
+    "headingTracking": "0",
+    "eyebrow": "0.875rem, weight 600, accent color, sentence case"
+  },
+  "motion": {
+    "rule": "Gentle arrival: cards rise 28px and fade in over 800ms, 90ms apart, with a soft ease-out and no overshoot.",
+    "reveal": "up",
+    "staggerMs": 90,
+    "durationMs": 800,
+    "ease": "cubic-bezier(.22,.8,.24,1)",
+    "use": ["data-reveal", "data-stagger", "data-lift", "data-count-to for real years in business"],
+    "avoid": ["data-tilt", "fast snaps", "marquee"]
+  },
+  "hero": {
+    "treatment": "photo-full-bleed",
+    "layout": "One large photo card with 32px radius filling the container; a warm ink-to-transparent overlay on the bottom 50%; headline and two buttons bottom-left over the overlay; a row of three short real facts under the card.",
+    "photo": "Real photo of the owners, the shop or the work; warm light preferred."
+  },
+  "background": "Cream page with alternating peach (surface) sections. A single large soft circle of surface color behind the hero card for depth. No patterns.",
+  "button": {
+    "shape": "Rounded 16px, 52px tall.",
+    "fill": "Accent fill, white label; secondary is an ink outline.",
+    "label": "Body sans, weight 600, sentence case.",
+    "hover": "Lifts 4px with data-lift on hover; shadow is static.",
+    "minHeightPx": 48
+  },
+  "banned": ["harsh black", "all-caps shouting", "neon", "sharp 0-radius corners", "dark mode"]
+}

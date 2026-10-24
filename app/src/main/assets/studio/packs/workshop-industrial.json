@@ -1,0 +1,82 @@
+{
+  "id": "workshop-industrial",
+  "name": "Workshop Industrial",
+  "signature": "Charcoal slab, safety-orange blocks, hazard-stripe dividers, condensed caps.",
+  "mood": ["rugged", "precise", "no-nonsense", "honest"],
+  "bestFor": [
+    "auto repair",
+    "tire shop",
+    "towing",
+    "welding and fabrication",
+    "machine shop",
+    "truck and diesel repair",
+    "transmission shop"
+  ],
+  "fonts": "oswald-inter",
+  "colors": {
+    "bg": "#14171A",
+    "surface": "#1F2428",
+    "ink": "#F2F0EA",
+    "muted": "#B4BAC0",
+    "accent": "#FF6A13",
+    "onAccent": "#14171A"
+  },
+  "contrast": {
+    "ink/bg": 15.78,
+    "ink/surface": 13.73,
+    "muted/bg": 9.18,
+    "muted/surface": 7.99,
+    "onAccent/accent": 6.27,
+    "accent/bg": 6.27,
+    "accent/surface": 5.45,
+    "accentAsText": true,
+    "note": "Dark theme. Orange is safe as text on both backgrounds. Buttons are orange with charcoal labels."
+  },
+  "radius": {"sm": 2, "md": 4, "lg": 6, "button": 4},
+  "shadow": {"card": "none", "pop": "0 16px 32px -16px rgba(0,0,0,.7)"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 96, "gutter": 16, "maxWidth": 1120},
+  "type": {
+    "scaleRatio": 1.25,
+    "basePx": 17,
+    "bodyLeading": 1.6,
+    "h1": "clamp(2.75rem,10vw,6.25rem)",
+    "h2": "clamp(2rem,6vw,3.5rem)",
+    "h3": "1.5rem",
+    "headingCase": "uppercase",
+    "headingWeight": 700,
+    "headingLeading": 1.02,
+    "headingTracking": "0.01em",
+    "eyebrow": "0.8125rem, uppercase, 0.18em tracking, accent color"
+  },
+  "motion": {
+    "rule": "Snap in: each block rises 28px and fades in over 500ms, no bounce, and numbers count up only when they are real.",
+    "reveal": "up",
+    "staggerMs": 70,
+    "durationMs": 500,
+    "ease": "cubic-bezier(.2,.8,.2,1)",
+    "use": ["data-reveal", "data-stagger", "data-count-to", "data-press"],
+    "avoid": ["data-tilt", "parallax on text"]
+  },
+  "hero": {
+    "treatment": "photo-duotone",
+    "layout": "Full-width photo of the real shop or owner at work, tinted charcoal-to-orange (photo under an accent layer with mix-blend-mode: multiply). Headline bottom-left, call button and estimate button under it, 12px hazard-stripe divider below the hero.",
+    "photo": "Real shop photo required; no stock mechanics."
+  },
+  "background": "Solid charcoal. A 1px blueprint grid at 4% ink opacity behind the hero only. Hazard stripes (45deg, accent and bg, 12px tall) appear once, as the divider under the hero.",
+  "button": {
+    "shape": "Rectangle, 4px radius, 48px tall.",
+    "fill": "Accent fill, onAccent label, 2px accent border.",
+    "label": "Uppercase, weight 700, 0.06em tracking.",
+    "hover": "Press feedback with data-press; colors swap instantly, nothing glows.",
+    "minHeightPx": 48
+  },
+  "banned": [
+    "pill buttons",
+    "pastel colors",
+    "soft gradients",
+    "emoji",
+    "stock handshake photos",
+    "centered body text",
+    "glassmorphism"
+  ]
+}

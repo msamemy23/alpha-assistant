@@ -1,0 +1,81 @@
+{
+  "id": "neo-brutalist",
+  "name": "Neo Brutalist",
+  "signature": "Mint page, 4px black borders, hard shadows, mono headings, sticker labels.",
+  "mood": ["raw", "playful", "indie", "punchy"],
+  "bestFor": [
+    "bike repair",
+    "skate and board shops",
+    "record stores",
+    "tattoo studios",
+    "mobile detailers",
+    "makers and fabricators",
+    "indie garages"
+  ],
+  "fonts": "mono-grotesk",
+  "colors": {
+    "bg": "#CFF7DD",
+    "surface": "#FFFFFF",
+    "ink": "#000000",
+    "muted": "#333333",
+    "accent": "#FF5C39",
+    "onAccent": "#000000"
+  },
+  "contrast": {
+    "ink/bg": 18,
+    "ink/surface": 21,
+    "muted/bg": 10.83,
+    "muted/surface": 12.63,
+    "onAccent/accent": 6.84,
+    "accent/bg": 2.63,
+    "accent/surface": 3.06,
+    "accentAsText": false,
+    "note": "Mint page, black text. Orange is a fill color only (buttons, stickers), never text on the page. Black labels on orange pass AA."
+  },
+  "radius": {"sm": 0, "md": 0, "lg": 0, "button": 0},
+  "shadow": {"card": "6px 6px 0 #000", "pop": "10px 10px 0 #000"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 80, "gutter": 16, "maxWidth": 1120},
+  "type": {
+    "scaleRatio": 1.25,
+    "basePx": 17,
+    "bodyLeading": 1.55,
+    "h1": "clamp(2.5rem,9vw,5.5rem)",
+    "h2": "clamp(1.875rem,5.5vw,3.25rem)",
+    "h3": "1.5rem",
+    "headingCase": "none",
+    "headingWeight": 700,
+    "headingLeading": 1.02,
+    "headingTracking": "-0.03em",
+    "eyebrow": "0.8125rem, mono, weight 700, uppercase, inside a 3px black-bordered label"
+  },
+  "motion": {
+    "rule": "Pop: elements scale from 0.92 to full size in 350ms with a 40ms stagger, and the sticker label tilts with the pointer.",
+    "reveal": "scale",
+    "staggerMs": 40,
+    "durationMs": 350,
+    "ease": "cubic-bezier(.3,1.4,.4,1)",
+    "use": ["data-reveal", "data-stagger", "data-tilt on stickers", "data-press"],
+    "avoid": ["soft fades", "parallax", "slow durations"]
+  },
+  "hero": {
+    "treatment": "big-type",
+    "layout": "Oversized mono headline on the mint page, a 4px black-bordered photo frame rotated 2deg with a hard shadow, and an orange sticker label rotated -3deg (\"Open Saturdays\" only if true). Buttons are stacked, full width on mobile.",
+    "photo": "Real photo inside the bordered frame."
+  },
+  "background": "Flat mint. Every card, image and button gets a 4px black border and a hard offset shadow. No gradients, no blur, no textures.",
+  "button": {
+    "shape": "Rectangle, 0 radius, 52px tall.",
+    "fill": "Accent fill, black label, 4px black border, 5px offset black shadow.",
+    "label": "Mono, weight 700, uppercase, 0.02em tracking.",
+    "hover": "Press moves the button 3px down-right with data-press; shadow stays put.",
+    "minHeightPx": 48
+  },
+  "banned": [
+    "gradients",
+    "soft shadows",
+    "rounded corners",
+    "thin lines",
+    "pastel colors beyond the page background",
+    "stock photos"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "id": "editorial-serif",
+  "name": "Editorial Serif",
+  "signature": "Ivory paper, oversized serif headline, hairline rules, one wine-red accent.",
+  "mood": ["literate", "calm", "considered", "timeless"],
+  "bestFor": [
+    "upscale detailing",
+    "classic car restoration",
+    "upholstery",
+    "fine carpentry",
+    "interior design",
+    "photographers",
+    "boutiques"
+  ],
+  "fonts": "fraunces-work",
+  "colors": {
+    "bg": "#FBF7F0",
+    "surface": "#F1E9DC",
+    "ink": "#1D1A16",
+    "muted": "#5C5348",
+    "accent": "#7A1F2B",
+    "onAccent": "#FFF8F0"
+  },
+  "contrast": {
+    "ink/bg": 16.23,
+    "ink/surface": 14.38,
+    "muted/bg": 7.05,
+    "muted/surface": 6.25,
+    "onAccent/accent": 9.68,
+    "accent/bg": 9.55,
+    "accent/surface": 8.46,
+    "accentAsText": true,
+    "note": "Light theme. Wine accent is safe as link text on both backgrounds. Use it sparingly: one accent moment per screen."
+  },
+  "radius": {"sm": 0, "md": 2, "lg": 4, "button": 0},
+  "shadow": {"card": "none", "pop": "none"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 112, "gutter": 24, "maxWidth": 1080},
+  "type": {
+    "scaleRatio": 1.333,
+    "basePx": 18,
+    "bodyLeading": 1.65,
+    "h1": "clamp(2.75rem,8.5vw,5.75rem)",
+    "h2": "clamp(2rem,5vw,3.25rem)",
+    "h3": "1.5rem",
+    "headingCase": "none",
+    "headingWeight": 600,
+    "headingLeading": 1.04,
+    "headingTracking": "-0.015em",
+    "eyebrow": "0.75rem, uppercase, 0.22em tracking, muted color, followed by a 48px hairline"
+  },
+  "motion": {
+    "rule": "Slow reveal: headlines and photos fade up 28px over 900ms with a 120ms stagger, and nothing else moves.",
+    "reveal": "up",
+    "staggerMs": 120,
+    "durationMs": 900,
+    "ease": "cubic-bezier(.22,.8,.24,1)",
+    "use": ["data-reveal", "data-stagger", "data-parallax on the hero photo at 0.08"],
+    "avoid": ["data-count-to", "marquee", "data-tilt", "data-magnetic"]
+  },
+  "hero": {
+    "treatment": "split",
+    "layout": "Two columns: huge serif headline and a one-sentence deck on the left, one tall portrait photo on the right with a small caption under it. Hairline rule across the top, drop cap on the first paragraph below.",
+    "photo": "Real portrait of the owner or a real finished job, 4:5 crop."
+  },
+  "background": "Ivory paper with 1px ink hairlines at 15% opacity between sections. No cards, no boxes: separate with whitespace and rules. Surface color is used for one pull-quote band only.",
+  "button": {
+    "shape": "Square corners, 52px tall, wide horizontal padding.",
+    "fill": "Accent fill, onAccent label.",
+    "label": "Body sans, weight 600, uppercase, 0.12em tracking. Secondary action is an underlined text link with an arrow.",
+    "hover": "Underline grows from left using a scaleX transform; fill does not change.",
+    "minHeightPx": 48
+  },
+  "banned": [
+    "rounded corners",
+    "drop shadows",
+    "gradients",
+    "icons inside circles",
+    "emoji",
+    "more than one accent moment per screen"
+  ]
+}

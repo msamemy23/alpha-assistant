@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="{{slug}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{business}} Estimates &amp; Invoices</title>
+<meta name="description" content="Estimates and invoices for {{business}}: line items, tax, deposits and balances, ready to text, email or print. Works offline on this phone.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="appkit.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript><p style="padding:24px">This app needs JavaScript turned on.</p></noscript>
+<!--
+  ESTIMATE BUILDER (Alpha Studio app blueprint). Every screen is a <template id="view-..."> below; app.js copies it into the page
+  and fills the parts marked data-t (text), data-if (show/hide), data-slot (lists built in app.js) and data-i (icons).
+  Keep the ids, names and data-* attributes when you change words or layout. Business facts come from the tokens in "facts".
+-->
+
+<!-- section:facts -->
+<template id="facts"><b data-k="business">{{business}}</b><b data-k="phone">{{phone}}</b><b data-k="email">{{email}}</b><b data-k="address">{{address}}</b><b data-k="year">{{year}}</b></template>
+<!-- /section:facts -->
+
+<!-- section:view-docs -->
+<template id="view-docs">
+  <header class="page-head">
+    <div><p class="eyebrow" data-t="todayText"></p><h1>Estimates &amp; invoices</h1><p class="sub" data-t="summary"></p></div>
+    <div class="actions" data-if="!empty"><button type="button" class="btn soft sm" data-act="new-invoice"><span data-i="receipt"></span>New invoice</button></div>
+  </header>
+  <div class="note sample-note" data-if="hasSample"><span data-i="info"></span><div><strong>Sample data is showing.</strong> These documents are made up so you can try things. Clear them when you are ready.</div><button type="button" class="btn sm" data-act="clear-sample">Clear</button></div>
+
+  <div class="card welcome" data-if="empty">
+    <svg class="illus welcome-art" viewBox="0 0 240 170" aria-hidden="true">
+      <circle class="il-a" cx="120" cy="88" r="74"/>
+      <rect class="il-s" x="70" y="22" width="100" height="128" rx="8"/>
+      <path class="il-l" d="M86 44h44M86 62h68M86 76h68M86 90h52"/>
+      <rect class="il-x" x="112" y="112" width="44" height="18" rx="9"/>
+      <path class="il-l" d="M86 121h16"/>
+      <circle class="il-x" cx="172" cy="40" r="16"/>
+      <path class="il-k" d="M165 40l5 5 9-10"/>
+    </svg>
+    <h2>Send your first estimate in a minute</h2>
+    <p class="muted">Add the customer, the work and the parts. Tax, discounts, deposits and the balance are worked out for you, ready to text, email or print.</p>
+    <ol class="steps">
+      <li><span class="step-n">1</span><span><strong>Who and what</strong> The customer and what the job is for</span></li>
+      <li><span class="step-n">2</span><span><strong>Work and parts</strong> Lines for labour, parts and anything else</span></li>
+      <li><span class="step-n">3</span><span><strong>Send and get paid</strong> Text it, email it or print it, then mark it paid</span></li>
+    </ol>
+    <div class="btns welcome-btns"><button type="button" class="btn primary lg" data-act="new-estimate"><span data-i="plus"></span>New estimate</button><button type="button" class="btn lg" data-act="new-invoice"><span data-i="receipt"></span>New invoice</button></div>
+    <button type="button" class="btn ghost sm sample-btn" data-act="load-sample"><span data-i="zap"></span>Try it with sample data</button>
+  </div>
+
+  <div class="stack docs-body" data-if="!empty">
+    <div class="stats money-stats lead-wide">
+      <button type="button" class="stat accent" data-act="show-owed"><span class="label"><span data-i="clock"></span>Waiting to be paid</span><span class="value" data-t="owed"></span><span class="meta" data-t="owedMeta"></span></button>
+      <div class="stat"><span class="label"><span data-i="check-circle"></span>Paid this month</span><span class="value" data-t="paidMonth"></span><span class="meta" data-t="paidMeta"></span></div>
+      <div class="stat"><span class="label"><span data-i="file-text"></span>Open estimates</span><span class="value" data-t="openEst"></span><span class="meta" data-t="openEstMeta"></span></div>
+    </div>
+    <div class="toolbar docs-tools">
+      <div class="search"><input type="search" id="doc-q" placeholder="Search names, numbers, jobs, items" aria-label="Search documents" autocomplete="off"></div>
+      <div class="seg kind-seg" role="radiogroup" aria-label="Show">
+        <label><input type="radio" name="kind" value="all"><span>All</span></label>
+        <label><input type="radio" name="kind" value="estimate"><span>Estimates</span></label>
+        <label><input type="radio" name="kind" value="invoice"><span>Invoices</span></label>
+      </div>
+    </div>
+    <div class="chips" data-single role="group" aria-label="Filter by status" data-slot="chips"></div>
+    <div class="doc-groups" data-slot="list"></div>
+  </div>
+</template>
+<!-- /section:view-docs -->
+
+<!-- section:view-doc -->
+<template id="view-doc">
+  <header class="page-head dv-head no-print">
+    <div><p class="eyebrow"><span data-t="kindTitle"></span> <span class="num" data-t="number"></span></p><h1 data-t="title"></h1>
+      <p class="sub dv-sub"><span data-slot="pill"></span><span data-t="dateLine"></span></p></div>
+  </header>
+  <div class="dv">
+    <section class="card dv-money no-print" aria-label="Money">
+      <div class="dv-total"><span class="label" data-t="totalLabel"></span><span class="big" data-t="totalText"></span><span class="muted small" data-t="dueHint"></span></div>
+      <div class="dv-paid" data-if="showPaid">
+        <div class="progress ok" data-slot="progress"></div>
+        <dl class="dv-split"><div><dt>Paid</dt><dd class="num" data-t="paidText"></dd></div><div><dt>Balance due</dt><dd class="num" data-t="balanceText"></dd></div></dl>
+      </div>
+      <div class="btns fill dv-next" data-slot="next"></div>
+      <ul class="pay-list" data-slot="payments" aria-label="Payments"></ul>
+    </section>
+    <div class="dv-paper" data-slot="paper"></div>
+    <div class="dv-side no-print">
+      <section class="card"><div class="card-head"><h2>Send it</h2></div>
+        <ul class="list">
+          <li><button type="button" class="item" data-act="send"><span class="lead"><span data-i="send"></span></span><span class="body"><span class="title">Text or email</span><span class="sub">A short message with the total</span></span><span data-i="chevron-right" data-cls="chev"></span></button></li>
+          <li><button type="button" class="item" data-act="print"><span class="lead"><span data-i="printer"></span></span><span class="body"><span class="title">Print or save as PDF</span><span class="sub">The full document with your letterhead</span></span><span data-i="chevron-right" data-cls="chev"></span></button></li>
+        </ul></section>
+      <section class="card"><div class="card-head"><h2>Customer</h2></div><div data-slot="customer"></div></section>
+      <section class="card"><div class="card-head"><h2>More</h2></div><ul class="list" data-slot="more"></ul></section>
+      <section class="card"><div class="card-head"><h2>History</h2></div><ol class="timeline" data-slot="log"></ol></section>
+    </div>
+  </div>
+</template>
+<!-- /section:view-doc -->
+
+<!-- section:doc-paper -->
+<!-- The printable estimate / invoice. The letterhead uses the business tokens; Settings can change them on this phone. -->
+<template id="doc-paper">
+  <article class="doc paper">
+    <header class="doc-head">
+      <div class="lh">
+        <p class="lh-name" data-t="biz.name">{{business}}</p>
+        <p class="lh-line" data-if="biz.address" data-t="biz.address">{{address}}</p>
+        <p class="lh-line" data-if="biz.phone" data-t="biz.phone">{{phone}}</p>
+        <p class="lh-line" data-if="biz.email" data-t="biz.email">{{email}}</p>
+        <p class="lh-line" data-if="biz.extra" data-t="biz.extra"></p>
+      </div>
+      <div class="right doc-id"><h2 data-t="kindTitle"></h2><p class="doc-no num" data-t="number"></p><p class="stamp" data-if="stamp" data-t="stamp"></p></div>
+    </header>
+    <dl class="doc-meta">
+      <div class="meta-to"><dt data-t="toLabel"></dt><dd><span data-t="cust.name"></span><span class="meta-sub" data-if="cust.phone" data-t="cust.phone"></span><span class="meta-sub" data-if="cust.email" data-t="cust.email"></span><span class="meta-sub pre" data-if="cust.address" data-t="cust.address"></span></dd></div>
+      <div data-if="what"><dt>For</dt><dd data-t="what"></dd></div>
+      <div><dt>Date</dt><dd data-t="dateText"></dd></div>
+      <div data-if="dueText"><dt data-t="dueLabel"></dt><dd data-t="dueText"></dd></div>
+    </dl>
+    <table class="doc-lines">
+      <thead><tr><th scope="col">Description</th><th scope="col" class="num c-qty">Qty</th><th scope="col" class="num c-price">Unit price</th><th scope="col" class="num">Amount</th></tr></thead>
+      <tbody data-slot="lines"></tbody>
+    </table>
+    <div class="doc-total">
+      <div><span>Subtotal</span><span class="num" data-t="subText"></span></div>
+      <div data-if="t.disc"><span data-t="discLabel"></span><span class="num" data-t="discText"></span></div>
+      <div data-if="t.rate"><span data-t="taxLabel"></span><span class="num" data-t="taxText"></span></div>
+      <div class="grand"><span>Total</span><span class="num" data-t="totalText"></span></div>
+      <div data-if="t.paid"><span data-t="paidLabel"></span><span class="num" data-t="paidText"></span></div>
+      <div class="balance" data-if="t.paid"><span>Balance due</span><span class="num" data-t="balanceText"></span></div>
+    </div>
+    <section class="doc-notes" data-if="notes"><h3>Notes</h3><p class="pre" data-t="notes"></p></section>
+    <section class="doc-notes" data-if="terms"><h3>Terms</h3><p class="pre" data-t="terms"></p></section>
+    <div class="doc-sign">
+      <div><div class="sig-box" data-slot="sig"></div><p class="line" data-t="signLabel"></p></div>
+      <div class="sign-date"><div class="sig-box"><p class="sig-date" data-t="signDate"></p></div><p class="line">Date</p></div>
+    </div>
+    <p class="doc-foot"><span data-t="footer"></span></p>
+  </article>
+</template>
+<!-- /section:doc-paper -->
+
+<!-- section:view-editor -->
+<template id="view-editor">
+  <header class="page-head">
+    <div><p class="eyebrow"><span data-i="check-circle" data-cls="save-ico"></span><span class="save-state">All changes saved</span></p><h1 class="ed-title"></h1></div>
+  </header>
+  <form class="ed" id="ed-form" novalidate autocomplete="off">
+    <div class="ed-main">
+      <section class="card ed-card"><div class="card-head"><h2>Document</h2></div>
+        <div class="form">
+          <div class="seg block" role="radiogroup" aria-label="Kind of document">
+            <label><input type="radio" name="type" value="estimate"><span>Estimate</span></label>
+            <label><input type="radio" name="type" value="invoice"><span>Invoice</span></label>
+          </div>
+          <div class="cols ed-dates">
+            <div class="field"><label for="ed-number">Number</label><input id="ed-number" name="number" autocapitalize="characters" spellcheck="false"><p class="help warn-help" hidden>Another document already uses this number.</p></div>
+            <div class="field"><label for="ed-date">Date</label><input id="ed-date" name="date" type="date"></div>
+            <div class="field"><label for="ed-due" class="due-label">Valid until</label><input id="ed-due" name="due" type="date"></div>
+          </div>
+        </div></section>
+
+      <section class="card ed-card"><div class="card-head"><h2>Customer</h2></div>
+        <div class="form">
+          <div class="field suggest-wrap"><label for="ed-cname">Name</label><input id="ed-cname" name="cname" autocomplete="off" autocapitalize="words" placeholder="Customer or company name"><p class="help">Start typing to pick someone from past documents.</p></div>
+          <div class="cols">
+            <div class="field"><label for="ed-cphone">Phone</label><input id="ed-cphone" name="cphone" type="tel" autocomplete="off" inputmode="tel"></div>
+            <div class="field"><label for="ed-cemail">Email</label><input id="ed-cemail" name="cemail" type="email" autocomplete="off" inputmode="email" autocapitalize="off" spellcheck="false"></div>
+          </div>
+          <div class="field"><label for="ed-caddress">Address</label><textarea id="ed-caddress" name="caddress" rows="2" class="short"></textarea></div>
+        </div></section>
+
+      <section class="card ed-card"><div class="card-head"><h2>The job</h2></div>
+        <div class="form">
+          <div class="field"><label for="ed-what">What it is for</label><input id="ed-what" name="what" placeholder="A vehicle, item or job site"><p class="help">For example the year, make and model, the item, or the address of the work.</p></div>
+          <div class="field"><label for="ed-notes">Notes for the customer</label><textarea id="ed-notes" name="notes" rows="3" class="short" placeholder="What you found, what you recommend, anything they should know"></textarea></div>
+        </div></section>
+
+      <section class="card ed-card lines-card"><div class="card-head"><h2>Work and parts</h2><span class="muted small lines-count"></span></div>
+        <ul class="ed-lines" aria-label="Lines"></ul>
+        <p class="lines-empty muted">No lines yet. Add the work and the parts below.</p>
+        <div class="add-lines">
+          <button type="button" class="btn soft" data-add="labour"><span data-i="wrench"></span>Labour</button>
+          <button type="button" class="btn soft" data-add="parts"><span data-i="box"></span>Parts</button>
+          <button type="button" class="btn soft" data-add="other"><span data-i="plus"></span>Other</button>
+        </div></section>
+
+      <section class="card ed-card"><div class="card-head"><h2>Terms</h2></div>
+        <div class="field"><label for="ed-terms" class="sr-only">Terms</label><textarea id="ed-terms" name="terms" rows="3" class="short"></textarea><p class="help">Printed at the bottom. Change the starting text in Settings.</p></div></section>
+    </div>
+
+    <aside class="ed-side">
+      <section class="card totals-card" aria-label="Totals">
+        <div class="trow by-type" data-type="labour"><span>Labour</span><span class="num"></span></div>
+        <div class="trow by-type" data-type="parts"><span>Parts</span><span class="num"></span></div>
+        <div class="trow by-type" data-type="other"><span>Other</span><span class="num"></span></div>
+        <div class="trow strong"><span>Subtotal</span><span class="num t-sub"></span></div>
+        <div class="tblock">
+          <div class="trow"><span>Discount</span><span class="num t-disc"></span></div>
+          <div class="disc-row">
+            <div class="seg" role="radiogroup" aria-label="Discount type"><label><input type="radio" name="discMode" value="amount"><span class="cur-sym">$</span></label><label><input type="radio" name="discMode" value="percent"><span>%</span></label></div>
+            <input name="discValue" inputmode="decimal" aria-label="Discount" placeholder="0">
+          </div>
+        </div>
+        <div class="tblock">
+          <div class="trow"><span class="t-taxname">Tax</span><span class="num t-tax"></span></div>
+          <details class="tax-more"><summary><span class="t-taxdesc"></span><span class="link-btn">Change</span></summary>
+            <div class="form tax-form">
+              <div class="field"><label for="ed-rate">Tax rate for this document</label><div class="affix"><input id="ed-rate" name="taxRate" inputmode="decimal"><span>%</span></div></div>
+              <div class="checks">
+                <label class="check"><input type="checkbox" name="taxLabour"><span>Tax on labour</span></label>
+                <label class="check"><input type="checkbox" name="taxParts"><span>Tax on parts</span></label>
+                <label class="check"><input type="checkbox" name="taxOther"><span>Tax on other</span></label>
+              </div>
+            </div></details>
+        </div>
+        <div class="trow grand"><span>Total</span><span class="num t-total"></span></div>
+        <div class="tblock">
+          <div class="field"><label for="ed-dep">Deposit or paid so far</label><div class="affix"><span class="cur-sym">$</span><input id="ed-dep" name="deposit" data-money inputmode="decimal" placeholder="0.00"></div></div>
+          <div class="trow muted t-payrow" hidden><span>Payments recorded</span><span class="num t-pays"></span></div>
+        </div>
+        <div class="trow balance"><span>Balance due</span><span class="num t-bal"></span></div>
+        <button type="button" class="btn primary block lg hide-phone" data-act="ed-done">Done</button>
+        <button type="button" class="btn ghost block sm ed-discard" data-act="ed-delete"><span data-i="trash"></span>Delete this document</button>
+      </section>
+    </aside>
+
+    <div class="ed-bar hide-desk">
+      <div class="ed-bar-sum"><span class="muted small">Total</span><strong class="num t-total"></strong></div>
+      <button type="button" class="btn primary" data-act="ed-done"><span data-i="check"></span>Done</button>
+    </div>
+  </form>
+</template>
+<!-- /section:view-editor -->
+
+<!-- section:row-line -->
+<!-- One line in the editor (labour, parts or other). Reorder with the handle. -->
+<template id="row-line">
+  <li class="ln">
+    <button type="button" class="handle" aria-label="Move this line (arrow keys)"><span data-i="grip"></span></button>
+    <select name="ltype" class="ln-type" aria-label="Type of line"><option value="labour">Labour</option><option value="parts">Parts</option><option value="other">Other</option></select>
+    <div class="suggest-wrap ln-desc"><input name="ldesc" aria-label="Description" placeholder="Describe the work or the part" autocomplete="off"></div>
+    <div class="ln-nums">
+      <label class="ln-f ln-qty"><span>Qty</span><input name="lqty" inputmode="decimal" autocomplete="off"></label>
+      <label class="ln-f ln-price"><span>Unit price</span><span class="affix"><span class="cur-sym">$</span><input name="lprice" data-money inputmode="decimal" placeholder="0.00" autocomplete="off"></span></label>
+      <span class="ln-f ln-amt"><span>Amount</span><output class="num">0.00</output></span>
+    </div>
+    <button type="button" class="btn icon ghost sm ln-del" aria-label="Remove this line"><span data-i="trash"></span></button>
+  </li>
+</template>
+<!-- /section:row-line -->
+
+<!-- section:view-customers -->
+<template id="view-customers">
+  <header class="page-head"><div><h1>Customers</h1><p class="sub" data-t="summary"></p></div></header>
+  <div class="toolbar" data-if="any"><div class="search"><input type="search" id="cust-q" placeholder="Search name, phone or email" aria-label="Search customers" autocomplete="off"></div></div>
+  <div data-slot="list"></div>
+</template>
+<!-- /section:view-customers -->
+
+<!-- section:sheet-customer -->
+<template id="sheet-customer">
+  <div class="person">
+    <span data-slot="avatar"></span>
+    <p class="person-name" data-t="name"></p>
+    <p class="muted small pre" data-if="address" data-t="address"></p>
+  </div>
+  <div class="btns fill contact-btns" data-slot="contact"></div>
+  <dl class="mini-stats"><div><dt>Billed</dt><dd class="num" data-t="billedText"></dd></div><div><dt>Owes</dt><dd class="num" data-t="owedText"></dd></div><div><dt>Documents</dt><dd class="num" data-t="count"></dd></div></dl>
+  <h3 class="sheet-h">Estimates and invoices</h3>
+  <ul class="list" data-slot="docs"></ul>
+</template>
+<!-- /section:sheet-customer -->
+
+<!-- section:view-insights -->
+<template id="view-insights">
+  <header class="page-head"><div><p class="eyebrow" data-t="monthText"></p><h1>Insights</h1><p class="sub">Invoices only count once they are sent. Void documents never count.</p></div></header>
+  <div class="card" data-if="empty" data-slot="empty"></div>
+  <div class="stack ins-body" data-if="!empty">
+    <div class="stats money-stats">
+      <div class="stat accent"><span class="label">Billed this month</span><span class="value" data-t="billedM"></span><span class="meta" data-t="billedMeta"></span></div>
+      <div class="stat"><span class="label">Collected this month</span><span class="value" data-t="paidM"></span><span class="meta" data-t="paidMeta"></span></div>
+      <div class="stat"><span class="label">Average invoice</span><span class="value" data-t="avg"></span><span class="meta" data-t="avgMeta"></span></div>
+      <div class="stat"><span class="label">Estimates approved</span><span class="value" data-t="winRate"></span><span class="meta" data-t="winMeta"></span></div>
+    </div>
+    <div class="ins-grid">
+      <section class="card ins-wide"><div class="card-head"><h2>Billed and collected</h2><span class="muted small">Last 6 months</span></div><div data-slot="chart"></div><ul class="legend row ins-legend"><li><span class="k key-1"></span><span>Billed</span></li><li><span class="k key-2"></span><span>Collected</span></li></ul></section>
+      <section class="card"><div class="card-head"><h2>Where the money comes from</h2></div><p class="muted small ins-note">Invoice lines this year, before discounts and tax</p><div data-slot="mix"></div></section>
+      <section class="card"><div class="card-head"><h2>Top customers</h2></div><ul class="list" data-slot="top"></ul></section>
+    </div>
+  </div>
+</template>
+<!-- /section:view-insights -->
+
+<!-- section:view-settings -->
+<template id="view-settings">
+  <header class="page-head"><div><h1>Settings</h1><p class="sub"><span data-i="check-circle" data-cls="save-ico"></span><span class="save-state">Changes save as you type</span></p></div></header>
+  <form class="stack settings" id="set-form" novalidate autocomplete="off">
+    <section class="card"><div class="card-head"><h2>On your documents</h2></div>
+      <div class="form">
+        <div class="field"><label for="s-business">Business name</label><input id="s-business" name="business" autocomplete="organization"><p class="help">The letterhead at the top of every estimate and invoice.</p></div>
+        <div class="cols">
+          <div class="field"><label for="s-phone">Phone</label><input id="s-phone" name="phone" type="tel" inputmode="tel"></div>
+          <div class="field"><label for="s-email">Email</label><input id="s-email" name="email" type="email" inputmode="email" autocapitalize="off" spellcheck="false"></div>
+        </div>
+        <div class="field"><label for="s-address">Address</label><textarea id="s-address" name="address" rows="2" class="short"></textarea></div>
+        <div class="field"><label for="s-extra">Extra line (optional)</label><input id="s-extra" name="extra" placeholder="A licence, registration or tax number"></div>
+      </div></section>
+
+    <section class="card"><div class="card-head"><h2>Tax</h2><span class="pill info tax-pill"></span></div>
+      <div class="form">
+        <div class="cols">
+          <div class="field"><label for="s-taxName">Name of the tax</label><input id="s-taxName" name="taxName" placeholder="Tax, Sales tax, GST, VAT"></div>
+          <div class="field"><label for="s-taxRate">Tax rate</label><div class="affix"><input id="s-taxRate" name="taxRate" inputmode="decimal" placeholder="0"><span>%</span></div><p class="help">0% means no tax is added.</p></div>
+        </div>
+        <fieldset class="field"><legend>Charge tax on</legend>
+          <div class="checks">
+            <label class="check between"><span>Labour<span class="sub">Work and time</span></span><input type="checkbox" class="switch" name="taxLabour"></label>
+            <label class="check between"><span>Parts<span class="sub">Parts and materials</span></span><input type="checkbox" class="switch" name="taxParts"></label>
+            <label class="check between"><span>Other<span class="sub">Fees, supplies and everything else</span></span><input type="checkbox" class="switch" name="taxOther"></label>
+          </div></fieldset>
+        <p class="help">New documents use these. Each document keeps its own tax, so changing this never changes old ones.</p>
+      </div></section>
+
+    <section class="card"><div class="card-head"><h2>Numbers, dates and prices</h2></div>
+      <div class="form">
+        <div class="cols">
+          <div class="field"><label for="s-estPrefix">Estimate numbers start with</label><input id="s-estPrefix" name="estPrefix" autocapitalize="characters"></div>
+          <div class="field"><label for="s-estNext">Next estimate number</label><input id="s-estNext" name="estNext" type="number" min="1" step="1" inputmode="numeric"></div>
+          <div class="field"><label for="s-invPrefix">Invoice numbers start with</label><input id="s-invPrefix" name="invPrefix" autocapitalize="characters"></div>
+          <div class="field"><label for="s-invNext">Next invoice number</label><input id="s-invNext" name="invNext" type="number" min="1" step="1" inputmode="numeric"></div>
+        </div>
+        <div class="cols">
+          <div class="field"><label for="s-validDays">Estimates are valid for (days)</label><div class="stepper"><input id="s-validDays" name="validDays" type="number" min="0" max="365"></div></div>
+          <div class="field"><label for="s-dueDays">Invoices are due after (days)</label><div class="stepper"><input id="s-dueDays" name="dueDays" type="number" min="0" max="365"></div></div>
+        </div>
+        <div class="cols">
+          <div class="field"><label for="s-labourRate">Usual labour price (optional)</label><div class="affix"><span class="cur-sym">$</span><input id="s-labourRate" name="labourRate" data-money inputmode="decimal" placeholder="0.00"></div><p class="help">Filled in on new labour lines.</p></div>
+          <div class="field"><label for="s-currency">Currency</label><select id="s-currency" name="currency"><option value="USD">US dollar</option><option value="CAD">Canadian dollar</option><option value="EUR">Euro</option><option value="GBP">British pound</option><option value="AUD">Australian dollar</option><option value="NZD">New Zealand dollar</option><option value="MXN">Mexican peso</option><option value="ZAR">South African rand</option><option value="INR">Indian rupee</option></select></div>
+        </div>
+      </div></section>
+
+    <section class="card"><div class="card-head"><h2>Starting text</h2></div>
+      <div class="form">
+        <div class="field"><label for="s-estTerms">Terms on new estimates</label><textarea id="s-estTerms" name="estTerms" rows="3" class="short"></textarea></div>
+        <div class="field"><label for="s-invTerms">Terms on new invoices</label><textarea id="s-invTerms" name="invTerms" rows="3" class="short"></textarea></div>
+      </div></section>
+  </form>
+
+  <section class="card"><div class="card-head"><h2>Backup and restore</h2></div>
+    <p class="muted small card-lead" data-t="storeText"></p>
+    <ul class="list">
+      <li><button type="button" class="item" data-act="backup"><span class="lead"><span data-i="download"></span></span><span class="body"><span class="title">Back up</span><span class="sub">Save one file with everything</span></span></button></li>
+      <li><button type="button" class="item" data-act="copy-backup"><span class="lead"><span data-i="copy"></span></span><span class="body"><span class="title">Copy the backup</span><span class="sub">Paste it into a note or an email to yourself</span></span></button></li>
+      <li><button type="button" class="item" data-act="restore-file"><span class="lead"><span data-i="upload"></span></span><span class="body"><span class="title">Restore from a file</span><span class="sub">Replaces what is on this phone now</span></span></button></li>
+      <li><button type="button" class="item" data-act="restore-text"><span class="lead"><span data-i="clipboard"></span></span><span class="body"><span class="title">Restore from copied text</span><span class="sub">Paste a backup you copied before</span></span></button></li>
+      <li><button type="button" class="item" data-act="export-csv"><span class="lead"><span data-i="file-text"></span></span><span class="body"><span class="title">Export to a spreadsheet</span><span class="sub">Every document as one CSV file</span></span></button></li>
+    </ul>
+    <input type="file" id="restore-input" accept=".json,application/json,text/plain" hidden>
+  </section>
+
+  <section class="card"><div class="card-head"><h2>Sample data</h2></div>
+    <p class="muted small card-lead">Made-up documents marked "Sample" so you can see how everything works. Clearing them never touches your own documents.</p>
+    <div class="btns"><button type="button" class="btn" data-act="load-sample"><span data-i="zap"></span>Load sample data</button><button type="button" class="btn" data-act="clear-sample"><span data-i="x"></span>Clear sample data</button></div>
+  </section>
+
+  <section class="section"><div class="sec-head"><h2>Help</h2></div>
+    <div class="accs" data-single>
+      <details class="acc"><summary>Where are my documents saved?</summary><p>On this phone, in this app's own storage. Nothing is sent anywhere unless you text, email or print it. Back up now and then, and before you clear the browser.</p></details>
+      <details class="acc"><summary>How do I turn an estimate into an invoice?</summary><p>Open the estimate and tap Mark approved, then Turn into invoice. The invoice copies every line, the deposit and the customer, and gets the next invoice number.</p></details>
+      <details class="acc"><summary>How does tax work?</summary><p>Set the rate and choose whether it applies to labour, parts and other lines. Discounts come off before tax. Each document keeps the tax it was made with, and you can change it on one document under Total.</p></details>
+      <details class="acc"><summary>I deleted something by mistake</summary><p>Tap Undo in the message at the bottom of the screen straight away. If it is too late, restore your last backup.</p></details>
+    </div></section>
+
+  <div class="danger-zone"><button type="button" class="btn ghost sm" data-act="erase"><span data-i="trash"></span>Erase every document</button></div>
+  <p class="muted small center app-foot"><span data-t="bizName"></span> &middot; Estimates and invoices &middot; {{year}}</p>
+</template>
+<!-- /section:view-settings -->
+
+<!-- section:sheets -->
+<!-- Bodies for the pop-up sheets: send a message, record a payment, sign. -->
+<template id="sheet-send">
+  <div class="form">
+    <div class="field"><label for="send-msg">Message</label><textarea id="send-msg" rows="6"></textarea><p class="help">Change anything you like before you send it.</p></div>
+  </div>
+  <ul class="list send-list">
+    <li><a class="item send-sms"><span class="lead"><span data-i="message"></span></span><span class="body"><span class="title">Text message</span><span class="sub send-sms-to"></span></span><span data-i="chevron-right" data-cls="chev"></span></a></li>
+    <li><a class="item send-mail"><span class="lead"><span data-i="mail"></span></span><span class="body"><span class="title">Email</span><span class="sub send-mail-to"></span></span><span data-i="chevron-right" data-cls="chev"></span></a></li>
+    <li><button type="button" class="item send-copy"><span class="lead"><span data-i="copy"></span></span><span class="body"><span class="title">Copy the message</span><span class="sub">Paste it into any app</span></span></button></li>
+    <li><button type="button" class="item send-print"><span class="lead"><span data-i="printer"></span></span><span class="body"><span class="title">Print or save as PDF</span><span class="sub">To hand over or attach</span></span></button></li>
+  </ul>
+  <label class="check send-mark"><input type="checkbox" checked><span>Mark it as sent</span></label>
+</template>
+
+<template id="modal-payment">
+  <form class="form" novalidate>
+    <div class="field"><label for="pay-amount">Amount</label><div class="affix"><span class="cur-sym">$</span><input id="pay-amount" name="amount" data-money inputmode="decimal" required></div><p class="help pay-help"></p></div>
+    <div class="field"><span class="label" id="pay-m">Paid by</span>
+      <div class="seg block" role="radiogroup" aria-labelledby="pay-m"><label><input type="radio" name="method" value="Cash" checked><span>Cash</span></label><label><input type="radio" name="method" value="Card"><span>Card</span></label><label><input type="radio" name="method" value="Transfer"><span>Transfer</span></label><label><input type="radio" name="method" value="Check"><span>Check</span></label></div></div>
+    <div class="field"><label for="pay-date">Date</label><input id="pay-date" name="date" type="date" required></div>
+  </form>
+</template>
+
+<template id="sheet-sign">
+  <p class="muted sign-lead"></p>
+  <canvas class="sign-pad"></canvas>
+  <div class="form sign-form">
+    <div class="field"><label for="sign-name">Name of the person signing</label><input id="sign-name" autocomplete="off" autocapitalize="words"></div>
+  </div>
+</template>
+<!-- /section:sheets -->
+
+<script src="appkit.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "id": "service-pro",
+  "kind": "local",
+  "name": "Service Pro",
+  "summary": "One-page site for a local service business: split hero with a huge headline on the left and an offset photo on the right carrying a floating hours/phone/address card, trust chips, a numbered two-column service list that expands on tap, a 4-step timeline that draws itself, a photo strip with a lightbox, hours + FAQ side by side, a full-bleed call band and a sticky Call/Text/Directions bar on phones. Feels direct, trustworthy and crafted.",
+  "best_for": ["auto repair", "mechanic", "tire shop", "plumber", "electrician", "HVAC", "handyman", "cleaning service", "hair salon", "barber", "landscaper", "car detailer", "painter", "locksmith", "pest control", "appliance repair"],
+  "mood": ["trustworthy", "direct", "friendly", "crafted"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "hero", "what": "Eyebrow with the city, h1 = {{tagline}}, one-line lead, Call + See services buttons, offset hero photo with a floating info card (hours, phone, address from tokens), then a row of 4 trust chips", "edit": "Keep one h1 (the owner's promise, under about 45 characters; longer ones get a smaller size automatically). Rewrite <title> as \"Business | trade in City\" (10-60 characters) and the meta description (50-160) once the trade is known. Rewrite the lead in one or two plain sentences. Trust chips must be short, true promises the owner makes (for example how quotes work, booking by text, areas served); delete any that are not true; never add numbers, years, awards, ratings or certifications"},
+    {"name": "services", "what": "Section head + numbered editorial list (2 columns on computers). Each <details class=\"svc\"> has a name (h3), a one-line summary and a detail paragraph that opens on tap; numbers 01, 02... count themselves", "edit": "One <details class=\"svc\"> per real service the owner offers; delete the rest (keep at least 3). Replace the summary and detail with the owner's words. No prices unless the owner gave them"},
+    {"name": "process", "what": "How it works: intro, an optional 'about' photo with a name tag, and a 4-step timeline whose line fills as you scroll (cards on computers)", "edit": "Rewrite the 4 steps to match how this business really works (3 to 5 steps are fine). Delete the <figure class=\"process__photo\"> if there is no good photo of the owner, team or place"},
+    {"name": "gallery", "what": "Recent work: 4 photos in a strip (swipe on phones, staggered row on computers) that open in a lightbox with the alt text as caption", "edit": "Use real photos of the owner's work; write honest alt text, it becomes the caption. Delete the whole section if there are no real photos"},
+    {"name": "info", "what": "Wrapper that holds two blocks side by side on computers: visit and faq", "edit": "Keep the wrapper; delete either inner section if needed, the other fills the row"},
+    {"name": "visit", "what": "Hours and location card: decorative map drawing, address, hours rows (app.js splits {{hours}} into rows), Get directions + Copy address buttons, phone and email", "edit": "Usually only the tokens are needed. Delete the email line if there is no email"},
+    {"name": "faq", "what": "Questions accordion (5 items, smooth open/close)", "edit": "Every answer must be true for this business; rewrite with the owner's facts or delete the question. Delete the whole section if there are no facts"},
+    {"name": "cta", "what": "Full-bleed accent band: kicker, h2, the phone number in huge type, Send a text + Directions buttons, a giant faint {{initial}} in the background", "edit": "Rewrite the h2 as one friendly line; keep the phone link"},
+    {"name": "footer", "what": "Brand, tagline, contact, address, hours, copyright, back to top", "edit": "Tokens only; add a real social link only if the owner gave one"}
+  ],
+  "photo_slots": [
+    {"slot": "hero", "orientation": "portrait", "hint": "the owner or team at work, or a striking close-up of the finished result; shown 4:5 on computers and 16:11 on tablets, cropped with object-fit"},
+    {"slot": "about", "orientation": "portrait", "hint": "optional: the owner, the team or the front of the place"},
+    {"slot": "gallery-1", "orientation": "portrait", "hint": "a finished job, close-up"},
+    {"slot": "gallery-2", "orientation": "portrait", "hint": "work in progress or tools of the trade"},
+    {"slot": "gallery-3", "orientation": "portrait", "hint": "another finished job or a before/after"},
+    {"slot": "gallery-4", "orientation": "portrait", "hint": "the shop, van or workspace"}
+  ],
+  "remove_if_no_facts": ["gallery", "faq"],
+  "behaviors": [
+    "sticky glass header with a call button; logo shrinks on scroll",
+    "sticky Call / Text / Directions bar on phones (sms: and Google Maps links are built in app.js from {{phone_href}} and the data-address attribute)",
+    "reveal on scroll and staggered lists (motion kit)",
+    "services and FAQ are native <details> with a smooth height transition",
+    "timeline rail fills as you scroll and lights each step",
+    "photo strip: swipe with a progress bar on phones, staggered row on computers, lightbox with arrows, swipe and Esc",
+    "opening hours text split into tidy rows",
+    "copy address to clipboard",
+    "subtle parallax on the hero photo; scroll progress bar"
+  ],
+  "style_notes": "Works with every style; strongest with workshop-industrial, editorial-serif, dark-luxury, swiss-grid, poster-bold, retro-americana, clinical-clean. Tested at 390 and 1280 with workshop-industrial, dark-luxury, editorial-serif, soft-pastel, neo-brutalist, poster-bold, high-contrast-sport, midnight-neon and minimal-mono. Text only uses --c-ink/--c-muted on --c-bg/--c-surface and --c-on-accent on --c-accent; the accent is used for fills, lines and icons, never as text colour. Numbers on the service list, steps and photos are CSS counters, so deleting items renumbers them."
+}

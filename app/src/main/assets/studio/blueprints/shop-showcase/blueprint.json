@@ -1,0 +1,36 @@
+{
+  "id": "shop-showcase",
+  "kind": "site",
+  "name": "Shop Showcase",
+  "summary": "An editorial shop page with no cart: a big serif-friendly headline beside a collage of three overlapping product photos on an arch with a turning name badge, filter chips over an image-first grid of 8 products (one featured, one wide) where every card has an 'Ask about this' button that opens a text or email already naming the product, a dark 'how to order' band, a story block with visit details, and a shipping/returns FAQ.",
+  "best_for": ["clothing boutique", "gift shop", "artisan maker or potter", "florist", "bakery or cake maker", "jewellery maker", "seller who takes orders by text or DM", "plant shop", "candle or soap maker", "second-hand or vintage shop"],
+  "mood": ["editorial", "warm", "crafted", "inviting"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "topbar", "what": "Thin dark strip: 'Call or text {{phone}}' (and the hours on bigger screens)", "edit": "Keep it short; delete the section if the shop takes no calls"},
+    {"name": "header", "what": "Sticky header: initial in a circle + shop name, 4 anchor links (desktop), 'How to order' button", "edit": "Match the links to the sections that remain"},
+    {"name": "hero", "what": "Kicker ({{city}}), h1 with an <em> word under a hand-drawn accent squiggle, lead, two buttons, address + hours; collage of photos hero-1 (tall), hero-2 (landscape), hero-3 (square) with a 'N°01' caption and a turning badge that spells the shop name and city", "edit": "Rewrite the h1 (2 to 5 words, keep one <em> word) and the lead with what the shop sells. Use the three best product or shop photos. The badge text reads '{{business}} · {{city}} · shop small ·': edit the words inside <textPath> if you like, keep it under about 40 characters"},
+    {"name": "shop", "what": "Heading, filter chips (All / New / Gifts / Everyday / Seasonal, counts filled in by app.js), status line, and 8 product cards: photo, optional tag, name, one line, price (default 'Price on request'), 'Ask about this' button. Card 1 is featured (big), card 6 is wide", "edit": "One card per real product with its real name, one honest line and the real price text; never invent prices, keep 'Price on request' when unknown. Set each card's data-cat to the chip categories it belongs to (space separated) and rename/delete chips to match; a chip with no products hides itself. Delete extra cards from the end. The grid's data-ask-via can be auto (text on phones, email on computers), sms or email"},
+    {"name": "order", "what": "Dark full-width band: three numbered steps (pick, call or text, pick up or delivery) and Call / Send a text / Email buttons", "edit": "Rewrite the steps to match how the owner really takes orders (pickup only, delivery, deposit, lead time). Delete buttons for channels the owner does not use"},
+    {"name": "story", "what": "Tall photo (slot about) with a round accent stamp (initial + city), heading, pull paragraph, second paragraph, Visit / Hours / Call or text list", "edit": "Write the owner's story in their own words; if there is no story, delete the two paragraphs and keep the visit list"},
+    {"name": "faq", "what": "Heading, 5 shipping/pickup/payment/returns/custom-order questions as native <details> (first open), and a 'Still not sure?' contact card", "edit": "Every answer is a generic instruction: replace each with the owner's real policy or delete that question. Never promise shipping, returns or custom work the owner did not confirm"},
+    {"name": "footer", "what": "Huge shop-name wordmark, Visit / Contact / Shop columns, copyright, back to top", "edit": "Keep the contact tokens; match links to remaining sections"}
+  ],
+  "photo_slots": [
+    {"slot": "hero-1", "orientation": "portrait", "hint": "the hero product or the shop's best photo; shown tall (4:5), centre of interest in the middle"},
+    {"slot": "hero-2", "orientation": "landscape", "hint": "a second product, a display or the shop front (4:3)"},
+    {"slot": "hero-3", "orientation": "square", "hint": "a close-up detail: texture, packaging, a hand at work (1:1)"},
+    {"slot": "product-1", "orientation": "landscape", "hint": "featured product, the one people know you for (shown 4:3 on phones, tall on computers)"},
+    {"slot": "product-2", "orientation": "portrait", "hint": "product photo on a plain or simple background (4:5)"},
+    {"slot": "product-3", "orientation": "portrait", "hint": "product photo (4:5); a gift-like item suits the 'Gift' tag"},
+    {"slot": "product-4", "orientation": "portrait", "hint": "product photo (4:5); a seasonal item suits the 'Seasonal' tag"},
+    {"slot": "product-5", "orientation": "portrait", "hint": "product photo (4:5)"},
+    {"slot": "product-6", "orientation": "landscape", "hint": "custom or made-to-order work (shown wide on phones, tall beside its text on computers)"},
+    {"slot": "product-7", "orientation": "portrait", "hint": "product photo (4:5)"},
+    {"slot": "product-8", "orientation": "portrait", "hint": "product photo (4:5)"},
+    {"slot": "about", "orientation": "portrait", "hint": "the owner or maker at work, or the inside of the shop (4:5)"}
+  ],
+  "remove_if_no_facts": ["topbar", "story", "faq"],
+  "behaviors": ["filter chips with a smooth FLIP layout animation (all products show without JavaScript; chips appear only with it)", "chip counts and an aria-live 'Showing n of 8' line", "'Ask about this' opens sms: on phones or mailto: on computers, prefilled with the product name", "'Send a text' built from the phone number", "turning name badge (paused off screen and for reduced motion)", "hand-drawn squiggle under the h1 word", "two collage photos drift on scroll (data-parallax)", "image zoom on product hover", "sticky header and reveal on scroll from motion.js", "native details FAQ"],
+  "style_notes": "Works with every style: photos get a frame in the page colour so they separate even when the style has no shadow; hard-shadow styles (neo-brutalist, poster-bold, retro-americana) give the collage a printed look. Strongest with editorial-serif, soft-pastel, warm-hospitality, earthy-craft and dark-luxury. Tested at 390 and 1280 px with editorial-serif, midnight-neon, neo-brutalist, soft-pastel, poster-bold and dark-luxury. The 'how to order' band uses the ink colour as its background, so it is dark on light styles and light on dark styles."
+}

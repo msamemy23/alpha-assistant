@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1b1f27">
+<title>Grease Monkey Survivor</title>
+</head>
+<body style="margin:0;background:#1b1f27">
+<canvas id="c"></canvas>
+<script src="../juice.js"></script>
+<script>
+'use strict';
+// =====================================================================
+// GREASE MONKEY SURVIVOR - top-down twin-stick survivor.
+// Left thumb moves, right thumb aims and throws wrenches (auto-aim when the right thumb is idle).
+// TO RETHEME: change CONFIG only. Every "CUSTOMIZE:" line is safe to edit.
+// =====================================================================
+const CONFIG = {
+  id: 'grease-survivor',               // CUSTOMIZE: unique short id (keeps saved scores separate per game)
+  title: 'GREASE MONKEY SURVIVOR',     // CUSTOMIZE: game title (also update <title> above)
+  tagline: 'Hold the garage against the rust!', // CUSTOMIZE: one line under the title
+  shop: "Mike's Auto Repair",          // CUSTOMIZE: business name
+  cta: 'Show this screen for 10% off your next repair!', // CUSTOMIZE: message on the game-over screen
+  player: 'MECHANIC',                  // CUSTOMIZE: name on the high-score board
+  text: {                              // CUSTOMIZE: any wording (keep it short)
+    play: 'START SHIFT', again: 'ANOTHER SHIFT', over: 'SHIFT OVER', time: 'TIME', kills: 'FIXED', best: 'BEST',
+    levelUp: 'LEVEL UP!', pick: 'PICK AN UPGRADE', boss: 'BIG ENGINE INCOMING!', bossDead: 'ENGINE SCRAPPED!', top: 'TOP SCORES',
+    paused: 'PAUSED', resume: 'Tap to resume', hint: 'Left thumb: move   Right thumb: aim'
+  },
+  colors: {                            // CUSTOMIZE: any CSS colours
+    bg: '#1b1f27', floor: '#262c36', line: '#ffd23f', text: '#f4f6f8', accent: '#ff7a1a', shirt: '#2f6fed', hat: '#ffd23f',
+    bolt: '#ffd23f', hurt: '#e63946', rust: '#c2703a', sludge: '#3a3d55', boss: '#7b8794', shot: '#cfd8e3'
+  },
+  hp: 5,                               // CUSTOMIZE: starting health
+  speed: 135,                          // CUSTOMIZE: player move speed (px/s)
+  fireInterval: 0.5,                   // CUSTOMIZE: seconds between throws (smaller = faster)
+  damage: 1,                           // CUSTOMIZE: damage per hit
+  autoAim: true,                       // CUSTOMIZE: true = throws at the nearest enemy when the right thumb is idle
+  spawn: { start: 1.1, min: 0.24, ramp: 0.009, bossEvery: 60 },   // CUSTOMIZE: seconds between spawns, speed-up per second, boss timer
+  enemies: {                           // CUSTOMIZE: toughness. hp = hits, speed = px/s, size = radius, xp = bolts dropped
+    rust:   { hp: 1,  speed: 64, size: 11, xp: 1 },
+    sludge: { hp: 4,  speed: 42, size: 17, xp: 2 },
+    boss:   { hp: 70, speed: 30, size: 34, xp: 3 }
+  },
+  upgrades: [                          // CUSTOMIZE: names and descriptions (the ids drive the effect, keep them)
+    { id: 'rate',   name: 'Fast Hands',   desc: 'Throw wrenches 20% faster' },
+    { id: 'dmg',    name: 'Heavy Wrench', desc: '+1 damage per hit' },
+    { id: 'multi',  name: 'Twin Throw',   desc: 'Throw one more wrench at once' },
+    { id: 'pierce', name: 'Impact Driver', desc: 'Wrenches go through 1 more enemy' },
+    { id: 'speed',  name: 'Sneakers',     desc: 'Move 12% faster' },
+    { id: 'magnet', name: 'Magnet Tray',  desc: 'Pick up bolts from farther away' },
+    { id: 'hp',     name: 'Spare Toolbox', desc: '+1 max health and heal fully' }
+  ],
+  music: { bpm: 138, tracks: [         // CUSTOMIZE: tune (notes like C4 F#3, "." = rest)
+    { w: 'sawtooth', v: .035, p: 'A2 . A2 A2 . A2 C3 . A2 . A2 A2 . G2 E2 .' },
+    { w: 'square', v: .03, p: 'A4 . . C5 . . E5 . . C5 . . A4 . . .' },
+    { w: 'noise', v: .04, len: .35, p: 'x . . . x . . . x . . . x . x .' }
+  ] }
+};
+
+// ---------------------------------------------------------------- setup
+const J = Juice, T = CONFIG.text, C = CONFIG.colors, PI2 = Math.PI * 2, rnd = J.rnd, cv = document.getElementById('c');
+J.init({ id: CONFIG.id, title: CONFIG.title, player: CONFIG.player, str: { paused: T.paused, resume: T.resume } });
+J.fit(cv, { w: 360, h: 640, min: .5, max: 1.8, bg: C.bg });
+
+let ui = [], uiNext = [];
+function button(c, s, x, y, w, h, fn, col) {
+  uiNext.push({ x: x - w / 2, y: y - h / 2, w, h, fn });
+  const dn = J.pt.down && Math.abs(J.pt.x - x) < w / 2 && Math.abs(J.pt.y - y) < h / 2, k = dn ? .95 : 1;
+  c.save(); c.translate(x, y); c.scale(k, k);
+  c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, -w / 2, -h / 2 + 5, w, h, h / 3); c.fill();
+  c.fillStyle = col || C.accent; J.rr(c, -w / 2, -h / 2, w, h, h / 3); c.fill();
+  J.txt(c, s, 0, 1, { size: h * .42, color: '#15181f', stroke: 0, max: w - 20 }); c.restore();
+}
+J.on('tap', (x, y) => { for (const b of ui) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { J.play('click'); b.fn(); return; } });
+
+const sl = J.stick('left', { r: 56 }), sr = J.stick('right', { r: 56, color: C.accent });
+const snd = J.btn({ x: () => J.W - 62, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'snd', x, y, 20, J.opts.sound), onpress: () => J.setOpt('sound'), key: 'KeyM' });
+const pause = J.btn({ x: () => J.W - 24, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'pause', x, y, 18), onpress: () => J.pause(), key: 'KeyP' });
+function ctrlOn(v) { sl.on = sr.on = snd.on = pause.on = v; if (!v) { sl.x = sl.y = sl.mag = sr.x = sr.y = sr.mag = 0; sl.active = sr.active = 0; sl.id = sr.id = null; } }
+ctrlOn(false);
+
+// floor texture is drawn once and cached
+let floorC = null;
+function makeFloor() {
+  floorC = document.createElement('canvas'); floorC.width = Math.ceil(J.W * J.sc); floorC.height = Math.ceil(J.H * J.sc);
+  const c = floorC.getContext('2d'); c.scale(J.sc, J.sc);
+  c.fillStyle = C.floor; c.fillRect(0, 0, J.W, J.H);
+  c.strokeStyle = 'rgba(255,255,255,.035)'; c.lineWidth = 2; c.beginPath();
+  for (let x = 0; x < J.W; x += 60) { c.moveTo(x, 0); c.lineTo(x, J.H); } for (let y = 0; y < J.H; y += 60) { c.moveTo(0, y); c.lineTo(J.W, y); } c.stroke();
+  for (let i = 0; i < 9; i++) { c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(rnd(J.W), rnd(J.H), rnd(14, 38), rnd(8, 22), rnd(3), 0, PI2); c.fill(); }
+  c.strokeStyle = C.line; c.globalAlpha = .35; c.lineWidth = 5; c.setLineDash([22, 16]); c.strokeRect(10, 10, J.W - 20, J.H - 20);
+}
+J.on('resize', () => { floorC = null; });
+
+// ---------------------------------------------------------------- game state
+let st = 'title', tt = 0, time = 0, kills = 0, score = 0, rank = 0, spawnT = 1, nextBoss = 60, banner = '', bannerT = 0, perks = [];
+let P = {}, E = [], B = [], G = [];
+
+function newGame() {
+  P = { x: J.W / 2, y: J.H / 2, hp: CONFIG.hp, max: CONFIG.hp, spd: CONFIG.speed, fire: CONFIG.fireInterval, dmg: CONFIG.damage, multi: 1, pierce: 0, mag: 70, xp: 0, lv: 1, need: 6, inv: 0, face: -1.57, cd: 0, r: 13, hurt: 0 };
+  E = []; B = []; G = []; time = 0; kills = 0; spawnT = 1; nextBoss = CONFIG.spawn.bossEvery; rank = 0; J.clearFx();
+  st = 'play'; ctrlOn(true); say(T.hint, 3); J.music.start(CONFIG.music);
+}
+function say(s, t) { banner = s; bannerT = t || 2; }
+function over() {
+  st = 'over'; ctrlOn(false); score = kills * 10 + Math.floor(time); rank = J.hs.add(score); J.music.stop();
+  J.play('lose'); J.vibe([60, 40, 120]); J.flash(C.hurt, .5); J.shake(.8);
+}
+function spawn(type, x, y) {
+  const d = CONFIG.enemies[type];
+  if (x === undefined) { const s = Math.floor(rnd(4)); x = s === 0 ? -20 : s === 1 ? J.W + 20 : rnd(J.W); y = s === 2 ? -20 : s === 3 ? J.H + 20 : rnd(J.H); }
+  const hp = Math.max(1, Math.round(d.hp * (1 + time / 200)));
+  E.push({ t: type, x, y, hp, max: hp, sp: d.speed * (1 + Math.min(time, 240) / 400) * rnd(.9, 1.1), r: d.size, f: 0, ph: rnd(PI2), kx: 0, ky: 0 });
+}
+function nearest(maxd) {
+  let b = null, bd = maxd * maxd; for (const e of E) { const d = (e.x - P.x) ** 2 + (e.y - P.y) ** 2; if (d < bd) { bd = d; b = e; } } return b;
+}
+function fire(a) {
+  const n = P.multi; for (let k = 0; k < n; k++) {
+    const t = a + (k - (n - 1) / 2) * .2;
+    B.push({ x: P.x + Math.cos(t) * 16, y: P.y + Math.sin(t) * 16, vx: Math.cos(t) * 470, vy: Math.sin(t) * 470, life: 1.1, pierce: P.pierce, hit: [], rot: rnd(PI2), dmg: P.dmg });
+  }
+  J.play('laser', rnd(1.7, 2.2), .22);
+}
+function kill(e) {
+  kills++; const d = CONFIG.enemies[e.t], col = e.t === 'rust' ? C.rust : e.t === 'sludge' ? C.sludge : C.boss;
+  J.feel(e.t === 'boss' ? 'large' : e.t === 'sludge' ? 'medium' : 'small', e.x, e.y, col);
+  if (e.t === 'sludge') { spawn('rust', e.x - 10, e.y); spawn('rust', e.x + 10, e.y); }
+  if (e.t === 'boss') { say(T.bossDead, 2.5); for (let i = 0; i < 14; i++) G.push({ x: e.x + rnd(-30, 30), y: e.y + rnd(-30, 30), v: d.xp }); J.burst(e.x, e.y, { n: 50, color: [C.boss, C.accent, C.bolt], grav: 200, spd: [80, 340], life: [.6, 1.4] }); }
+  else for (let i = 0; i < d.xp; i++) G.push({ x: e.x + rnd(-8, 8), y: e.y + rnd(-8, 8), v: 1 });
+}
+function levelUp() {
+  P.lv++; P.xp -= P.need; P.need = Math.floor(P.need * 1.3) + 2; st = 'perk'; ctrlOn(false);
+  perks = CONFIG.upgrades.slice().sort(() => Math.random() - .5).slice(0, 3);
+  J.feel('large', P.x, P.y, C.bolt, T.levelUp); J.jingle('E5 G5 B5 E6');
+}
+function takePerk(id) {
+  if (id === 'rate') P.fire *= .8; if (id === 'dmg') P.dmg += 1; if (id === 'multi') P.multi++; if (id === 'pierce') P.pierce++;
+  if (id === 'speed') P.spd *= 1.12; if (id === 'magnet') P.mag *= 1.5; if (id === 'hp') { P.max++; P.hp = P.max; }
+  st = 'play'; ctrlOn(true); J.play('power'); if (P.xp >= P.need) levelUp();
+}
+
+function update(dt) {
+  tt += dt; bannerT = Math.max(0, bannerT - dt);
+  if (st !== 'play') return;
+  time += dt; P.inv = Math.max(0, P.inv - dt); P.hurt = Math.max(0, P.hurt - dt);
+  // move
+  P.x = J.clamp(P.x + sl.x * P.spd * dt, 16, J.W - 16); P.y = J.clamp(P.y + sl.y * P.spd * dt, 52, J.H - 16);
+  // aim + fire
+  P.cd -= dt; let a = null;
+  if (sr.mag > .25) a = sr.ang; else if (CONFIG.autoAim) { const n = nearest(300); if (n) a = Math.atan2(n.y - P.y, n.x - P.x); }
+  if (a !== null) { let d = a - P.face; d = Math.atan2(Math.sin(d), Math.cos(d)); P.face += d * Math.min(1, dt * 18); if (P.cd <= 0) { fire(a); P.cd = P.fire; } }
+  else if (sl.mag > .2) P.face = sl.ang;
+  // spawning
+  const S = CONFIG.spawn; spawnT -= dt;
+  if (spawnT <= 0 && E.length < 90) { spawnT = Math.max(S.min, S.start - time * S.ramp); spawn(time > 18 && Math.random() < Math.min(.35, (time - 18) / 120) ? 'sludge' : 'rust'); if (time > 40 && Math.random() < .3) spawn('rust'); }
+  if (time >= nextBoss) { nextBoss += S.bossEvery; spawn('boss'); say(T.boss, 2.5); J.shake(.5); J.play('boom'); }
+  // bullets
+  for (let i = B.length; i--;) {
+    const b = B[i]; b.x += b.vx * dt; b.y += b.vy * dt; b.rot += dt * 22; b.life -= dt;
+    if (b.life <= 0 || b.x < -10 || b.x > J.W + 10 || b.y < -10 || b.y > J.H + 10) { B.splice(i, 1); continue; }
+    for (const e of E) {
+      if (e.hp <= 0 || b.hit.includes(e)) continue;
+      if ((e.x - b.x) ** 2 + (e.y - b.y) ** 2 < (e.r + 6) ** 2) {
+        b.hit.push(e); e.hp -= b.dmg; e.f = .1; const m = Math.hypot(b.vx, b.vy); e.kx += b.vx / m * 60; e.ky += b.vy / m * 60;
+        J.burst(b.x, b.y, { n: 3, color: C.shot, spd: [40, 130], size: [2, 3] }); J.text(e.x, e.y - e.r, Math.round(b.dmg), { size: 14, life: .5, color: C.shot }); J.play('hit', rnd(1.2, 1.8), .3);
+        if (b.pierce-- <= 0) { B.splice(i, 1); } break;
+      }
+    }
+  }
+  // enemies
+  for (let i = E.length; i--;) {
+    const e = E[i]; if (e.hp <= 0) { kill(e); E.splice(i, 1); continue; }
+    e.f = Math.max(0, e.f - dt); const dx = P.x - e.x, dy = P.y - e.y, d = Math.hypot(dx, dy) || 1; e.ph += dt * 5;
+    e.x += (dx / d * e.sp + Math.cos(e.ph) * 14) * dt + e.kx * dt * 6; e.y += (dy / d * e.sp + Math.sin(e.ph) * 14) * dt + e.ky * dt * 6; e.kx *= .9; e.ky *= .9;
+    if (d < e.r + P.r - 2 && P.inv <= 0) {
+      P.hp--; P.inv = .9; P.hurt = .3; J.shake(.45); J.flash(C.hurt, .35); J.vibe([25, 20, 25]); J.play('hit', .6); J.burst(P.x, P.y, { n: 10, color: C.hurt, spd: [60, 200] });
+      const m = e.t === 'boss' ? 40 : 18; e.kx -= dx / d * m; e.ky -= dy / d * m; P.x -= dx / d * 10; P.y -= dy / d * 10;
+      if (P.hp <= 0) { over(); return; }
+    }
+  }
+  // gems
+  for (let i = G.length; i--;) {
+    const g = G[i], dx = P.x - g.x, dy = P.y - g.y, d = Math.hypot(dx, dy);
+    if (d < P.mag || g.mag) { g.mag = 1; g.x += dx / d * 300 * dt; g.y += dy / d * 300 * dt; }
+    if (d < 14) { G.splice(i, 1); P.xp += g.v; J.play('coin', rnd(.9, 1.4), .25); J.burst(P.x, P.y, { n: 2, color: C.bolt, spd: [30, 90], size: [2, 3] }); if (P.xp >= P.need) { levelUp(); return; } }
+  }
+}
+
+// ---------------------------------------------------------------- drawing
+function tire(c, x, y, r) {
+  c.fillStyle = '#262a33'; c.beginPath(); c.arc(x, y, r, 0, PI2); c.fill(); c.fillStyle = '#b8c4d0'; c.beginPath(); c.arc(x, y, r * .5, 0, PI2); c.fill();
+  c.fillStyle = '#5f6b7a'; c.beginPath(); c.arc(x, y, r * .2, 0, PI2); c.fill();
+}
+function wrench(c, x, y, len, a, col) {
+  c.save(); c.translate(x, y); c.rotate(a); c.fillStyle = col;
+  c.fillRect(-len / 2, -len * .09, len, len * .18); c.beginPath(); c.arc(-len / 2, 0, len * .2, 0, PI2); c.arc(len / 2, 0, len * .2, 0, PI2); c.fill();
+  c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(len / 2 - len * .02, -len * .07, len * .2, len * .14); c.fillRect(-len / 2 - len * .18, -len * .07, len * .2, len * .14); c.restore();
+}
+function drawEnemy(c, e) {
+  const t = e.f > 0, wob = Math.sin(e.ph * 1.4) * .08;
+  c.save(); c.translate(e.x, e.y); c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(0, e.r * .7, e.r, e.r * .45, 0, 0, PI2); c.fill();
+  if (e.t === 'rust') {
+    c.strokeStyle = t ? '#fff' : '#7a4318'; c.lineWidth = 2; c.beginPath();
+    for (let i = -1; i <= 1; i++) for (const s of [-1, 1]) { const w = Math.sin(e.ph * 2 + i + s) * 3; c.moveTo(s * 4, i * 5); c.lineTo(s * (e.r + 4), i * 7 + w); } c.stroke();
+    c.fillStyle = t ? '#fff' : C.rust; c.beginPath(); c.ellipse(0, 0, e.r * (1 + wob), e.r * .85, 0, 0, PI2); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.arc(-3, -2, e.r * .35, 0, PI2); c.fill();
+  } else if (e.t === 'sludge') {
+    c.fillStyle = t ? '#fff' : C.sludge; c.beginPath(); c.ellipse(0, 0, e.r * (1 + wob), e.r * (1 - wob), 0, 0, PI2); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.ellipse(-e.r * .35, -e.r * .4, e.r * .3, e.r * .18, -.5, 0, PI2); c.fill();
+  } else {
+    const bob = Math.sin(e.ph * 2) * 3; c.fillStyle = t ? '#fff' : C.boss; J.rr(c, -e.r, -e.r * .7, e.r * 2, e.r * 1.5, 10); c.fill();
+    c.fillStyle = t ? '#fff' : '#4d5661'; for (let i = 0; i < 4; i++) { J.rr(c, -e.r * .8 + i * e.r * .45, -e.r * 1.05 + (i % 2 ? bob : -bob), e.r * .3, e.r * .55, 4); c.fill(); }
+    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(-e.r * .8, e.r * .5, e.r * 1.6, 5);
+  }
+  const ey = e.t === 'boss' ? -e.r * .05 : -e.r * .15, ew = e.r * .3; c.fillStyle = '#fff'; c.beginPath(); c.arc(-ew, ey, e.r * .22, 0, PI2); c.arc(ew, ey, e.r * .22, 0, PI2); c.fill();
+  c.fillStyle = e.t === 'boss' ? '#e63946' : '#111'; c.beginPath(); c.arc(-ew + 1, ey + 1, e.r * .11, 0, PI2); c.arc(ew + 1, ey + 1, e.r * .11, 0, PI2); c.fill();
+  if (e.t === 'boss') { const w = e.r * 2; c.fillStyle = 'rgba(0,0,0,.5)'; c.fillRect(-w / 2, e.r * 1.0, w, 6); c.fillStyle = C.hurt; c.fillRect(-w / 2, e.r * 1.0, w * Math.max(0, e.hp / e.max), 6); }
+  c.restore();
+}
+function drawPlayer(c) {
+  if (P.inv > 0 && Math.floor(tt * 20) % 2) return;
+  c.save(); c.translate(P.x, P.y); c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(0, 10, 15, 7, 0, 0, PI2); c.fill();
+  wrench(c, Math.cos(P.face) * 18, Math.sin(P.face) * 18, 26, P.face + Math.sin(tt * 14) * .15, C.shot);
+  c.fillStyle = P.hurt > 0 ? '#fff' : C.shirt; c.beginPath(); c.arc(0, 2, 13, 0, PI2); c.fill();
+  c.fillStyle = '#f1c27d'; c.beginPath(); c.arc(0, -2, 8, 0, PI2); c.fill();
+  c.fillStyle = C.hat; c.beginPath(); c.arc(0, -4, 8.5, Math.PI, 0); c.fill(); c.fillRect(-9, -5, 18, 3);
+  c.fillStyle = '#111'; c.beginPath(); c.arc(Math.cos(P.face) * 3 - 2.5, 0, 1.4, 0, PI2); c.arc(Math.cos(P.face) * 3 + 2.5, 0, 1.4, 0, PI2); c.fill(); c.restore();
+}
+function draw(c) {
+  ui = uiNext; uiNext = [];
+  if (!floorC) makeFloor(); c.drawImage(floorC, 0, 0, J.W, J.H);
+  if (st === 'title' || st === 'over') return;
+  for (const g of G) { c.save(); c.translate(g.x, g.y); c.rotate(g.x * .05); c.fillStyle = C.bolt; c.beginPath(); for (let i = 0; i < 6; i++) c.lineTo(Math.cos(i * 1.0472) * 6, Math.sin(i * 1.0472) * 6); c.fill(); c.fillStyle = 'rgba(0,0,0,.5)'; c.beginPath(); c.arc(0, 0, 2.2, 0, PI2); c.fill(); c.restore(); }
+  for (const e of E) drawEnemy(c, e);
+  drawPlayer(c);
+  for (const b of B) wrench(c, b.x, b.y, 16, b.rot, C.shot);
+}
+function hud(c) {
+  const W = J.W, H = J.H;
+  if (st === 'title') {
+    c.fillStyle = 'rgba(10,12,16,.55)'; c.fillRect(0, 0, W, H);
+    const y = H * .27; c.save(); c.translate(W / 2, y); c.rotate(Math.sin(tt) * .2); wrench(c, 0, 0, 120, 0, C.shot); wrench(c, 0, 0, 120, Math.PI / 2, C.accent); c.restore();
+    J.txt(c, CONFIG.title, W / 2, H * .48, { size: 36, max: W - 30, color: C.accent }); J.txt(c, CONFIG.tagline, W / 2, H * .48 + 34, { size: 16, max: W - 40 });
+    button(c, T.play, W / 2, H * .64, 230, 64, newGame); J.txt(c, T.best + ' ' + J.hs.best(), W / 2, H * .64 + 56, { size: 16, color: C.bolt });
+    J.txt(c, CONFIG.shop, W / 2, H - 30, { size: 15, max: W - 40, color: '#aab4c0' });
+    return;
+  }
+  if (st === 'over') {
+    c.fillStyle = 'rgba(10,12,16,.88)'; c.fillRect(0, 0, W, H);
+    J.txt(c, T.over, W / 2, H * .13, { size: 38, color: C.hurt, max: W - 30 });
+    J.txt(c, T.kills + ' ' + kills + '   ' + T.time + ' ' + Math.floor(time / 60) + ':' + String(Math.floor(time % 60)).padStart(2, '0'), W / 2, H * .2, { size: 19, max: W - 30 });
+    J.txt(c, score, W / 2, H * .28, { size: 44, color: C.text }); if (rank === 1) J.txt(c, 'NEW BEST!', W / 2, H * .34, { size: 20, color: C.bolt });
+    J.txt(c, T.top, W / 2, H * .41, { size: 15, color: '#aab4c0' }); J.hs.draw(c, W / 2, H * .46, { size: 17, w: 210, n: 4, hi: C.bolt });
+    J.wrap(c, CONFIG.cta, W - 60, 17).forEach((l, i) => J.txt(c, l, W / 2, H * .67 + i * 22, { size: 17, color: C.accent }));
+    button(c, T.again, W / 2, H * .83, 240, 62, newGame); J.txt(c, CONFIG.shop, W / 2, H - 28, { size: 14, max: W - 40, color: '#aab4c0' });
+    return;
+  }
+  // xp bar + hp + clock
+  c.fillStyle = 'rgba(0,0,0,.5)'; c.fillRect(0, 0, W, 9); c.fillStyle = C.bolt; c.fillRect(0, 0, W * Math.min(1, P.xp / P.need), 9);
+  for (let i = 0; i < P.max; i++) { c.globalAlpha = i < P.hp ? 1 : .25; tire(c, 18 + i * 22, 30, 9); } c.globalAlpha = 1;
+  J.txt(c, Math.floor(time / 60) + ':' + String(Math.floor(time % 60)).padStart(2, '0'), W / 2 + 6, 28, { size: 20 }); J.txt(c, T.kills + ' ' + kills, 18, 54, { size: 13, align: 'left', color: '#aab4c0' });
+  J.txt(c, 'LV ' + P.lv, W - 100, 28, { size: 14, color: C.bolt });
+  if (bannerT > 0 && st === 'play') J.txt(c, banner, W / 2, H * .3, { size: 26, color: C.accent, max: W - 30 });
+  if (st === 'perk') {
+    c.fillStyle = 'rgba(10,12,16,.8)'; c.fillRect(0, 0, W, H);
+    J.txt(c, T.levelUp, W / 2, H * .15, { size: 36, color: C.bolt }); J.txt(c, T.pick, W / 2, H * .15 + 34, { size: 16, color: '#aab4c0' });
+    const cw = Math.min(320, W - 30), ch = 92, y0 = H * .3;
+    perks.forEach((p, i) => {
+      const y = y0 + i * (ch + 16) + ch / 2, x = W / 2; uiNext.push({ x: x - cw / 2, y: y - ch / 2, w: cw, h: ch, fn: () => takePerk(p.id) });
+      const dn = J.pt.down && Math.abs(J.pt.x - x) < cw / 2 && Math.abs(J.pt.y - y) < ch / 2;
+      c.fillStyle = dn ? '#3a4254' : '#2a303d'; J.rr(c, x - cw / 2, y - ch / 2, cw, ch, 16); c.fill(); c.strokeStyle = C.accent; c.lineWidth = 3; c.stroke();
+      J.txt(c, p.name, x, y - 16, { size: 22, color: C.accent, max: cw - 30 }); J.txt(c, p.desc, x, y + 16, { size: 15, max: cw - 30, stroke: 0 });
+    });
+  }
+}
+window.__qa.info = () => ({ st, time: +time.toFixed(1), kills, hp: P.hp, lv: P.lv, enemies: E.length, bullets: B.length, gems: G.length });
+J.loop({ update, draw, hud });
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "title": "Transition SFX set: whoosh + ding, then swoosh + pop + low ding",
+  "mode": "sfx",
+  "tailSec": 0.8,
+  "master": { "reverb": { "decay": 1.4, "damping": 0.4 } },
+  "sfx": [
+    { "name": "whoosh in", "preset": "whoosh", "start": 0.0, "volume": 0.9, "pan": -0.15 },
+    { "name": "ding", "preset": "ding", "start": 0.62, "volume": 0.85, "reverb": 0.35 },
+    { "name": "swoosh out", "preset": "swoosh", "start": 2.2, "volume": 0.9, "pan": 0.15 },
+    { "name": "pop", "preset": "pop", "start": 2.85, "volume": 0.8, "pan": 0.3 },
+    { "name": "low ding", "preset": "ding", "start": 3.15, "volume": 0.7, "pitch": -7, "reverb": 0.4 }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Drum loop 100 BPM (2-bar pattern x 4)",
+  "tempo": 100,
+  "timeSignature": [4, 4],
+  "lengthBars": 2,
+  "loop": { "times": 4 },
+  "swing": 0.3,
+  "humanize": 0.15,
+  "tailSec": 1.2,
+  "master": { "reverb": { "decay": 1.1 } },
+  "tracks": [
+    { "name": "kit", "instrument": "power drums", "volume": 1, "fx": { "reverb": 0.12 },
+      "steps": {
+        "kick":       "x.....x.x.......x.....x...x.x...",
+        "snare":      "....x.......x.......x.......x.g.",
+        "closed_hat": "X.x.X.x.X.x.X.x.X.x.X.x.X.x.X.x.",
+        "open_hat":   "..............................x.",
+        "crash":      "X..............................."
+      } },
+    { "name": "percussion", "instrument": "drums", "volume": 0.5, "fx": { "reverb": 0.1 },
+      "steps": { "tambourine": "..x...x...x...x...x...x...x...x.", "cowbell": "x..............." } }
+  ]
+}

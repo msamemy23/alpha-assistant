@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#171b26">
+<title>Shop Sign Studio</title>
+</head>
+<body style="margin:0;background:#171b26">
+<canvas id="c"></canvas>
+<script src="../juice.js"></script>
+<script>
+'use strict';
+// =====================================================================
+// SHOP SIGN STUDIO - creative studio: draw, add stickers, add meme text, save a PNG.
+// TO RETHEME: change CONFIG only. Every "CUSTOMIZE:" line is safe to edit.
+// =====================================================================
+const CONFIG = {
+  id: 'sign-studio',                  // CUSTOMIZE: unique short id
+  title: 'SIGN STUDIO',               // CUSTOMIZE: toy title (also update <title> above)
+  shop: "Mike's Auto Repair",         // CUSTOMIZE: business name
+  watermark: "Made at Mike's Auto Repair", // CUSTOMIZE: small credit printed on every saved picture ('' = none)
+  badge: 'SALE',                      // CUSTOMIZE: word on the badge sticker (for example SALE, NEW, 5 STARS)
+  text: {                             // CUSTOMIZE: any wording (keep it short)
+    save: 'SAVE', draw: 'DRAW', stickers: 'STICKERS', words: 'TEXT', back: 'BACKGROUND', undo: 'UNDO', clear: 'CLEAR', eraser: 'ERASER', top: 'TOP', bottom: 'BOTTOM', edit: 'TYPE', size: 'SIZE',
+    saved: 'Your picture is ready!', hold: 'Press and hold the picture to save it, or use the button.', download: 'DOWNLOAD', share: 'SHARE', close: 'CLOSE', ok: 'OK', typeHere: 'Type your caption', colour: 'COLOUR', del: 'DELETE', paused: 'PAUSED', resume: 'Tap to resume'
+  },
+  colors: { bg: '#171b26', panel: '#222a3b', btn: '#34405f', text: '#f4f6f8', accent: '#ff7a1a', gold: '#ffd23f' }, // CUSTOMIZE: colours
+  inks: ['#15181f', '#ffffff', '#e63946', '#ff7a1a', '#ffd23f', '#2ec4b6', '#4895ef', '#b583e8'], // CUSTOMIZE: pen colours
+  captions: {                         // CUSTOMIZE: ready-made meme lines (tap the arrows to cycle). Add as many as you like.
+    top: ['WHEN YOU FINALLY BOOK THE OIL CHANGE', 'MY CAR AFTER A TUNE-UP', 'THAT NOISE? WE CAN FIX THAT', 'FRESH TIRES FEEL', 'CHECK ENGINE LIGHT ON?'],
+    bottom: ['FEELS LIKE A BRAND NEW CAR', "MIKE'S AUTO REPAIR", 'BOOK TODAY', 'SMOOTH RIDE UNLOCKED', 'WE GOT YOU']
+  },
+  backgrounds: ['garage', 'road', 'blueprint', 'sunset', 'checker', 'white']  // CUSTOMIZE: which backgrounds are offered (garage | road | blueprint | sunset | checker | white)
+};
+
+// ---------------------------------------------------------------- setup
+const J = Juice, T = CONFIG.text, C = CONFIG.colors, PI2 = Math.PI * 2, cv = document.getElementById('c'), P = 720;   // P = picture size in pixels
+J.init({ id: CONFIG.id, title: CONFIG.title, str: { paused: T.paused, resume: T.resume } });
+J.fit(cv, { w: 360, h: 640, fixed: true, bg: C.bg });
+
+let ui = [], uiNext = [];
+function button(c, s, x, y, w, h, fn, col, tc, size) {
+  uiNext.push({ x: x - w / 2, y: y - h / 2, w, h, fn });
+  const dn = J.pt.down && Math.abs(J.pt.x - x) < w / 2 && Math.abs(J.pt.y - y) < h / 2, k = dn ? .94 : 1;
+  c.save(); c.translate(x, y); c.scale(k, k); c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, -w / 2, -h / 2 + 3, w, h, h / 3); c.fill(); c.fillStyle = col || C.btn; J.rr(c, -w / 2, -h / 2, w, h, h / 3); c.fill();
+  if (typeof s === 'function') s(c); else J.txt(c, s, 0, 1, { size: size || Math.min(h * .4, 15), color: tc || '#fff', stroke: 0, max: w - 8 }); c.restore();
+}
+J.on('tap', (x, y) => { for (const b of ui) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { J.play('click', 1, .6); b.fn(); return; } });
+
+// ---------------------------------------------------------------- picture state
+const ink = document.createElement('canvas'); ink.width = ink.height = P; const ig = ink.getContext('2d');
+let strokes = [], cur = null, stickers = [], sel = -1, drag = null, tab = 'draw', color = CONFIG.inks[0], width = 14, eraser = false, bgIx = 0, tt = 0;
+const caps = { top: { text: CONFIG.captions.top[0], size: 64, color: '#ffffff', i: 0 }, bottom: { text: CONFIG.captions.bottom[0], size: 64, color: '#ffffff', i: 0 } };
+let capSel = 'top', overlay = null, lastShot = '';
+const STK = ['wrench', 'tire', 'oil', 'gear', 'car', 'star', 'sale', 'bolt'];
+
+// ---------------------------------------------------------------- art
+function outline(g, w) { g.lineWidth = w || 5; g.strokeStyle = '#15181f'; g.lineJoin = 'round'; g.stroke(); }
+const ART = {
+  wrench(g) { g.rotate(-.7); g.fillStyle = '#c9d2dc'; g.beginPath(); g.rect(-9, -26, 18, 78); g.fill(); outline(g); g.beginPath(); g.arc(0, -36, 22, .5, Math.PI * 2 - .5 + Math.PI); g.fillStyle = '#c9d2dc'; g.arc(0, -36, 22, Math.PI * .5 + .45, Math.PI * 2.5 - .45); g.fill(); outline(g); g.beginPath(); g.arc(0, 58, 14, 0, PI2); g.fill(); outline(g); g.fillStyle = '#15181f'; g.beginPath(); g.arc(0, 58, 6, 0, PI2); g.fill(); },
+  tire(g) { g.fillStyle = '#262a33'; g.beginPath(); g.arc(0, 0, 50, 0, PI2); g.fill(); outline(g); g.strokeStyle = '#14161b'; g.lineWidth = 6; g.beginPath(); for (let i = 0; i < 14; i++) { const t = i * .4488; g.moveTo(Math.cos(t) * 41, Math.sin(t) * 41); g.lineTo(Math.cos(t) * 49, Math.sin(t) * 49); } g.stroke(); g.fillStyle = '#b8c4d0'; g.beginPath(); g.arc(0, 0, 25, 0, PI2); g.fill(); outline(g, 3); g.fillStyle = '#5f6b7a'; for (let i = 0; i < 5; i++) { g.beginPath(); g.arc(Math.cos(i * 1.2566) * 14, Math.sin(i * 1.2566) * 14, 3.5, 0, PI2); g.fill(); } },
+  oil(g) { g.fillStyle = '#ffb703'; g.beginPath(); g.moveTo(0, -52); g.bezierCurveTo(10, -26, 38, -8, 38, 18); g.arc(0, 18, 38, 0, Math.PI); g.bezierCurveTo(-38, -8, -10, -26, 0, -52); g.fill(); outline(g); g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.ellipse(-16, 14, 6, 14, .4, 0, PI2); g.fill(); },
+  gear(g) { g.fillStyle = '#9fb3c8'; g.beginPath(); for (let i = 0; i < 20; i++) { const a = i * .3142, r = i % 2 ? 40 : 52; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); g.lineTo(Math.cos(a + .157) * r, Math.sin(a + .157) * r); } g.closePath(); g.fill(); outline(g); g.fillStyle = '#15181f'; g.beginPath(); g.arc(0, 0, 16, 0, PI2); g.fill(); },
+  car(g) { g.scale(.8, .8); g.fillStyle = '#e05260'; g.beginPath(); g.moveTo(-60, 0); g.lineTo(-60, -16); g.lineTo(-40, -22); g.lineTo(-24, -44); g.lineTo(22, -44); g.lineTo(42, -22); g.lineTo(62, -16); g.lineTo(62, 0); g.closePath(); g.fill(); outline(g, 6); g.fillStyle = '#cfe8ff'; g.beginPath(); g.moveTo(-20, -39); g.lineTo(-33, -22); g.lineTo(-4, -22); g.lineTo(-4, -39); g.closePath(); g.moveTo(2, -39); g.lineTo(2, -22); g.lineTo(34, -22); g.lineTo(20, -39); g.closePath(); g.fill(); for (const x of [-36, 36]) { g.fillStyle = '#15181f'; g.beginPath(); g.arc(x, 2, 14, 0, PI2); g.fill(); g.fillStyle = '#b8c4d0'; g.beginPath(); g.arc(x, 2, 6, 0, PI2); g.fill(); } },
+  star(g) { g.fillStyle = '#ffd23f'; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * .6283, r = i % 2 ? 22 : 52; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill(); outline(g, 6); },
+  sale(g) { g.fillStyle = '#e63946'; g.beginPath(); for (let i = 0; i < 32; i++) { const a = i * .19635, r = i % 2 ? 42 : 54; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill(); outline(g, 4); J.txt(g, CONFIG.badge, 0, 2, { size: 26, max: 78, color: '#fff', stroke: 'rgba(0,0,0,.6)' }); },
+  bolt(g) { g.fillStyle = '#ffd23f'; g.beginPath(); g.moveTo(8, -54); g.lineTo(-30, 6); g.lineTo(-4, 6); g.lineTo(-12, 54); g.lineTo(32, -12); g.lineTo(4, -12); g.closePath(); g.fill(); outline(g, 6); }
+};
+const BG = {
+  garage(g) { const q = g.createLinearGradient(0, 0, 0, P); q.addColorStop(0, '#59647d'); q.addColorStop(1, '#2d3548'); g.fillStyle = q; g.fillRect(0, 0, P, P); g.fillStyle = 'rgba(0,0,0,.18)'; for (let i = 0; i < 9; i++) for (let k = 0; k < 14; k++) { g.beginPath(); g.arc(30 + k * 50, 40 + i * 50, 4, 0, PI2); g.fill(); } g.fillStyle = '#1e2433'; g.fillRect(0, P * .78, P, P * .22); g.fillStyle = '#ff7a1a'; g.fillRect(0, P * .78, P, 10); },
+  road(g) { g.fillStyle = '#3a404c'; g.fillRect(0, 0, P, P); g.fillStyle = '#6fa8dc'; g.fillRect(0, 0, P, P * .34); g.fillStyle = '#4c7a54'; g.fillRect(0, P * .3, P, P * .06); g.fillStyle = '#e9edf2'; for (let i = 0; i < 6; i++) g.fillRect(40 + i * 130, P * .78, 80, 14); g.fillStyle = '#ffd23f'; g.fillRect(0, P * .62, P, 8); },
+  blueprint(g) { g.fillStyle = '#1b4f8a'; g.fillRect(0, 0, P, P); g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 2; g.beginPath(); for (let i = 0; i <= P; i += 40) { g.moveTo(i, 0); g.lineTo(i, P); g.moveTo(0, i); g.lineTo(P, i); } g.stroke(); },
+  sunset(g) { const q = g.createLinearGradient(0, 0, 0, P); q.addColorStop(0, '#5a3d7a'); q.addColorStop(.6, '#ff7a1a'); q.addColorStop(1, '#ffd23f'); g.fillStyle = q; g.fillRect(0, 0, P, P); g.fillStyle = '#fff4c2'; g.beginPath(); g.arc(P * .5, P * .62, 90, 0, PI2); g.fill(); g.fillStyle = '#2a2a3d'; g.fillRect(0, P * .74, P, P * .26); },
+  checker(g) { g.fillStyle = '#fff'; g.fillRect(0, 0, P, P); g.fillStyle = '#15181f'; for (let y = 0; y < 12; y++) for (let x = 0; x < 12; x++) if ((x + y) % 2) g.fillRect(x * 60, y * 60, 60, 60); },
+  white(g) { g.fillStyle = '#fbfbfd'; g.fillRect(0, 0, P, P); }
+};
+function drawCaption(g, cap) {
+  cap.h = 0; if (!cap.text) return; const txt = cap.text.toUpperCase(), F = z => { g.font = '900 ' + z + 'px Impact, "Arial Black", "Trebuchet MS", sans-serif'; }, wd = s => g.measureText(s).width; let z = cap.size, ls = [txt]; F(z);
+  if (wd(txt) > P - 50 && txt.includes(' ')) { const w = txt.split(' '); let bi = 1, bd = 1e9; for (let i = 1; i < w.length; i++) { const d = Math.abs(wd(w.slice(0, i).join(' ')) - wd(w.slice(i).join(' '))); if (d < bd) { bd = d; bi = i; } } ls = [w.slice(0, bi).join(' '), w.slice(bi).join(' ')]; }
+  while (Math.max(...ls.map(wd)) > P - 50 && z > 18) { z -= 2; F(z); }
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.lineWidth = z / 4.5; g.strokeStyle = '#000'; g.fillStyle = cap.color; const lh = z * 1.04; cap.h = ls.length * lh + 20;
+  ls.forEach((s, i) => { const y = cap === caps.top ? 16 + z * .55 + i * lh : P - 16 - z * .55 - (ls.length - 1 - i) * lh; g.strokeText(s, P / 2, y); g.fillText(s, P / 2, y); });
+}
+function drawPicture(g, forExport) {            // draws the whole picture in 720 x 720 picture space
+  BG[CONFIG.backgrounds[bgIx]](g); g.drawImage(ink, 0, 0);
+  stickers.forEach((s, i) => { g.save(); g.translate(s.x, s.y); g.rotate(s.r); const k = s.s / 110; g.scale(k, k); ART[s.k](g); g.restore(); if (!forExport && i === sel) { g.save(); g.translate(s.x, s.y); g.rotate(s.r); g.strokeStyle = '#fff'; g.lineWidth = 4; g.setLineDash([12, 8]); g.strokeRect(-s.s * .5, -s.s * .5, s.s, s.s); g.restore(); } });
+  drawCaption(g, caps.top); drawCaption(g, caps.bottom);
+  if (forExport && CONFIG.watermark) { g.font = '700 22px "Trebuchet MS", sans-serif'; g.textAlign = 'right'; g.textBaseline = 'alphabetic'; g.fillStyle = 'rgba(255,255,255,.85)'; g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 5; const y = P - (caps.bottom.h || 0) - 6; g.strokeText(CONFIG.watermark, P - 16, y); g.fillText(CONFIG.watermark, P - 16, y); }
+}
+function strokeDraw(g, s) {
+  g.save(); g.lineCap = g.lineJoin = 'round'; g.lineWidth = s.w; g.strokeStyle = s.c; g.fillStyle = s.c; g.globalCompositeOperation = s.e ? 'destination-out' : 'source-over'; const p = s.p;
+  if (p.length === 1) { g.beginPath(); g.arc(p[0][0], p[0][1], s.w / 2, 0, PI2); g.fill(); } else { g.beginPath(); g.moveTo(p[0][0], p[0][1]); for (let i = 1; i < p.length - 1; i++) g.quadraticCurveTo(p[i][0], p[i][1], (p[i][0] + p[i + 1][0]) / 2, (p[i][1] + p[i + 1][1]) / 2); g.lineTo(p[p.length - 1][0], p[p.length - 1][1]); g.stroke(); }
+  g.restore();
+}
+function rerender() { ig.clearRect(0, 0, P, P); strokes.forEach(s => strokeDraw(ig, s)); }
+
+// ---------------------------------------------------------------- layout + input
+const L = () => { const ps = Math.min(J.W - 20, 340); return { ps, px: (J.W - ps) / 2, py: 52, k: P / ps }; };
+const toPic = (x, y) => { const l = L(); return [(x - l.px) * l.k, (y - l.py) * l.k]; };
+const inPaper = (x, y) => { const l = L(); return x >= l.px && x <= l.px + l.ps && y >= l.py && y <= l.py + l.ps; };
+J.on('down', (x, y) => {
+  if (overlay || !inPaper(x, y)) return; const [qx, qy] = toPic(x, y);
+  if (tab === 'draw') { cur = { c: color, w: eraser ? width * 1.8 : width, e: eraser, p: [[qx, qy]] }; strokes.push(cur); strokeDraw(ig, cur); }
+  else if (tab === 'stickers') { let b = -1, bd = 1e9; stickers.forEach((s, i) => { const d = Math.hypot(s.x - qx, s.y - qy); if (d < s.s * .6 && d < bd) { bd = d; b = i; } }); sel = b; if (b >= 0) { drag = { dx: stickers[b].x - qx, dy: stickers[b].y - qy }; stickers.push(stickers.splice(b, 1)[0]); sel = stickers.length - 1; J.play('tick', 1.3, .5); } }
+  else if (tab === 'words') { capSel = qy < P / 2 ? 'top' : 'bottom'; J.play('tick', 1.1, .5); }
+});
+J.on('move', (x, y) => {
+  const [qx, qy] = toPic(x, y);
+  if (cur) { const q = cur.p[cur.p.length - 1]; if (Math.hypot(qx - q[0], qy - q[1]) > 2) { cur.p.push([J.clamp(qx, -20, P + 20), J.clamp(qy, -20, P + 20)]); const n = cur.p.length; if (n >= 3) strokeDraw(ig, { c: cur.c, w: cur.w, e: cur.e, p: cur.p.slice(-3) }); else strokeDraw(ig, cur); } }
+  else if (drag && sel >= 0) { const s = stickers[sel]; s.x = J.clamp(qx + drag.dx, 0, P); s.y = J.clamp(qy + drag.dy, 0, P); }
+});
+J.on('up', () => { if (cur) { if (strokes.length > 150) { strokes.shift(); rerender(); } cur = null; } drag = null; });
+
+function addSticker(k) { stickers.push({ k, x: P / 2 + J.rnd(-60, 60), y: P / 2 + J.rnd(-60, 60), s: 150, r: J.rnd(-.3, .3) }); sel = stickers.length - 1; const l = L(); J.feel('small', l.px + l.ps / 2, l.py + l.ps / 2, CONFIG.inks[3]); }
+function undo() { if (strokes.length) { strokes.pop(); rerender(); } }
+function clearAll() { strokes = []; stickers = []; sel = -1; rerender(); J.play('boom', 1.5, .5); }
+
+// ---------------------------------------------------------------- DOM overlays (text entry and the saved picture)
+function showOverlay(html, setup) {
+  hideOverlay(); const d = document.createElement('div'); d.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(8,10,16,.82);display:flex;align-items:center;justify-content:center;z-index:20;font-family:"Trebuchet MS",system-ui,sans-serif;color:#fff;text-align:center';
+  d.innerHTML = '<div style="background:' + C.panel + ';padding:16px;border-radius:20px;width:min(340px,90vw);max-height:92vh;overflow:auto;box-sizing:border-box">' + html + '</div>'; document.body.appendChild(d); overlay = d; setup(d);
+}
+function hideOverlay() { if (overlay) { overlay.remove(); overlay = null; } }
+const BTN = 'style="flex:1;min-height:48px;border:0;border-radius:14px;font-size:17px;font-weight:800;color:#15181f;background:' + '#ff7a1a' + ';margin:4px;padding:0 10px"';
+function askText(init, cb) {
+  showOverlay('<div style="font-weight:800;margin-bottom:10px">' + T.typeHere + '</div><input id="ti" maxlength="60" style="width:100%;box-sizing:border-box;font-size:20px;padding:12px;border-radius:12px;border:0" value=""><div style="display:flex;margin-top:12px"><button id="ok" ' + BTN + '>' + T.ok + '</button><button id="no" ' + BTN.replace('#ff7a1a', '#9fb3c8') + '>' + T.close + '</button></div>', d => {
+    const i = d.querySelector('#ti'); i.value = init; setTimeout(() => { try { i.focus(); i.select(); } catch (e) { } }, 50);
+    const done = () => { cb(i.value.trim()); hideOverlay(); }; d.querySelector('#ok').onclick = done; d.querySelector('#no').onclick = hideOverlay; i.onkeydown = e => { if (e.key === 'Enter') done(); };
+  });
+}
+function save() {
+  sel = -1; const out = document.createElement('canvas'); out.width = out.height = P; drawPicture(out.getContext('2d'), true);
+  let url = ''; try { url = out.toDataURL('image/png'); } catch (e) { console.error('export failed', e); return; } lastShot = url; J.play('power'); J.burst(J.W / 2, J.H / 2, { n: 40, color: CONFIG.inks.slice(2), grav: 260, spd: [80, 300], life: [.6, 1.2], size: [3, 6] });
+  showOverlay('<div style="font-weight:800;font-size:20px;margin-bottom:8px">' + T.saved + '</div><img id="shot" src="' + url + '" style="width:100%;border-radius:12px;display:block" alt="picture"><div style="font-size:13px;opacity:.8;margin:8px 0">' + T.hold + '</div><div style="display:flex"><a id="dl" download="' + (CONFIG.id || 'picture') + '.png" href="' + url + '" ' + BTN.replace('<', '') + '><span style="display:block;line-height:48px;text-decoration:none;color:#15181f">' + T.download + '</span></a><button id="sh" ' + BTN.replace('#ff7a1a', '#2ec4b6') + '>' + T.share + '</button></div><button id="cl" ' + BTN.replace('#ff7a1a', '#9fb3c8') + ' >' + T.close + '</button>', d => {
+    d.querySelector('#cl').onclick = hideOverlay; d.querySelector('#sh').onclick = () => out.toBlob(b => { try { const f = new File([b], (CONFIG.id || 'picture') + '.png', { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: CONFIG.title }); else d.querySelector('#dl').click(); } catch (e) { d.querySelector('#dl').click(); } });
+  });
+}
+
+// ---------------------------------------------------------------- drawing the UI
+function update(dt) { tt += dt; }
+function draw(c) { ui = uiNext; uiNext = []; const g = c.createLinearGradient(0, 0, 0, J.H); g.addColorStop(0, '#202739'); g.addColorStop(1, C.bg); c.fillStyle = g; c.fillRect(-30, -30, J.W + 60, J.H + 60); }
+function hud(c) {
+  const W = J.W, H = J.H, l = L(), mx = W / 2; J.txt(c, CONFIG.title, 14, 28, { size: 22, align: 'left', color: C.accent, max: W - 190 });
+  button(c, T.save, W - 52, 26, 84, 36, save, C.accent, '#15181f', 17); button(c, T.undo, W - 122, 26, 50, 36, undo, C.btn, '#fff', 12);
+  c.save(); c.translate(l.px, l.py); c.scale(1 / l.k, 1 / l.k); drawPicture(c, false); c.restore(); c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 2; c.strokeRect(l.px, l.py, l.ps, l.ps);
+  // tabs
+  const ty = l.py + l.ps + 26, tw = (Math.min(W - 16, 420) - 18) / 4, tx0 = mx - Math.min(W - 16, 420) / 2 + tw / 2;
+  [['draw', T.draw], ['stickers', T.stickers], ['words', T.words], ['bg', T.back]].forEach(([k, n], i) => button(c, n, tx0 + i * (tw + 6), ty, tw, 34, () => { tab = k; }, tab === k ? C.gold : C.btn, tab === k ? '#15181f' : '#fff', 12));
+  const py = ty + 28; c.fillStyle = C.panel; J.rr(c, mx - Math.min(W - 16, 420) / 2, py, Math.min(W - 16, 420), H - py - 8, 18); c.fill(); const cx0 = mx - Math.min(W - 16, 420) / 2 + 12, cw = Math.min(W - 16, 420) - 24, y0 = py + 14;
+  if (tab === 'draw') {
+    const n = CONFIG.inks.length, sp = cw / n; CONFIG.inks.forEach((col, i) => { const x = cx0 + sp * (i + .5), on = color === col && !eraser; button(c, c2 => { c2.fillStyle = col; c2.beginPath(); c2.arc(0, 0, 15, 0, PI2); c2.fill(); c2.strokeStyle = on ? '#fff' : 'rgba(255,255,255,.3)'; c2.lineWidth = on ? 4 : 2; c2.stroke(); }, x, y0 + 22, sp - 2, 40, () => { color = col; eraser = false; }, 'rgba(0,0,0,0)'); });
+    [8, 16, 30].forEach((w, i) => button(c, c2 => { c2.fillStyle = '#fff'; c2.beginPath(); c2.arc(0, 0, 4 + i * 4, 0, PI2); c2.fill(); }, cx0 + 28 + i * 58, y0 + 86, 52, 44, () => { width = w; }, width === w ? '#4a5a85' : C.btn));
+    button(c, T.eraser, cx0 + cw - 150, y0 + 86, 86, 44, () => { eraser = !eraser; }, eraser ? C.gold : C.btn, eraser ? '#15181f' : '#fff', 13); button(c, T.clear, cx0 + cw - 50, y0 + 86, 86, 44, clearAll, '#7a2f3a', '#fff', 13);
+    J.txt(c, CONFIG.shop, mx, H - 22, { size: 12, color: '#6f7b96', stroke: 0 });
+  } else if (tab === 'stickers') {
+    const bw = (cw - 18) / 4; STK.forEach((k, i) => { const x = cx0 + bw / 2 + (i % 4) * (bw + 6), y = y0 + 28 + Math.floor(i / 4) * 62; button(c, c2 => { c2.save(); c2.scale(.4, .4); ART[k](c2); c2.restore(); }, x, y, bw, 56, () => addSticker(k), '#2b3550'); });
+    const sy = y0 + 28 + 2 * 62 + 4, on = sel >= 0; const ds = [['-', () => { if (sel >= 0) stickers[sel].s = Math.max(50, stickers[sel].s - 24); }], ['+', () => { if (sel >= 0) stickers[sel].s = Math.min(420, stickers[sel].s + 24); }], ['<', () => { if (sel >= 0) stickers[sel].r -= .3; }], ['>', () => { if (sel >= 0) stickers[sel].r += .3; }]];
+    ds.forEach(([n, f], i) => button(c, n, cx0 + 24 + i * 52, sy, 46, 44, f, on ? C.btn : '#252c40', on ? '#fff' : '#66708c', 20)); button(c, T.del, cx0 + cw - 50, sy, 92, 44, () => { if (sel >= 0) { stickers.splice(sel, 1); sel = -1; J.play('lose', 1.4, .5); } }, on ? '#7a2f3a' : '#252c40', on ? '#fff' : '#66708c', 13);
+  } else if (tab === 'words') {
+    ['top', 'bottom'].forEach((k, i) => button(c, k === 'top' ? T.top : T.bottom, cx0 + cw * (i ? .75 : .25) - 4, y0 + 20, cw / 2 - 10, 38, () => { capSel = k; }, capSel === k ? C.gold : C.btn, capSel === k ? '#15181f' : '#fff', 14));
+    const cap = caps[capSel], list = CONFIG.captions[capSel];
+    button(c, '<', cx0 + 24, y0 + 74, 46, 48, () => { cap.i = (cap.i + list.length - 1) % list.length; cap.text = list[cap.i]; }, C.btn, '#fff', 22); button(c, '>', cx0 + cw - 24, y0 + 74, 46, 48, () => { cap.i = (cap.i + 1) % list.length; cap.text = list[cap.i]; }, C.btn, '#fff', 22);
+    c.fillStyle = 'rgba(0,0,0,.3)'; J.rr(c, cx0 + 52, y0 + 50, cw - 104, 48, 12); c.fill(); const wl = J.wrap(c, cap.text || '(empty)', cw - 120, 12); wl.slice(0, 2).forEach((q, i) => J.txt(c, q, cx0 + cw / 2, y0 + 74 + (i - (Math.min(2, wl.length) - 1) / 2) * 15, { size: 12, stroke: 0, max: cw - 112 }));
+    button(c, T.edit, cx0 + 44, y0 + 130, 80, 44, () => askText(cap.text, v => { cap.text = v; }), C.accent, '#15181f', 15);
+    button(c, '-', cx0 + 112, y0 + 130, 42, 44, () => { cap.size = Math.max(28, cap.size - 8); }, C.btn, '#fff', 20); J.txt(c, T.size, cx0 + 150, y0 + 130, { size: 11, color: '#8f9bb3', stroke: 0 }); button(c, '+', cx0 + 188, y0 + 130, 42, 44, () => { cap.size = Math.min(100, cap.size + 8); }, C.btn, '#fff', 20);
+    ['#ffffff', '#ffd23f', '#ff7a1a'].forEach((col, i) => button(c, c2 => { c2.fillStyle = col; c2.beginPath(); c2.arc(0, 0, 13, 0, PI2); c2.fill(); c2.strokeStyle = cap.color === col ? '#fff' : 'rgba(255,255,255,.3)'; c2.lineWidth = cap.color === col ? 4 : 2; c2.stroke(); }, cx0 + cw - 90 + i * 34, y0 + 130, 32, 44, () => { cap.color = col; }, 'rgba(0,0,0,0)'));
+  } else {
+    const n = CONFIG.backgrounds.length, bw = (cw - 6 * 2) / 3; CONFIG.backgrounds.forEach((k, i) => { const x = cx0 + bw / 2 + (i % 3) * (bw + 6), y = y0 + 34 + Math.floor(i / 3) * 70; button(c, c2 => { c2.save(); J.rr(c2, -bw / 2 + 3, -28, bw - 6, 56, 10); c2.clip(); c2.translate(-bw / 2 + 3, -28); c2.scale((bw - 6) / P, 56 / P); BG[k](c2); c2.restore(); if (i === bgIx) { c2.strokeStyle = '#fff'; c2.lineWidth = 4; J.rr(c2, -bw / 2 + 3, -28, bw - 6, 56, 10); c2.stroke(); } }, x, y, bw, 62, () => { bgIx = i; J.play('tick', 1, .6); }, '#2b3550'); });
+  }
+}
+window.__qa.info = () => ({ tab, strokes: strokes.length, stickers: stickers.length, bg: CONFIG.backgrounds[bgIx], top: caps.top.text, overlay: !!overlay, shot: lastShot.length, shotHead: lastShot.slice(0, 22) });
+J.loop({ update, draw, hud });
+</script>
+</body>
+</html>

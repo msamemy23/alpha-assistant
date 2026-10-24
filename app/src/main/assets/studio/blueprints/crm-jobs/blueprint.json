@@ -1,0 +1,41 @@
+{
+  "id": "crm-jobs",
+  "kind": "app",
+  "name": "Job Board",
+  "summary": "Customers and jobs app for a shop counter: a calm drag-and-drop kanban board (New, Scheduled, In progress, Waiting, Done) with a list view, search and filters; customer pages with one-tap Call / Text / Email and job history; follow-up reminders on a Today screen (late ones in red); totals (jobs this week, open value, done this month); printable job sheets; CSV import/export; JSON backup and restore. Works offline, data stays on the device, starts empty with a sample-data button.",
+  "best_for": ["auto repair", "mechanic", "tire shop", "body shop", "plumber", "electrician", "HVAC", "handyman", "cleaning service", "landscaper", "painter", "appliance repair", "computer repair", "contractor", "any small business that tracks customers and jobs"],
+  "mood": ["calm", "organised", "board-first", "practical"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "facts", "what": "Hidden div with the business facts ({{business}}, {{phone}}, {{email}}, {{address}}, {{year}}) that feed the app header and the printed job sheet until the owner saves their own in Settings", "edit": "Leave the tokens. Facts the app could not fill (shown as [Business name], Call us, Email us) are ignored by app.js, except the business name, which also appears in the <title>"},
+    {"name": "view-board", "what": "Board screen template: header with Board/List switch, first-run welcome card (illustration, 3 steps, Add your first job + Try it with sample data), sample-data note, search + filter chips, phone column pager, and the board/list output", "edit": "Rewrite the welcome copy and the 3 steps for the trade (keep data-act on the buttons). Status names live in app.js (STATUS) if the owner wants other columns; keep 5 or fewer"},
+    {"name": "view-today", "what": "Today screen: date, 4 stats (follow-ups due = accent, jobs this week, open value, done this month), follow-up cards with Call/Text/Later/Done, coming-up list, jobs due, later this week", "edit": "Labels can change; keep every data-f"},
+    {"name": "view-customers", "what": "Customer list: Import/Export buttons, search, sort select, filter chips (open jobs, follow-up due, tags)", "edit": "Rarely needs edits"},
+    {"name": "view-customer", "what": "One customer (#/customers/ID): avatar, name, tags, big Call / Text / Email buttons (prefilled greeting), open and done totals, follow-ups, job history, notes, delete", "edit": "Rarely needs edits"},
+    {"name": "view-settings", "what": "Settings: business details form, currency / week start / done-column window, reorderable default job checklist, backup (download, copy, restore file, paste), CSV export/import/paste, sample data load/clear, erase everything, help accordion, footer with {{business}} and {{year}}", "edit": "Rewrite the help answers if behaviour changes; keep data-act names"},
+    {"name": "sheet-job", "what": "Job form (bottom sheet on phones, side panel on computers): status pills, title, customer (or + New customer inline), price, due date with quick-date chips, checklist with progress, notes; existing jobs add Follow up, Print job sheet, Call, Text, Customer page", "edit": "Placeholders and labels can change; keep name= attributes and data-f"},
+    {"name": "sheet-customer", "what": "Customer form: name, phone, email, tag chips + add tag, notes; warns before saving a likely duplicate", "edit": "Change the tag examples in the help line to fit the trade"},
+    {"name": "sheet-followup", "what": "Follow-up form: customer, what to follow up on, date with quick chips, optional job", "edit": "Change the placeholder example to fit the trade"},
+    {"name": "doc-job", "what": "Printable job sheet (appkit .doc): letterhead from Settings or the business facts, job number, customer, status, due, price, title, checklist boxes, notes, signature and date lines, thank-you footer", "edit": "Reword the footer line; keep the tokens and data-f"}
+  ],
+  "photo_slots": [],
+  "remove_if_no_facts": [],
+  "behaviors": [
+    "kanban board: hold a card then drag it on touch (instant drag with a mouse), Shift+arrow keys on a selected card, or tap the status circle on the card to pick a column; Undo after every move",
+    "Linear-style status circles (dashed, quarter, half, pause, check) so status never relies on colour alone",
+    "phone column pager: 5 status buttons with counts that jump across the board and follow your swipe",
+    "Done column shows recent jobs only (7/14/30/90 days or all, set in Settings); older ones stay in the list view",
+    "list view grouped by status with counts and totals; search matches title, notes, customer name, email and phone digits; filter chips Late, Due this week, No date and every customer tag",
+    "quick add from the top bar (job, customer or follow-up), an Add a job button in the New column, a New job floating button, N and / keyboard shortcuts on computers",
+    "follow-ups: due ones on Today with a red bar and days-late pill when overdue, badge count on the Today tab, Later (tomorrow / 3 days / next week / 2 weeks / month / pick a date), Done with Undo",
+    "customer page with tel:/sms:/mailto: buttons; the text is prefilled with a greeting from the business",
+    "duplicate customer warning (same phone, email or name); deleting a customer keeps their jobs and removes their follow-ups; every delete asks first and offers Undo",
+    "money rounded to cents and summed in whole cents; dates are local calendar days (safe across clock changes)",
+    "printable job sheet with letterhead, checklist boxes and signature lines (AK.print)",
+    "CSV export of customers and jobs (with a Copy instead fallback), CSV import from a file or pasted text with fuzzy column names, US and day-first dates, duplicate skipping and customers created from job rows",
+    "JSON backup: download, copy, restore from a file or pasted text, validated and cleaned before it replaces anything",
+    "starts empty with a welcome card and Try it with sample data; samples are labelled Sample customer A, Sample job: ... and Clear sample data removes only them",
+    "window.JobBoard exposes the store and date helpers read-only for checks"
+  ],
+  "style_notes": "Built on appkit, so every style skins it (light or dark, rounded or hard-edged). Tested at 390 and 1280 with midnight-neon, clinical-clean, workshop-industrial, soft-pastel, neo-brutalist, editorial-serif, and lint-checked on every screen with poster-bold, high-contrast-sport, minimal-mono and dark-luxury too. Status colours come from appkit's contrast-tuned ok/warn/bad tokens; the accent-hue lint warning on screens with status circles is expected."
+}

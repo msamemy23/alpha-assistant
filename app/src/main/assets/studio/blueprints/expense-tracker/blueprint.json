@@ -1,0 +1,39 @@
+{
+  "id": "expense-tracker",
+  "kind": "app",
+  "name": "Money Tracker",
+  "summary": "Friendly phone-first money app (Copilot/Monarch feel): month switcher, a big Net number with in/out sparklines, a donut and breakdown by colour-coded category, a 6-month in/out bar chart, budgets with progress rings and over-budget warnings, repeating entries that add themselves on the right dates, search and filters, receipt photos, CSV import/export, JSON backup/restore and a printable month report with the owner's letterhead. Starts empty with a welcome card and a 'Try it with sample data' button.",
+  "best_for": ["auto repair shop", "small business owner", "contractor", "tradesperson", "freelancer", "food truck", "salon", "cleaning service", "landscaper", "personal budget", "household money", "side hustle"],
+  "mood": ["friendly", "calm", "trustworthy", "polished"],
+  "files": ["index.html", "style.css", "app.js", "blueprint.json"],
+  "sections": [
+    {"name": "facts", "what": "Hidden spans holding {{business}}, {{phone}}, {{email}}, {{address}}, {{year}}; app.js reads them for the top bar and the report letterhead", "edit": "Leave as is; the tokens are filled in by the app"},
+    {"name": "view-home", "what": "Home tab: month switcher, welcome card (only when there is no data), Net hero stat with a spent-of-income bar, Money in / Money out stats with deltas and sparklines, 'Where it went' donut + breakdown rows (tap a row to filter Activity), 'Last 6 months' bars, budget preview, Recent, Coming up, Month report button", "edit": "Rewrite the welcome card words for the owner's trade; reorder or delete <section> blocks freely; keep the data-slot attributes app.js fills"},
+    {"name": "view-activity", "what": "Activity tab: search (notes, categories, amounts), Month / All time, category select, chips (All, Money in, Money out, Receipts), entries grouped by day with day totals, Export these as CSV", "edit": "Usually no change; rename chip labels if the owner uses other words (for example Sales / Costs)"},
+    {"name": "view-budgets", "what": "Budgets tab: Left to spend hero with an even-pace marker, budget cards with rings (amber near the limit, red when over), alerts, list of categories without a budget", "edit": "Usually no change"},
+    {"name": "view-repeat", "what": "Repeating tab: monthly totals of repeating money in/out and the list of rules (every week, every 2 weeks, monthly with the 31st becoming the month's last day, yearly with Feb 29 -> Feb 28)", "edit": "Usually no change"},
+    {"name": "view-settings", "what": "Settings tab: currency, link to Categories, backup + restore (JSON), CSV export + import (bank exports work: Date/Amount or Debit/Credit columns, US or day-first dates), storage meter, load/clear sample data, erase everything", "edit": "Usually no change"},
+    {"name": "view-categories", "what": "Route #/data/categories: categories for money out and money in; each has a name, colour, icon and optional monthly budget", "edit": "To change the starting categories edit DEFAULT_CATS in app.js (section 2), not this markup"},
+    {"name": "view-report", "what": "Route #/home/report: printable month report (letterhead with {{business}}, {{address}}, {{phone}}, {{email}}; totals; money out by category with budgets; money in by category; every entry)", "edit": "Keep the tokens; the footer line can be reworded"},
+    {"name": "form-txn", "what": "Add / edit entry sheet: Money out / Money in, big amount box, category tiles, date, repeat, note, receipt photo", "edit": "Field names are read by saveTxn() in app.js; keep them"},
+    {"name": "form-category", "what": "Category sheet: name, kind, colour swatches, icon grid, monthly budget", "edit": "Keep field names"},
+    {"name": "form-repeat", "what": "Repeating entry sheet: kind, amount, category, name, how often, first date, last date, active switch, a live line explaining the schedule", "edit": "Keep field names"},
+    {"name": "form-budget", "what": "Budget dialog: one money box", "edit": "Keep field names"}
+  ],
+  "photo_slots": [],
+  "remove_if_no_facts": [],
+  "behaviors": [
+    "all data in browser storage through AK.store('expense-tracker') under the {{slug}} namespace; survives reloads; JSON backup/restore and CSV import/export in Settings",
+    "starts empty: welcome card + 'Try it with sample data' (entries say 'Sample ...', never future-dated) + 'Clear sample data' that keeps the owner's own entries",
+    "money is stored rounded to the cent (1.005 -> 1.01) and summed in whole cents (0.10 + 0.20 = 0.30)",
+    "repeating entries are added on their dates whenever the app opens or comes back to the screen; never duplicated; editing changes only future ones; pause/resume; optional last date",
+    "fair comparisons: while a month is running, Money in/out deltas compare with the same days of last month",
+    "budgets: rings and pills (On track, Ahead of pace, Almost used, Over by $X), Home banner when a budget is over",
+    "delete asks first, then offers Undo; deleting a used category asks where to move its entries",
+    "receipt photos via the phone camera or gallery (resized JPEG) with a viewer; a storage meter warns when the phone storage gets full",
+    "big numbers shrink to fit their card in every style; donut slices wear the category colours",
+    "printable month report with the owner's letterhead (AK.print) and a Copy summary button for messages",
+    "phone: bottom tabs + Add entry button; computer: sidebar, two-column dashboard, side sheets"
+  ],
+  "style_notes": "Works with every style; tested at 390 and 1280 with midnight-neon, clinical-clean, editorial-serif, soft-pastel, neo-brutalist and workshop-industrial (plus lint on all screens). Colours come from the kit through appkit tokens; category colours are fixed hues mixed with the ink colour so they read on light and dark backgrounds (lint's 'more than one accent colour family' warning is expected). Edit DEFAULT_CATS in app.js to fit the owner's trade (an auto shop can keep Parts & supplies, Tools & equipment, Fuel & vehicle). Change the app name in the <title> and AK.pwa() line if the owner prefers another word than 'Money'."
+}

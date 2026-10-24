@@ -1,0 +1,69 @@
+{
+  "id": "clinical-clean",
+  "name": "Clinical Clean",
+  "signature": "Bright white, cool slate text, teal-cyan accent, airy 12px-radius cards, trust checks.",
+  "mood": ["clean", "trustworthy", "calm", "professional"],
+  "bestFor": ["dentists", "vets", "opticians", "physiotherapy", "cleaning companies", "HVAC", "auto glass"],
+  "fonts": "sora-inter",
+  "colors": {
+    "bg": "#FFFFFF",
+    "surface": "#F1F6F9",
+    "ink": "#0F2230",
+    "muted": "#4A5E6D",
+    "accent": "#0E7490",
+    "onAccent": "#FFFFFF"
+  },
+  "contrast": {
+    "ink/bg": 16.25,
+    "ink/surface": 14.93,
+    "muted/bg": 6.74,
+    "muted/surface": 6.19,
+    "onAccent/accent": 5.35,
+    "accent/bg": 5.35,
+    "accent/surface": 4.92,
+    "accentAsText": true,
+    "note": "Light theme. Cyan-teal is safe as text on both backgrounds. White on accent passes AA for buttons."
+  },
+  "radius": {"sm": 8, "md": 12, "lg": 20, "button": 12},
+  "shadow": {
+    "card": "0 1px 2px rgba(15,34,48,.06), 0 12px 28px -16px rgba(15,34,48,.18)",
+    "pop": "0 20px 40px -18px rgba(15,34,48,.28)"
+  },
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 88, "gutter": 20, "maxWidth": 1120},
+  "type": {
+    "scaleRatio": 1.2,
+    "basePx": 17,
+    "bodyLeading": 1.65,
+    "h1": "clamp(2.25rem,6.5vw,4rem)",
+    "h2": "clamp(1.75rem,4.5vw,2.75rem)",
+    "h3": "1.25rem",
+    "headingCase": "none",
+    "headingWeight": 600,
+    "headingLeading": 1.12,
+    "headingTracking": "-0.02em",
+    "eyebrow": "0.8125rem, weight 600, accent color, sentence case"
+  },
+  "motion": {
+    "rule": "Quiet and quick: elements fade up 28px over 600ms, 70ms apart, then stay still; nothing loops.",
+    "reveal": "up",
+    "staggerMs": 70,
+    "durationMs": 600,
+    "ease": "cubic-bezier(.22,.8,.24,1)",
+    "use": ["data-reveal", "data-stagger", "data-count-to for real credentials", "sticky header"],
+    "avoid": ["marquee", "data-tilt", "data-parallax"]
+  },
+  "hero": {
+    "treatment": "split",
+    "layout": "Left: headline, one-line promise, primary call button, three check-mark facts (only real credentials, licenses and years). Right: clean photo of the real practice or team in a 20px-radius frame with a subtle shadow.",
+    "photo": "Real photo of the actual premises or staff; no stock lab coats."
+  },
+  "background": "White with one very soft radial wash of the accent at 6% opacity in the top-left of the hero. Hairline dividers in ink at 10% between sections.",
+  "button": {
+    "shape": "Rounded 12px, 52px tall.",
+    "fill": "Accent fill, white label; secondary is a 1px slate outline.",
+    "label": "Weight 600, sentence case.",
+    "hover": "Press feedback with data-press; colors do not animate.",
+    "minHeightPx": 48
+  },
+  "banned": ["dark mode", "loud gradients", "ornamental serif fonts", "stock photos of models in lab coats", "emoji"]
+}

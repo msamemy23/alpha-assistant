@@ -1,0 +1,7 @@
+# Optional. Copy this file to owner.properties (it is git-ignored) to build a copy of Alpha with YOUR business details inside it.
+# Without owner.properties the app is generic: no business name, address, phone or project IDs, and the shop-only tools are hidden.
+shop.name=Acme Auto Repair
+shop.address=100 Main St, Springfield, TX 77001
+shop.phone=(555) 010-0100
+supabase.project=
+supabase.org=

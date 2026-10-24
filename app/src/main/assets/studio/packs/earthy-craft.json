@@ -1,0 +1,81 @@
+{
+  "id": "earthy-craft",
+  "name": "Earthy Craft",
+  "signature": "Linen paper, moss green, soft old-style serif, taped polaroid photos, hand underline.",
+  "mood": ["handmade", "grounded", "honest", "warm"],
+  "bestFor": [
+    "landscapers",
+    "carpenters",
+    "farm stands",
+    "potters and makers",
+    "auto restoration",
+    "upholsterers",
+    "plant nurseries"
+  ],
+  "fonts": "fraunces-work",
+  "colors": {
+    "bg": "#F2EBDD",
+    "surface": "#E6DBC4",
+    "ink": "#2E2A21",
+    "muted": "#5A5442",
+    "accent": "#55662A",
+    "onAccent": "#FBF7EA"
+  },
+  "contrast": {
+    "ink/bg": 12.04,
+    "ink/surface": 10.4,
+    "muted/bg": 6.36,
+    "muted/surface": 5.49,
+    "onAccent/accent": 5.9,
+    "accent/bg": 5.33,
+    "accent/surface": 4.6,
+    "accentAsText": true,
+    "note": "Light theme. Moss green is safe as text on both backgrounds. Linen labels on moss buttons pass AA."
+  },
+  "radius": {"sm": 6, "md": 12, "lg": 20, "button": 12},
+  "shadow": {"card": "0 14px 28px -18px rgba(46,42,33,.4)", "pop": "0 22px 40px -20px rgba(46,42,33,.5)"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 88, "gutter": 20, "maxWidth": 1100},
+  "type": {
+    "scaleRatio": 1.25,
+    "basePx": 18,
+    "bodyLeading": 1.65,
+    "h1": "clamp(2.5rem,8vw,4.75rem)",
+    "h2": "clamp(1.875rem,5vw,3rem)",
+    "h3": "1.5rem",
+    "headingCase": "none",
+    "headingWeight": 600,
+    "headingLeading": 1.08,
+    "headingTracking": "-0.01em",
+    "eyebrow": "0.875rem, weight 600, moss color, sentence case, with a short hand-drawn wavy underline"
+  },
+  "motion": {
+    "rule": "Settle: photos and cards rise 28px over 850ms with a 100ms stagger, like objects being set down on a table.",
+    "reveal": "up",
+    "staggerMs": 100,
+    "durationMs": 850,
+    "ease": "cubic-bezier(.22,.8,.24,1)",
+    "use": ["data-reveal", "data-stagger", "data-parallax on one photo at 0.08"],
+    "avoid": ["neon effects", "marquee", "fast snaps"]
+  },
+  "hero": {
+    "treatment": "polaroid-collage",
+    "layout": "Headline and short story on the left. On the right, two or three real photos as white-bordered polaroids (12px border, rotated -3deg, 2deg and -1deg), overlapping, each with a strip of semi-transparent tape and a handwritten-style caption in the body font.",
+    "photo": "Real photos of the work, tools and people; at least two."
+  },
+  "background": "Linen with a 5% SVG noise grain. One hand-drawn wavy underline (a single SVG stroke in moss) under the key word of the hero headline. Surface color for alternating bands.",
+  "button": {
+    "shape": "Rounded 12px, 52px tall.",
+    "fill": "Accent fill, linen label; secondary is an underlined text link.",
+    "label": "Body sans, weight 600, sentence case.",
+    "hover": "Press feedback with data-press; underline grows with scaleX on the link.",
+    "minHeightPx": 48
+  },
+  "banned": [
+    "neon",
+    "glossy gradients",
+    "tech-jargon icons",
+    "pure white or pure black",
+    "sans-serif headings",
+    "stock handshake photos"
+  ]
+}

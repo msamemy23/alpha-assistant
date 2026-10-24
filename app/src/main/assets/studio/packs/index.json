@@ -1,0 +1,241 @@
+[
+  {
+    "id": "workshop-industrial",
+    "name": "Workshop Industrial",
+    "signature": "Charcoal slab, safety-orange blocks, hazard-stripe dividers, condensed caps.",
+    "mood": ["rugged", "precise", "no-nonsense", "honest"],
+    "bestFor": [
+      "auto repair",
+      "tire shop",
+      "towing",
+      "welding and fabrication",
+      "machine shop",
+      "truck and diesel repair",
+      "transmission shop"
+    ],
+    "fonts": "oswald-inter",
+    "hero": "photo-duotone",
+    "dark": true
+  },
+  {
+    "id": "editorial-serif",
+    "name": "Editorial Serif",
+    "signature": "Ivory paper, oversized serif headline, hairline rules, one wine-red accent.",
+    "mood": ["literate", "calm", "considered", "timeless"],
+    "bestFor": [
+      "upscale detailing",
+      "classic car restoration",
+      "upholstery",
+      "fine carpentry",
+      "interior design",
+      "photographers",
+      "boutiques"
+    ],
+    "fonts": "fraunces-work",
+    "hero": "split",
+    "dark": false
+  },
+  {
+    "id": "swiss-grid",
+    "name": "Swiss Grid",
+    "signature": "White page, flush-left heavy grotesque, strict 12-column grid, one red signal.",
+    "mood": ["objective", "sharp", "modern", "orderly"],
+    "bestFor": ["electricians", "HVAC", "plumbers", "signage and print shops", "architects and builders", "IT repair", "inspectors"],
+    "fonts": "archivo",
+    "hero": "big-type",
+    "dark": false
+  },
+  {
+    "id": "warm-hospitality",
+    "name": "Warm Hospitality",
+    "signature": "Cream and terracotta, friendly display serif, big rounded photo cards, soft shadows.",
+    "mood": ["welcoming", "friendly", "family-run", "comforting"],
+    "bestFor": ["family auto shops", "restaurants", "bakeries", "salons and barbers", "cleaners", "bed and breakfasts", "florists"],
+    "fonts": "dmserif-dm",
+    "hero": "photo-full-bleed",
+    "dark": false
+  },
+  {
+    "id": "clinical-clean",
+    "name": "Clinical Clean",
+    "signature": "Bright white, cool slate text, teal-cyan accent, airy 12px-radius cards, trust checks.",
+    "mood": ["clean", "trustworthy", "calm", "professional"],
+    "bestFor": ["dentists", "vets", "opticians", "physiotherapy", "cleaning companies", "HVAC", "auto glass"],
+    "fonts": "sora-inter",
+    "hero": "split",
+    "dark": false
+  },
+  {
+    "id": "poster-bold",
+    "name": "Poster Bold",
+    "signature": "Full-bleed yellow, enormous black type, hard white cards, red buttons.",
+    "mood": ["loud", "urgent", "street-level", "confident"],
+    "bestFor": ["tire shops", "towing", "junk removal", "car washes", "food trucks", "gyms", "flea markets"],
+    "fonts": "archivo",
+    "hero": "type-poster",
+    "dark": false
+  },
+  {
+    "id": "coastal",
+    "name": "Coastal",
+    "signature": "Sand page, sea-glass bands, deep-sea ink, coral buttons, one wave divider.",
+    "mood": ["airy", "fresh", "sunlit", "relaxed"],
+    "bestFor": [
+      "marine repair and detailing",
+      "mobile mechanics",
+      "pool service",
+      "lawn care",
+      "surf and dive shops",
+      "car washes",
+      "beach rentals"
+    ],
+    "fonts": "grotesk-dm",
+    "hero": "photo-full-bleed",
+    "dark": false
+  },
+  {
+    "id": "dark-luxury",
+    "name": "Dark Luxury",
+    "signature": "Near-black page, ivory serif, gold hairlines, slow cinematic fades.",
+    "mood": ["exclusive", "refined", "cinematic", "quiet"],
+    "bestFor": [
+      "high-end detailing",
+      "European car specialists",
+      "collision restoration",
+      "barbers",
+      "custom upholstery",
+      "wedding limos",
+      "steakhouses"
+    ],
+    "fonts": "playfair-source",
+    "hero": "photo-full-bleed",
+    "dark": true
+  },
+  {
+    "id": "retro-americana",
+    "name": "Retro Americana",
+    "signature": "Cream paper, navy ink, signal red, thick borders, offset shadows, a stamped badge.",
+    "mood": ["nostalgic", "proud", "hand-built", "neighborly"],
+    "bestFor": ["classic garages", "hot-rod shops", "diners", "barbers", "gas stations", "tire shops", "farm stands"],
+    "fonts": "oswald-inter",
+    "hero": "badge-photo",
+    "dark": false
+  },
+  {
+    "id": "neo-brutalist",
+    "name": "Neo Brutalist",
+    "signature": "Mint page, 4px black borders, hard shadows, mono headings, sticker labels.",
+    "mood": ["raw", "playful", "indie", "punchy"],
+    "bestFor": [
+      "bike repair",
+      "skate and board shops",
+      "record stores",
+      "tattoo studios",
+      "mobile detailers",
+      "makers and fabricators",
+      "indie garages"
+    ],
+    "fonts": "mono-grotesk",
+    "hero": "big-type",
+    "dark": false
+  },
+  {
+    "id": "soft-pastel",
+    "name": "Soft Pastel",
+    "signature": "Blush page, raspberry accent, arch-cropped photo, pill buttons, floating cards.",
+    "mood": ["sweet", "gentle", "cheerful", "cared-for"],
+    "bestFor": ["pet groomers", "florists", "bakeries", "nail and hair salons", "daycare", "tutoring", "boutiques"],
+    "fonts": "dmserif-dm",
+    "hero": "arch-photo",
+    "dark": false
+  },
+  {
+    "id": "midnight-neon",
+    "name": "Midnight Neon",
+    "signature": "Near-black page, one mint-neon accent, grain glow, wide geometric type.",
+    "mood": ["nocturnal", "electric", "technical", "sleek"],
+    "bestFor": [
+      "car audio and tuning",
+      "EV charger installers",
+      "phone and gaming repair",
+      "IT support",
+      "vinyl wraps",
+      "24-hour locksmiths",
+      "detailing studios"
+    ],
+    "fonts": "sora-inter",
+    "hero": "grain-gradient",
+    "dark": true
+  },
+  {
+    "id": "earthy-craft",
+    "name": "Earthy Craft",
+    "signature": "Linen paper, moss green, soft old-style serif, taped polaroid photos, hand underline.",
+    "mood": ["handmade", "grounded", "honest", "warm"],
+    "bestFor": [
+      "landscapers",
+      "carpenters",
+      "farm stands",
+      "potters and makers",
+      "auto restoration",
+      "upholsterers",
+      "plant nurseries"
+    ],
+    "fonts": "fraunces-work",
+    "hero": "polaroid-collage",
+    "dark": false
+  },
+  {
+    "id": "high-contrast-sport",
+    "name": "High-Contrast Sport",
+    "signature": "Off-white page, black diagonal blocks, volt-lime highlights, giant numerals, ticker.",
+    "mood": ["fast", "athletic", "aggressive", "competitive"],
+    "bestFor": [
+      "performance tuning",
+      "wheel and tire shops",
+      "motorsport",
+      "gyms and trainers",
+      "bike shops",
+      "driving schools",
+      "sports retailers"
+    ],
+    "fonts": "bebas-inter",
+    "hero": "diagonal-block",
+    "dark": false
+  },
+  {
+    "id": "newspaper",
+    "name": "Newspaper",
+    "signature": "Newsprint grey, black Playfair headlines, column rules, a masthead, classic blue links.",
+    "mood": ["authoritative", "established", "informative", "dense"],
+    "bestFor": [
+      "shops with a long service list",
+      "heritage garages",
+      "machine shops",
+      "tax preparers",
+      "funeral homes",
+      "contractors",
+      "local trades since 19xx"
+    ],
+    "fonts": "playfair-source",
+    "hero": "masthead",
+    "dark": false
+  },
+  {
+    "id": "minimal-mono",
+    "name": "Minimal Mono",
+    "signature": "Concrete grey page, lowercase mono headings, almost no decoration, one cobalt link color.",
+    "mood": ["quiet", "technical", "direct", "understated"],
+    "bestFor": [
+      "freelance and mobile mechanics",
+      "inspectors",
+      "consultants",
+      "one-person shops",
+      "plumbers with a simple offer",
+      "anyone with a phone number and few words"
+    ],
+    "fonts": "mono-grotesk",
+    "hero": "type-only",
+    "dark": false
+  }
+]

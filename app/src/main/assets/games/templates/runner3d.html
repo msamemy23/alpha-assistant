@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#5a7db3">
+<title>Tire Roll Rush</title>
+<!-- three.js loads through this import map (relative paths, works offline). It needs http(s) hosting - ES modules do not load from file:// -->
+<script type="importmap">{"imports":{"three":"../lib/three.module.min.js","three/addons/":"../lib/addons/"}}</script>
+</head>
+<body style="margin:0;background:#5a7db3">
+<canvas id="gl"></canvas>
+<canvas id="c"></canvas>
+<script src="../juice.js"></script>
+<script type="module">
+import * as THREE from 'three';
+// =====================================================================
+// TIRE ROLL RUSH - low-poly 3D endless runner (three.js). Swipe left/right to change lane, swipe up or tap to jump.
+// TO RETHEME: change CONFIG only. Every "CUSTOMIZE:" line is safe to edit.
+// =====================================================================
+const CONFIG = {
+  id: 'tire-roll-rush',                // CUSTOMIZE: unique short id (keeps saved scores separate per game)
+  title: 'TIRE ROLL RUSH',             // CUSTOMIZE: game title (also update <title> above)
+  tagline: 'Roll down Main Street, dodge the hazards!', // CUSTOMIZE: one line under the title
+  shop: "Mike's Auto Repair",          // CUSTOMIZE: business name (also printed on the roadside billboards)
+  billboard: "MIKE'S AUTO REPAIR  -  OIL - TIRES - BRAKES", // CUSTOMIZE: text on the roadside billboards
+  cta: 'Free tire pressure check, no appointment needed!', // CUSTOMIZE: message on the game-over screen
+  player: 'MECHANIC',                  // CUSTOMIZE: name on the high-score board
+  text: {                              // CUSTOMIZE: any wording (keep it short)
+    play: 'ROLL!', again: 'ROLL AGAIN', over: 'FLAT TIRE!', score: 'SCORE', bolts: 'BOLTS', best: 'BEST', top: 'TOP SCORES',
+    paused: 'PAUSED', resume: 'Tap to resume', hint: 'Swipe left / right to change lane, up to jump', nogl: '3D is not available on this device'
+  },
+  colors: {                            // CUSTOMIZE: any CSS colours
+    sky: '#5a7db3', ground: '#3b4a3d', road: '#4d5565', lane: '#e9edf2', text: '#f4f6f8', accent: '#ff7a1a', bolt: '#ffd23f', hurt: '#e63946', tire: '#22252c', rim: '#c3ccd8',
+    cone: '#ff7a1a', barrel: '#e63946', crate: '#8793a3', buildings: ['#3b4a6b', '#4a3b6b', '#2f5d62', '#6b4a3b', '#55607a']
+  },
+  hp: 3,                               // CUSTOMIZE: hits you can take
+  startSpeed: 14,                      // CUSTOMIZE: starting speed (units/second)
+  maxSpeed: 32,                        // CUSTOMIZE: top speed
+  music: { bpm: 150, tracks: [         // CUSTOMIZE: tune (notes like C4 F#3, "." = rest)
+    { w: 'sawtooth', v: .03, p: 'E3 . E3 E3 . E3 G3 . E3 . E3 E3 . D3 B2 .' },
+    { w: 'square', v: .028, p: 'B4 . . E5 . . G5 . . E5 . . B4 . . .' },
+    { w: 'noise', v: .04, len: .35, p: 'x . . . x . . . x . . . x . x .' }
+  ] }
+};
+
+// ---------------------------------------------------------------- setup
+const J = Juice, T = CONFIG.text, C = CONFIG.colors, PI2 = Math.PI * 2, rnd = J.rnd, cv = document.getElementById('c'), glc = document.getElementById('gl');
+J.init({ id: CONFIG.id, title: CONFIG.title, player: CONFIG.player, str: { paused: T.paused, resume: T.resume } });
+J.fit(cv, { w: 360, h: 640, min: .5, max: 1.8, bg: C.sky });
+J.swipeLive = 1; glc.style.pointerEvents = 'none';
+
+let R = null;
+try { R = new THREE.WebGLRenderer({ canvas: glc, antialias: true, powerPreference: 'high-performance' }); R.setClearColor(new THREE.Color(C.sky)); } catch (e) { console.warn('WebGL unavailable', e); }
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(62, 1, .1, 130);
+scene.fog = new THREE.Fog(new THREE.Color(C.sky), 35, 100); scene.background = new THREE.Color(C.sky);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x6b7a90, 3.2)); const sun = new THREE.DirectionalLight(0xfff0d8, 2.6); sun.position.set(-6, 12, 8); scene.add(sun);
+function sizeGL() {
+  if (!R) return; const cw = parseFloat(cv.style.width), ch = parseFloat(cv.style.height); R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); R.setSize(cw, ch, false);
+  glc.style.width = cv.style.width; glc.style.height = cv.style.height; glc.style.left = cv.style.left; glc.style.top = cv.style.top; camera.aspect = cw / ch; camera.updateProjectionMatrix();
+}
+J.on('resize', sizeGL); sizeGL();
+
+let ui = [], uiNext = [];
+function button(c, s, x, y, w, h, fn, col) {
+  uiNext.push({ x: x - w / 2, y: y - h / 2, w, h, fn });
+  const dn = J.pt.down && Math.abs(J.pt.x - x) < w / 2 && Math.abs(J.pt.y - y) < h / 2, k = dn ? .95 : 1;
+  c.save(); c.translate(x, y); c.scale(k, k);
+  c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, -w / 2, -h / 2 + 5, w, h, h / 3); c.fill();
+  c.fillStyle = col || C.accent; J.rr(c, -w / 2, -h / 2, w, h, h / 3); c.fill();
+  J.txt(c, s, 0, 1, { size: h * .42, color: '#15181f', stroke: 0, max: w - 20 }); c.restore();
+}
+J.on('tap', (x, y) => { for (const b of ui) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { J.play('click'); b.fn(); return; } if (st === 'play') jump(); });
+const snd = J.btn({ x: () => J.W - 62, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'snd', x, y, 20, J.opts.sound), onpress: () => J.setOpt('sound'), key: 'KeyM' });
+const pause = J.btn({ x: () => J.W - 24, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'pause', x, y, 18), onpress: () => J.pause(), key: 'KeyP' });
+function ctrlOn(v) { snd.on = pause.on = v; }
+ctrlOn(false);
+
+// ---------------------------------------------------------------- 3D world (shared geometry + materials, pooled objects)
+const LANE = 2.2, mat = (col, o) => new THREE.MeshLambertMaterial(Object.assign({ color: new THREE.Color(col), flatShading: true }, o || {}));
+const M = { tire: mat(C.tire), rim: mat(C.rim), cone: mat(C.cone), white: mat('#f4f6f8'), barrel: mat(C.barrel), dark: mat('#15181f'), crate: mat(C.crate), yellow: mat(C.bolt), puddle: mat('#0b0c10'), road: mat('#fff'), ground: mat(C.ground) };
+const G = {
+  tire: new THREE.CylinderGeometry(.5, .5, .42, 18).rotateZ(Math.PI / 2), rim: new THREE.CylinderGeometry(.3, .3, .46, 10).rotateZ(Math.PI / 2), cone: new THREE.ConeGeometry(.42, .9, 8), base: new THREE.BoxGeometry(.95, .1, .95),
+  barrel: new THREE.CylinderGeometry(.42, .42, 1.1, 10), ring: new THREE.CylinderGeometry(.44, .44, .12, 10), bar: new THREE.BoxGeometry(1.9, .36, .3), crate: new THREE.BoxGeometry(1.7, 2.3, 1.7), stripe: new THREE.BoxGeometry(1.74, .24, 1.74),
+  puddle: new THREE.CylinderGeometry(.95, .95, .05, 16), bolt: new THREE.CylinderGeometry(.34, .34, .14, 6).rotateX(Math.PI / 2), boltHole: new THREE.CylinderGeometry(.14, .14, .16, 8).rotateX(Math.PI / 2)
+};
+const mesh = (g, m, x, y, z) => { const o = new THREE.Mesh(g, m); o.position.set(x || 0, y || 0, z || 0); return o; };
+
+// road with a scrolling lane-line texture
+const rc = document.createElement('canvas'); rc.width = 256; rc.height = 256; const rg = rc.getContext('2d');
+rg.fillStyle = C.road; rg.fillRect(0, 0, 256, 256); rg.fillStyle = C.lane; for (const x of [85, 171]) rg.fillRect(x - 3, 20, 6, 90), rg.fillRect(x - 3, 148, 6, 90);
+rg.fillStyle = '#ffd23f'; rg.fillRect(2, 0, 5, 256); rg.fillRect(249, 0, 5, 256);
+const roadTex = new THREE.CanvasTexture(rc); roadTex.wrapS = roadTex.wrapT = THREE.RepeatWrapping; roadTex.repeat.set(1, 60); roadTex.colorSpace = THREE.SRGBColorSpace; roadTex.anisotropy = 4;
+const road = new THREE.Mesh(new THREE.PlaneGeometry(LANE * 3 + .4, 240).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ map: roadTex })); road.position.set(0, 0, -90); scene.add(road);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 260).rotateX(-Math.PI / 2), M.ground); ground.position.set(0, -.02, -90); scene.add(ground);
+
+// player: a low-poly tire with a shiny rim
+const player = new THREE.Group(), wheel = new THREE.Group(); wheel.add(mesh(G.tire, M.tire)); wheel.add(mesh(G.rim, M.rim));
+for (let i = 0; i < 5; i++) { const a = i * PI2 / 5, n = mesh(G.boltHole, M.dark, 0, Math.cos(a) * .17, Math.sin(a) * .17); n.rotation.z = Math.PI / 2; n.scale.set(1, 1, 1); wheel.add(n); }
+const treadG = new THREE.BoxGeometry(.46, .1, .2), treadM = mat('#59616f');
+for (let i = 0; i < 14; i++) { const a = i * PI2 / 14, b = mesh(treadG, treadM, 0, Math.cos(a) * .52, Math.sin(a) * .52); b.rotation.x = -a; wheel.add(b); }
+for (const s of [-1, 1]) { const h = mesh(new THREE.CylinderGeometry(.34, .34, .05, 12).rotateZ(Math.PI / 2), M.rim, s * .24, 0, 0); wheel.add(h); }
+const shadow = new THREE.Mesh(new THREE.CircleGeometry(.75, 16).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .35 })); shadow.position.y = .02; scene.add(shadow);
+player.add(wheel); player.position.set(0, .5, 0); scene.add(player);
+
+// billboard texture (shop name)
+function billboardTex() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 160; const g = c.getContext('2d'); g.fillStyle = '#15181f'; g.fillRect(0, 0, 512, 160); g.fillStyle = C.accent; g.fillRect(0, 0, 512, 12); g.fillRect(0, 148, 512, 12);
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; let z = 52; g.font = '800 ' + z + 'px sans-serif'; const w = g.measureText(CONFIG.billboard).width; if (w > 480) { z *= 480 / w; g.font = '800 ' + z + 'px sans-serif'; } g.fillText(CONFIG.billboard, 256, 82);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const bbMat = new THREE.MeshLambertMaterial({ map: billboardTex() });
+const SEG = 150, scen = [], STACK = new THREE.CylinderGeometry(.55, .55, .4, 12);
+function makeScenery() {
+  for (let i = 0; i < 18; i++) for (const side of [-1, 1]) {
+    const g = new THREE.Group(), kind = (i + (side > 0 ? 1 : 0)) % 6, z = -i * (SEG / 18);
+    if (kind === 0) { const h = rnd(5, 12), b = mesh(new THREE.BoxGeometry(rnd(4, 6), h, rnd(5, 7)), mat(J.pick(C.buildings))); b.position.y = h / 2; g.add(b); const r = mesh(new THREE.BoxGeometry(5, .4, 6), mat(C.accent)); r.position.y = h + .1; g.add(r); }
+    else if (kind === 1) { g.add(mesh(new THREE.CylinderGeometry(.1, .12, 5.5, 6), M.dark, 0, 2.75, 0)); g.add(mesh(new THREE.BoxGeometry(.9, .3, .3), M.yellow, side * -.4, 5.4, 0)); }
+    else if (kind === 2) { for (let k = 0; k < 4; k++) g.add(mesh(STACK, M.tire, rnd(-.1, .1), .22 + k * .44, 0)); }
+    else if (kind === 3) { const p = mesh(new THREE.PlaneGeometry(6, 1.9), bbMat, 0, 4.2, 0); p.rotation.y = side * -.55; g.add(p); g.add(mesh(new THREE.CylinderGeometry(.12, .12, 3.4, 6), M.dark, 0, 1.7, 0)); }
+    else if (kind === 4) { const h = rnd(3, 6), b = mesh(new THREE.BoxGeometry(rnd(3, 5), h, 4), mat(J.pick(C.buildings))); b.position.y = h / 2; g.add(b); }
+    else { g.add(mesh(new THREE.ConeGeometry(.8, 1.8, 7), mat('#2d6a4f'), 0, 1.2, 0)); g.add(mesh(new THREE.CylinderGeometry(.14, .14, .5, 6), M.dark, 0, .25, 0)); }
+    g.position.set(side * rnd(7.5, 12), 0, z - rnd(0, 4)); g.userData.side = side; scene.add(g); scen.push(g);
+  }
+}
+makeScenery();
+
+// pooled obstacles and bolts
+const pool = {};
+function make(type) {
+  const g = new THREE.Group();
+  if (type === 'cone') { g.add(mesh(G.base, M.dark, 0, .05, 0)); g.add(mesh(G.cone, M.cone, 0, .55, 0)); g.add(mesh(new THREE.CylinderGeometry(.24, .3, .14, 8), M.white, 0, .5, 0)); }
+  else if (type === 'barrel') { g.add(mesh(G.barrel, M.barrel, 0, .55, 0)); g.add(mesh(G.ring, M.dark, 0, .25, 0)); g.add(mesh(G.ring, M.dark, 0, .85, 0)); }
+  else if (type === 'barrier') { g.add(mesh(G.bar, M.cone, 0, .55, 0)); g.add(mesh(new THREE.BoxGeometry(.5, .36, .32), M.white, -.5, .55, 0)); g.add(mesh(new THREE.BoxGeometry(.5, .36, .32), M.white, .5, .55, 0)); g.add(mesh(new THREE.BoxGeometry(.12, .55, .12), M.dark, -.8, .27, 0)); g.add(mesh(new THREE.BoxGeometry(.12, .55, .12), M.dark, .8, .27, 0)); }
+  else if (type === 'crate') { g.add(mesh(G.crate, M.crate, 0, 1.15, 0)); g.add(mesh(G.stripe, M.yellow, 0, .5, 0)); g.add(mesh(G.stripe, M.yellow, 0, 1.8, 0)); }
+  else if (type === 'puddle') { g.add(mesh(G.puddle, M.puddle, 0, .03, 0)); }
+  else { const b = new THREE.Group(); b.add(mesh(G.bolt, M.yellow)); b.add(mesh(G.boltHole, M.dark)); g.add(b); g.userData.spin = b; }
+  scene.add(g); return g;
+}
+function take(type) { const p = pool[type] || (pool[type] = []); let g = p.find(o => !o.visible); if (!g) { g = make(type); g.userData.type = type; p.push(g); } g.visible = true; g.scale.set(1, 1, 1); g.rotation.set(0, 0, 0); return g; }
+const OB = { cone: { h: .85, w: .9 }, barrel: { h: 1.1, w: .9 }, barrier: { h: .75, w: 1.8 }, crate: { h: 2.4, w: 1.6 }, puddle: { h: .12, w: 1.8 } };
+let items = [];   // active obstacles and bolts: {g, type, x, z, h, w, dead}
+function addItem(type, lane, z, y) { const g = take(type), o = OB[type] || { h: 0, w: .8 }; g.position.set(lane * LANE, y || 0, z); items.push({ g, type, x: lane * LANE, z, y: y || 0, h: o.h, w: o.w, dead: 0 }); }
+function coinLine(lane, z, n, arc) { for (let i = 0; i < n; i++) addItem('bolt', lane, z - i * 1.7, (arc ? Math.sin(i / (n - 1) * Math.PI) * 1.6 : 0) + .85); }
+function chunk(z) {
+  const lanes = [-1, 0, 1], free = J.pick(lanes), o = lanes.filter(l => l !== free), r = Math.random();
+  if (r < .22) { addItem(J.pick(['cone', 'barrel']), J.pick(lanes), z); coinLine(J.pick(lanes), z - 3, 5); }
+  else if (r < .44) { addItem(J.pick(['barrel', 'cone']), o[0], z); addItem(J.pick(['barrel', 'cone']), o[1], z - 2); coinLine(free, z + 1, 6); }
+  else if (r < .62) { for (const l of lanes) addItem('barrier', l, z); coinLine(0, z + 2, 7, 1); }
+  else if (r < .8) { addItem('crate', o[0], z); addItem('barrel', o[1], z); coinLine(free, z + 2, 6); }
+  else if (r < .9) { addItem('puddle', free, z); addItem('puddle', o[0], z - 2); coinLine(o[1], z + 2, 5); }
+  else coinLine(J.pick(lanes), z, 8);
+}
+
+// ---------------------------------------------------------------- game state
+let st = 'title', tt = 0, speed = 12, dist = 0, bolts = 0, hp = 3, inv = 0, score = 0, rank = 0, spawnAcc = 0, lane = 0, px = 0, py = 0, vy = 0, hint = 0, streak = 0;
+const _v = new THREE.Vector3(), scr = (x, y, z) => { _v.set(x, y, z).project(camera); return [(_v.x * .5 + .5) * J.W, (-_v.y * .5 + .5) * J.H]; };
+
+function clearItems() { for (const it of items) it.g.visible = false; items = []; }
+function newGame() {
+  clearItems(); st = 'play'; speed = CONFIG.startSpeed; dist = 0; bolts = 0; hp = CONFIG.hp; inv = 0; rank = 0; spawnAcc = 0; lane = 0; px = 0; py = 0; vy = 0; hint = 4; streak = 0; ctrlOn(true); J.clearFx();
+  for (let z = -40; z > -100; z -= 22) chunk(z); J.music.start(CONFIG.music);
+}
+function jump() { if (st === 'play' && py <= .01) { vy = 14.5; J.play('jump', 1.1); J.vibe(8); const [x, y] = scr(px, 0, 0); J.burst(x, y, { n: 6, color: '#cbd5e0', spd: [20, 90], angle: -Math.PI / 2, spread: 1.4, shape: 'c', size: [2, 4] }); } }
+function move(d) { if (st !== 'play') return; const n = J.clamp(lane + d, -1, 1); if (n !== lane) { lane = n; J.play('tick', 1.5 + lane * .1); J.vibe(5); } }
+J.on('swipe', dir => { if (dir === 'left') move(-1); else if (dir === 'right') move(1); else if (dir === 'up') jump(); else if (dir === 'down' && py > .1) vy = -22; });
+addEventListener('keydown', e => { if (e.code === 'ArrowLeft' || e.code === 'KeyA') move(-1); else if (e.code === 'ArrowRight' || e.code === 'KeyD') move(1); else if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') { if (st === 'play') jump(); else if (st !== 'play') newGame(); } });
+function gameOver() { st = 'over'; ctrlOn(false); score = Math.floor(dist / 3) + bolts * 10; rank = J.hs.add(score); J.music.stop(); J.play('lose'); J.vibe([60, 40, 120]); J.flash(C.hurt, .5); }
+function hit(it) {
+  it.dead = 1; hp--; inv = 1.4; speed = Math.max(CONFIG.startSpeed, speed * .8); J.shake(.7); J.hitstop(80); J.flash(C.hurt, .35); J.vibe([40, 30, 40]); streak = 0;
+  const [x, y] = scr(it.x, 1, 0); J.feel('large', x, y, C.hurt); J.tween(it.g.scale, { x: 0, y: 0, z: 0 }, .25, { ease: 'inQuad' });
+  if (hp <= 0) gameOver();
+}
+
+function update(dt) {
+  tt += dt; hint = Math.max(0, hint - dt);
+  const spd = st === 'play' ? speed : st === 'title' ? 9 : 0;
+  if (st === 'play') {
+    speed = Math.min(CONFIG.maxSpeed, CONFIG.startSpeed + dist / 220); dist += speed * dt; inv = Math.max(0, inv - dt);
+    py += vy * dt; vy -= 40 * dt; if (py < 0) { if (vy < -8) { const [x, y] = scr(px, 0, 0); J.burst(x, y, { n: 5, color: '#cbd5e0', spd: [20, 80], angle: -Math.PI / 2, spread: 1.4, shape: 'c', size: [2, 4] }); J.shake(.08); } py = 0; vy = 0; }
+    spawnAcc += speed * dt; if (spawnAcc > 24) { spawnAcc -= 24; chunk(-100); }
+  }
+  px += (lane * LANE - px) * Math.min(1, dt * 14);
+  // world scroll
+  roadTex.offset.y -= spd * dt / 4; for (const g of scen) { g.position.z += spd * dt; if (g.position.z > 14) g.position.z -= SEG; }
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i]; it.z += spd * dt; it.g.position.z = it.z;
+    if (it.type === 'bolt') { it.g.userData.spin.rotation.y += dt * 4; it.g.position.y = it.y + Math.sin(tt * 4 + it.z) * .08; }
+    if (st === 'play' && !it.dead && Math.abs(it.z) < .75 && Math.abs(it.x - px) < it.w / 2 + .35) {
+      if (it.type === 'bolt') { if (Math.abs(py + .5 - it.y) < 1.0) { it.dead = 1; it.g.visible = false; bolts++; streak++; const [x, y] = scr(it.x, it.y, 0); J.feel('small', x, y, C.bolt, '+10'); J.tone(J.hz(['C5', 'E5', 'G5', 'C6'][streak % 4]), .1, 'triangle', .1); } }
+      else if (inv <= 0 && py < it.h - .05) hit(it);
+    }
+    if (it.z > 8 || it.dead && it.type === 'bolt') { it.g.visible = false; items.splice(i, 1); }
+    else if (it.dead && it.g.scale.x <= .01) { it.g.visible = false; items.splice(i, 1); }
+  }
+  // player + camera
+  shadow.position.x = px; shadow.scale.setScalar(Math.max(.4, 1 - py * .25)); player.position.set(px, .5 + py, 0); wheel.rotation.x -= spd * dt / .5; wheel.rotation.z = (lane * LANE - px) * .15; player.visible = !(inv > 0 && Math.floor(tt * 20) % 2);
+  const tr = J.trauma(); camera.position.set(px * .55 + rnd(-1, 1) * tr * .5, 3.5 + py * .35 + rnd(-1, 1) * tr * .4, 6.2); camera.lookAt(px * .35, 1.1, -9);
+}
+
+function draw(c) {
+  ui = uiNext; uiNext = [];
+  c.clearRect(-30, -30, J.W + 60, J.H + 60);
+  if (R) R.render(scene, camera); else { c.fillStyle = C.sky; c.fillRect(-30, -30, J.W + 60, J.H + 60); J.txt(c, T.nogl, J.W / 2, J.H / 2, { size: 18, max: J.W - 30 }); }
+}
+function hud(c) {
+  const W = J.W, H = J.H;
+  if (st === 'title') {
+    c.fillStyle = 'rgba(10,14,24,.45)'; c.fillRect(0, 0, W, H); J.txt(c, CONFIG.title, W / 2, H * .2, { size: 42, max: W - 30, color: C.accent }); J.txt(c, CONFIG.tagline, W / 2, H * .2 + 36, { size: 16, max: W - 40 });
+    button(c, T.play, W / 2, H * .68, 230, 66, newGame); J.txt(c, T.best + ' ' + J.hs.best(), W / 2, H * .68 + 58, { size: 16, color: C.bolt }); J.txt(c, CONFIG.shop, W / 2, H - 30, { size: 15, max: W - 40, color: '#cfd8e3' });
+    return;
+  }
+  if (st === 'over') {
+    c.fillStyle = 'rgba(10,12,18,.88)'; c.fillRect(0, 0, W, H); J.txt(c, T.over, W / 2, H * .13, { size: 40, color: C.hurt, max: W - 30 }); J.txt(c, T.score + ' ' + score + '    ' + T.bolts + ' ' + bolts, W / 2, H * .21, { size: 20, max: W - 30 });
+    if (rank === 1) J.txt(c, 'NEW BEST!', W / 2, H * .27, { size: 21, color: C.bolt }); J.txt(c, T.top, W / 2, H * .36, { size: 15, color: '#aab4c0' }); J.hs.draw(c, W / 2, H * .41, { size: 17, w: 210, n: 4, hi: C.bolt });
+    J.wrap(c, CONFIG.cta, W - 60, 17).forEach((l, i) => J.txt(c, l, W / 2, H * .64 + i * 22, { size: 17, color: C.accent })); button(c, T.again, W / 2, H * .82, 240, 62, newGame); J.txt(c, CONFIG.shop, W / 2, H - 28, { size: 14, max: W - 40, color: '#aab4c0' });
+    return;
+  }
+  J.txt(c, String(Math.floor(dist / 3) + bolts * 10), 14, 30, { size: 28, align: 'left' }); J.txt(c, T.bolts + ' ' + bolts, 14, 56, { size: 14, align: 'left', color: C.bolt });
+  for (let i = 0; i < CONFIG.hp; i++) { c.globalAlpha = i < hp ? 1 : .3; c.fillStyle = '#e8edf3'; c.beginPath(); c.arc(W / 2 - (CONFIG.hp - 1) * 12 + i * 24, 62, 10, 0, PI2); c.fill(); c.fillStyle = '#15181f'; c.beginPath(); c.arc(W / 2 - (CONFIG.hp - 1) * 12 + i * 24, 62, 6, 0, PI2); c.fill(); } c.globalAlpha = 1;
+  if (hint > 0) J.txt(c, T.hint, W / 2, H * .22, { size: 18, max: W - 30, color: '#fff' });
+}
+window.__qa.info = () => ({ st, dist: Math.round(dist), bolts, hp, lane, speed: +speed.toFixed(1), items: items.length, gl: !!R, calls: R ? R.info.render.calls : 0, tris: R ? R.info.render.triangles : 0 });
+J.loop({ update, draw, hud });
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#161a26">
+<title>The Mystery Rattle</title>
+</head>
+<body style="margin:0;background:#161a26">
+<canvas id="c"></canvas>
+<script src="../juice.js"></script>
+<script>
+'use strict';
+// =====================================================================
+// THE MYSTERY RATTLE - branching story / text adventure driven by a JSON script.
+// TO RETHEME: change CONFIG.story (and the labels). Every "CUSTOMIZE:" line is safe to edit.
+// =====================================================================
+const CONFIG = {
+  id: 'mystery-rattle',               // CUSTOMIZE: unique short id (keeps saved endings separate per story)
+  title: 'THE MYSTERY RATTLE',        // CUSTOMIZE: story title (also update <title> above)
+  tagline: 'Every choice changes the ending.', // CUSTOMIZE: one line under the title
+  shop: "Mike's Auto Repair",         // CUSTOMIZE: business name (available in text as {shop})
+  customer: 'Dana',                   // CUSTOMIZE: name used for {customer} in the story text
+  cta: 'Real rattle? Real answers. Book a free inspection with us today!', // CUSTOMIZE: message on the ending screen
+  text: {                             // CUSTOMIZE: any wording (keep it short)
+    begin: 'BEGIN', again: 'PLAY AGAIN', endings: 'ENDINGS FOUND', theEnd: 'THE END', tap: 'tap to continue', restart: 'RESTART', paused: 'PAUSED', resume: 'Tap to resume'
+  },
+  colors: { bg: '#161a26', bg2: '#222a3d', panel: '#1d2436', text: '#f4f6f8', accent: '#ff7a1a', good: '#2ec4b6', bad: '#e63946', gold: '#ffd23f', btn: '#34405f' }, // CUSTOMIZE: colours
+  stats: [                            // CUSTOMIZE: counters shown in the corner. key = name used by add/req below
+    { key: 'trust', label: 'TRUST', color: '#2ec4b6' }, { key: 'cash', label: 'CASH', color: '#ffd23f' }
+  ],
+  textSpeed: 60,                      // CUSTOMIZE: typewriter speed in characters per second
+  story: {
+    start: 'intro',
+    // Each node: scene (garage|road|wheel|counter|sunset|night), text, choices [{ t: button text, to: next node, add: {trust:1}, req: {trust:2} }].
+    // An ending node has end: 'good' | 'bad' | 'neutral' and a badge (its name). Text can use {customer} {shop} {trust} {cash}.
+    nodes: {
+      intro: { scene: 'garage', text: '{customer} rolls in at {shop} on a busy Saturday. "My car makes a rattle when I turn right, and only when it is cold. Can you find it?"', choices: [
+        { t: 'Take it for a test drive', to: 'drive' }, { t: 'Put it on the lift and look underneath', to: 'lift' }, { t: 'Quote a big repair right away', to: 'upsell1', add: { cash: 1 } } ] },
+      drive: { scene: 'road', text: 'Out on the road you hear it: a dull click that grows louder when you turn right. It could be small. It could be something bigger.', choices: [
+        { t: 'Back to the shop - onto the lift', to: 'lift', add: { trust: 1 } }, { t: 'Sounds minor. Ignore it.', to: 'ignore' } ] },
+      lift: { scene: 'garage', text: 'Under the car you find a loose heat shield that rattles. But the front wheel also has a little play when you wiggle it.', choices: [
+        { t: 'Check the wheel bearing too', to: 'bearing' }, { t: 'Tighten the shield and call it done', to: 'shieldOnly' } ] },
+      bearing: { scene: 'wheel', text: 'The front wheel bearing is worn and getting noisy. If it fails on the highway, the wheel could seize. {customer} needs to know.', choices: [
+        { t: 'Show {customer} the part and explain honestly', to: 'explain', add: { trust: 2 } }, { t: 'Replace it quietly and charge extra', to: 'review', add: { cash: 2, trust: -2 } } ] },
+      explain: { scene: 'counter', text: '{customer} looks at the worn bearing in your hand. "Wow. Thank you for showing me instead of just telling me. What are my options?"', choices: [
+        { t: 'Fair price, plus a free alignment check', to: 'quote', add: { trust: 1, cash: 1 } }, { t: 'Just give the price', to: 'quote', add: { cash: 1 } } ] },
+      quote: { scene: 'counter', text: '{customer} nods and hands over the keys. "Do it. And honestly, I trust this place now."', choices: [
+        { t: 'Fix it properly', to: 'loyal', req: { trust: 3 } }, { t: 'Fix it properly', to: 'good' } ] },
+      upsell1: { scene: 'counter', text: '{customer} frowns at the big number. "That is a lot for a rattle. Are you sure?"', choices: [
+        { t: 'Push harder - it is urgent!', to: 'review', add: { trust: -2, cash: 1 } }, { t: 'Back down and inspect it properly', to: 'lift', add: { trust: 1 } } ] },
+      shieldOnly: { scene: 'night', text: 'You tighten the shield. The rattle stops. Two weeks later, on the highway at night, the wheel starts to hum and the car limps to the shoulder.', choices: [ { t: 'Continue', to: 'returns' } ] },
+      ignore: { scene: 'night', text: 'You hand the keys back. Three days later {customer} is stuck on the roadside with a worn wheel bearing and a very long tow.', choices: [ { t: 'Continue', to: 'breakdown' } ] },
+      loyal: { scene: 'sunset', end: 'good', badge: 'Customer for Life', text: 'The bearing is fixed, the shield is tight, and the rattle is gone. {customer} tells everyone about {shop}. Trust {trust}, cash {cash}. A perfect Saturday.' },
+      good: { scene: 'sunset', end: 'good', badge: 'Honest Fix', text: 'The car runs quiet again. {customer} drives away happy and books the next service on the way out.' },
+      returns: { scene: 'night', end: 'neutral', badge: 'The Rattle Returns', text: 'You fixed what you could see, but not what mattered. {customer} comes back with the real problem and less patience.' },
+      review: { scene: 'counter', end: 'bad', badge: 'One-Star Review', text: '{customer} finds out the price was padded and posts a long review. Cash {cash}, trust {trust}. A quick buck is a slow loss.' },
+      breakdown: { scene: 'night', end: 'bad', badge: 'Roadside Rescue', text: 'The tow truck arrives. {customer} is safe but stranded. You wish you had listened to that click.' }
+    }
+  },
+  music: { bpm: 76, tracks: [         // CUSTOMIZE: tune (notes like C4 F#3, "." = rest)
+    { w: 'triangle', v: .1, p: 'A3 . C4 . E4 . C4 . F3 . A3 . C4 . A3 .' },
+    { w: 'sine', v: .2, p: 'A2 . . . . . . . F2 . . . . . . .' }
+  ] }
+};
+
+// ---------------------------------------------------------------- setup
+const J = Juice, T = CONFIG.text, C = CONFIG.colors, PI2 = Math.PI * 2, rnd = J.rnd, S = CONFIG.story, cv = document.getElementById('c');
+J.init({ id: CONFIG.id, title: CONFIG.title, str: { paused: T.paused, resume: T.resume } });
+J.fit(cv, { w: 360, h: 640, min: .5, max: 1.8, bg: C.bg });
+
+let ui = [], uiNext = [];
+function button(c, s, x, y, w, h, fn, col, tc, k0) {
+  uiNext.push({ x: x - w / 2, y: y - h / 2, w, h, fn });
+  const dn = J.pt.down && Math.abs(J.pt.x - x) < w / 2 && Math.abs(J.pt.y - y) < h / 2, k = (dn ? .96 : 1) * (k0 === undefined ? 1 : k0); if (k <= 0.02) return;
+  c.save(); c.translate(x, y); c.scale(k, k);
+  c.fillStyle = 'rgba(0,0,0,.4)'; J.rr(c, -w / 2, -h / 2 + 4, w, h, h / 3); c.fill();
+  c.fillStyle = col || C.btn; J.rr(c, -w / 2, -h / 2, w, h, h / 3); c.fill();
+  J.txt(c, s, 0, 1, { size: Math.min(h * .38, 19), color: tc || '#fff', stroke: 0, max: w - 28 }); c.restore();
+}
+J.on('tap', (x, y) => { for (const b of ui) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) { J.play('click'); b.fn(); return; } if (st === 'play' && shown < txt.length) { shown = txt.length; } });
+const snd = J.btn({ x: () => J.W - 62, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'snd', x, y, 20, J.opts.sound), onpress: () => J.setOpt('sound'), key: 'KeyM' });
+const pause = J.btn({ x: () => J.W - 24, y: 28, r: 19, label: (c, x, y) => J.icon(c, 'pause', x, y, 18), onpress: () => J.pause(), key: 'KeyP' });
+function ctrlOn(v) { snd.on = pause.on = v; }
+ctrlOn(false);
+
+// ---------------------------------------------------------------- story engine
+let st = 'title', node = null, nid = '', vars = {}, txt = '', shown = 0, choiceT = 0, tt = 0, choices = [], endings = J.load('endings', []), steps = 0, newEnd = false;
+const totalEndings = Object.values(S.nodes).filter(n => n.end).length;
+const fill = s => String(s).replace(/\{(\w+)\}/g, (m, k) => k === 'customer' ? CONFIG.customer : k === 'shop' ? CONFIG.shop : k in vars ? vars[k] : m);
+const meets = req => !req || Object.keys(req).every(k => (vars[k] || 0) >= req[k]);
+function begin() { vars = {}; CONFIG.stats.forEach(s => vars[s.key] = 0); Object.assign(vars, S.vars || {}); steps = 0; newEnd = false; J.clearFx(); st = 'play'; ctrlOn(true); J.music.start(CONFIG.music); go(S.start); }
+function go(id, add) {
+  if (add) for (const k in add) { vars[k] = (vars[k] || 0) + add[k]; const s = CONFIG.stats.find(q => q.key === k); J.text(J.W / 2, 150, (add[k] > 0 ? '+' : '') + add[k] + ' ' + (s ? s.label : k), { size: 22, color: add[k] > 0 ? (s ? s.color : C.good) : C.bad, life: 1.2 }); J.play(add[k] > 0 ? 'coin' : 'hit', 1, .5); }
+  nid = id; node = S.nodes[id]; if (!node) { console.error('Story node missing: ' + id); node = { scene: 'garage', text: 'Missing story node: ' + id, choices: [] }; }
+  txt = fill(node.text); shown = 0; choiceT = 0; steps++; choices = (node.choices || []).filter(c => meets(c.req)).map(c => Object.assign({}, c, { t: fill(c.t) }));
+  if (node.end) { if (!endings.includes(nid)) { endings.push(nid); J.save('endings', endings); newEnd = true; } }
+}
+function endFx() {
+  const m = node.end; if (m === 'good') { J.jingle('C5 E5 G5 C6 E6'); J.burst(J.W / 2, J.H * .3, { n: 60, color: [C.good, C.gold, C.accent, '#fff'], grav: 260, spd: [80, 340], life: [.8, 1.6], size: [3, 7] }); J.feel('large', J.W / 2, J.H * .3, C.good); }
+  else if (m === 'bad') { J.play('lose'); J.shake(.5); J.flash(C.bad, .3); J.vibe([50, 40, 80]); } else { J.jingle('E4 D4 C4', 'triangle'); }
+}
+let endDone = false;
+
+function update(dt) {
+  tt += dt;
+  if (st !== 'play' || !node) return;
+  if (shown < txt.length) { const o = shown; shown = Math.min(txt.length, shown + CONFIG.textSpeed * dt); if (Math.floor(shown / 3) !== Math.floor(o / 3)) J.play('tick', rnd(1.6, 2.2), .12); endDone = false; }
+  else { choiceT += dt; if (node.end && !endDone) { endDone = true; endFx(); } }
+}
+
+// ---------------------------------------------------------------- scenes (vector art, drawn into a rounded panel)
+function car(c, x, y, s, col) {
+  c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = col; c.beginPath(); c.moveTo(-60, 0); c.lineTo(-60, -16); c.lineTo(-40, -22); c.lineTo(-24, -42); c.lineTo(22, -42); c.lineTo(42, -22); c.lineTo(62, -16); c.lineTo(62, 0); c.closePath(); c.fill();
+  c.fillStyle = 'rgba(180,220,255,.8)'; c.beginPath(); c.moveTo(-20, -38); c.lineTo(-33, -22); c.lineTo(-4, -22); c.lineTo(-4, -38); c.closePath(); c.fill(); c.beginPath(); c.moveTo(2, -38); c.lineTo(2, -22); c.lineTo(34, -22); c.lineTo(20, -38); c.closePath(); c.fill();
+  for (const wx of [-36, 36]) { c.fillStyle = '#15181f'; c.beginPath(); c.arc(wx, 2, 12, 0, PI2); c.fill(); c.fillStyle = '#b8c4d0'; c.beginPath(); c.arc(wx, 2, 5, 0, PI2); c.fill(); } c.restore();
+}
+const SC = {
+  garage(c, x, y, w, h) {
+    const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#39445f'); g.addColorStop(1, '#232a3d'); c.fillStyle = g; c.fillRect(x, y, w, h); c.fillStyle = '#1a1f2e'; c.fillRect(x, y + h * .78, w, h * .22);
+    c.fillStyle = '#2b3550'; c.fillRect(x + w * .06, y + h * .12, w * .34, h * .4); c.fillStyle = '#f2c14e'; for (let i = 0; i < 5; i++) c.fillRect(x + w * .08 + i * w * .065, y + h * .16 + (i % 2) * h * .12, 4, h * .14);
+    c.strokeStyle = '#f2872e'; c.lineWidth = 6; c.beginPath(); c.moveTo(x + w * .52, y + h * .78); c.lineTo(x + w * .52, y + h * .3); c.moveTo(x + w * .92, y + h * .78); c.lineTo(x + w * .92, y + h * .3); c.stroke();
+    car(c, x + w * .72, y + h * .66 - Math.sin(tt) * 2, Math.min(1.5, w / 280), '#e05260'); c.fillStyle = 'rgba(255,230,150,' + (.15 + Math.sin(tt * 2) * .05) + ')'; c.beginPath(); c.moveTo(x + w * .2, y); c.lineTo(x + w * .3, y); c.lineTo(x + w * .4, y + h * .8); c.lineTo(x + w * .1, y + h * .8); c.fill();
+  },
+  road(c, x, y, w, h) {
+    const g = c.createLinearGradient(0, y, 0, y + h * .6); g.addColorStop(0, '#6fa8dc'); g.addColorStop(1, '#cfe3f5'); c.fillStyle = g; c.fillRect(x, y, w, h); c.fillStyle = '#4c7a54'; c.beginPath(); c.moveTo(x, y + h * .6); for (let i = 0; i <= 8; i++) c.lineTo(x + w * i / 8, y + h * (.45 + Math.sin(i * 1.7) * .08)); c.lineTo(x + w, y + h * .6); c.fill();
+    c.fillStyle = '#3a404c'; c.fillRect(x, y + h * .6, w, h * .4); c.fillStyle = '#e9edf2'; for (let i = -1; i < 8; i++) c.fillRect(x + ((i * 60 - tt * 120) % (w + 60)) , y + h * .8, 34, 5);
+    car(c, x + w * .5, y + h * .78 + Math.sin(tt * 14) * .8, Math.min(1.4, w / 300), '#e05260');
+  },
+  wheel(c, x, y, w, h) {
+    c.fillStyle = '#1b2030'; c.fillRect(x, y, w, h); const cx = x + w / 2, cy = y + h / 2, r = h * .42; c.fillStyle = '#262a33'; c.beginPath(); c.arc(cx, cy, r, 0, PI2); c.fill(); c.fillStyle = '#8793a3'; c.beginPath(); c.arc(cx, cy, r * .62, 0, PI2); c.fill();
+    c.save(); c.translate(cx, cy); c.rotate(tt * .8); c.fillStyle = '#c3ccd8'; for (let i = 0; i < 5; i++) { c.beginPath(); c.arc(Math.cos(i * 1.2566) * r * .4, Math.sin(i * 1.2566) * r * .4, r * .08, 0, PI2); c.fill(); } c.restore();
+    c.strokeStyle = C.bad; c.lineWidth = 4; c.globalAlpha = .5 + Math.sin(tt * 5) * .4; c.beginPath(); c.arc(cx, cy, r * .2 + Math.sin(tt * 5) * 3, 0, PI2); c.stroke(); c.globalAlpha = 1; c.fillStyle = '#15181f'; c.beginPath(); c.arc(cx, cy, r * .16, 0, PI2); c.fill();
+  },
+  counter(c, x, y, w, h) {
+    const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#3b4a6b'); g.addColorStop(1, '#232a3d'); c.fillStyle = g; c.fillRect(x, y, w, h); c.fillStyle = '#6b4a3b'; c.fillRect(x, y + h * .66, w, h * .34);
+    c.fillStyle = '#f1c27d'; c.beginPath(); c.arc(x + w * .3, y + h * .34, h * .14, 0, PI2); c.fill(); c.fillStyle = C.accent; J.rr(c, x + w * .3 - h * .22, y + h * .48, h * .44, h * .3, 14); c.fill();
+    c.fillStyle = '#2d3748'; J.rr(c, x + w * .62, y + h * .5, w * .22, h * .22, 6); c.fill(); c.fillStyle = C.good; c.fillRect(x + w * .65, y + h * .54, w * .16, h * .07); J.rr(c, x + w * .5, y + h * .12, w * .4, h * .22, 14); c.fillStyle = '#fff'; c.fill(); c.fillStyle = '#15181f'; for (let i = 0; i < 3; i++) { c.beginPath(); c.arc(x + w * .62 + i * 22, y + h * .23 + Math.sin(tt * 4 + i) * 2, 4, 0, PI2); c.fill(); }
+  },
+  sunset(c, x, y, w, h) {
+    const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#5a3d7a'); g.addColorStop(.55, '#ff7a1a'); g.addColorStop(1, '#ffd23f'); c.fillStyle = g; c.fillRect(x, y, w, h); c.fillStyle = '#fff4c2'; c.beginPath(); c.arc(x + w * .7, y + h * .5, h * .18, 0, PI2); c.fill();
+    c.fillStyle = '#2a2a3d'; c.beginPath(); c.moveTo(x, y + h * .72); for (let i = 0; i <= 10; i++) c.lineTo(x + w * i / 10, y + h * (.66 + Math.sin(i * 1.3) * .05)); c.lineTo(x + w, y + h); c.lineTo(x, y + h); c.fill(); car(c, x + ((tt * 25) % (w + 160)) - 80, y + h * .86, Math.min(1.1, w / 330), '#e05260');
+  },
+  night(c, x, y, w, h) {
+    c.fillStyle = '#0d1020'; c.fillRect(x, y, w, h); c.fillStyle = '#fff'; for (let i = 0; i < 26; i++) { c.globalAlpha = .4 + Math.sin(tt * 2 + i) * .3; c.fillRect(x + (i * 53 % w), y + (i * 29 % (h * .6)), 2, 2); } c.globalAlpha = 1;
+    c.fillStyle = '#2b2f40'; c.fillRect(x, y + h * .72, w, h * .28); car(c, x + w * .5, y + h * .86, Math.min(1.3, w / 300), '#6b7684'); c.fillStyle = Math.floor(tt * 2.5) % 2 ? '#ffb100' : '#5a3b00'; c.beginPath(); c.arc(x + w * .5 - 62 * Math.min(1.3, w / 300), y + h * .8, 6, 0, PI2); c.arc(x + w * .5 + 62 * Math.min(1.3, w / 300), y + h * .8, 6, 0, PI2); c.fill();
+  }
+};
+
+// ---------------------------------------------------------------- drawing
+function fitWrap(c, s, w, h, max, min) { let z = max, ls; do { ls = J.wrap(c, s, w, z); z--; } while (z > min && ls.length * (z + 1) * 1.3 > h); return { ls, z: z + 1 }; }
+function draw(c) { ui = uiNext; uiNext = []; const g = c.createLinearGradient(0, 0, 0, J.H); g.addColorStop(0, C.bg2); g.addColorStop(1, C.bg); c.fillStyle = g; c.fillRect(-30, -30, J.W + 60, J.H + 60); }
+function hud(c) {
+  const W = J.W, H = J.H, mx = W / 2, CW = Math.min(W - 24, 460), X = mx - CW / 2;
+  if (st === 'title') {
+    c.save(); J.rr(c, X, 70, CW, 200, 22); c.clip(); SC.garage(c, X, 70, CW, 200); c.restore();
+    J.txt(c, CONFIG.title, mx, H * .5, { size: 38, max: W - 30, color: C.accent }); J.txt(c, CONFIG.tagline, mx, H * .5 + 34, { size: 16, max: W - 40 });
+    button(c, T.begin, mx, H * .66, 230, 64, () => { J.unlock(); begin(); }, C.accent, '#15181f'); J.txt(c, T.endings + ' ' + endings.length + '/' + totalEndings, mx, H * .66 + 54, { size: 14, color: C.gold }); J.txt(c, CONFIG.shop, mx, H - 30, { size: 15, max: W - 40, color: '#aab4c0' });
+    return;
+  }
+  // scene panel
+  const sh = Math.min(190, H * .3); c.save(); J.rr(c, X, 60, CW, sh, 20); c.clip(); (SC[node.scene] || SC.garage)(c, X, 60, CW, sh); c.restore(); c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 2; J.rr(c, X, 60, CW, sh, 20); c.stroke();
+  J.txt(c, CONFIG.title, 14, 28, { size: 15, align: 'left', color: '#8f9bb3', stroke: 0, max: W - 150 });
+  CONFIG.stats.forEach((s, i) => { const x = X + 8 + i * 92; c.fillStyle = 'rgba(0,0,0,.55)'; J.rr(c, x, 68, 86, 24, 12); c.fill(); J.txt(c, s.label + ' ' + (vars[s.key] || 0), x + 43, 81, { size: 12, color: s.color, stroke: 0 }); });
+  // text panel
+  const ty = 60 + sh + 12, nCh = node.end ? 2 : choices.length, chH = 48, chGap = 10, chTop = H - 16 - nCh * (chH + chGap) + chGap, th = chTop - ty - 10;
+  c.fillStyle = C.panel; J.rr(c, X, ty, CW, th, 18); c.fill(); const fw = fitWrap(c, txt, CW - 32, th - 22, 18, 12); J.font(c, fw.z);
+  // typewriter: reveal characters across wrapped lines
+  let left = Math.floor(shown), line = 0; for (const l of fw.ls) { const part = l.slice(0, Math.max(0, left)); J.txt(c, part, X + 16, ty + 14 + fw.z * .65 + line * fw.z * 1.3, { size: fw.z, align: 'left', stroke: 0, color: node.end ? '#fff' : C.text }); left -= l.length + 1; line++; }
+  if (shown < txt.length) J.txt(c, T.tap, X + CW - 12, ty + th - 12, { size: 11, align: 'right', color: '#6f7b96', stroke: 0 });
+  if (shown >= txt.length) {
+    if (node.end) {
+      const col = node.end === 'good' ? C.good : node.end === 'bad' ? C.bad : C.gold; c.fillStyle = col; J.rr(c, X, chTop - 4, CW, 40, 20); c.fill(); J.txt(c, T.theEnd + ': ' + (node.badge || ''), mx, chTop + 16, { size: 17, color: '#15181f', stroke: 0, max: CW - 24 });
+      J.txt(c, T.endings + ' ' + endings.length + '/' + totalEndings + (newEnd ? '  NEW!' : ''), mx, chTop + 52, { size: 13, color: C.gold, stroke: 0 });
+      button(c, T.again, mx, chTop + 90, Math.min(260, CW), chH, () => { st = 'title'; ctrlOn(false); J.music.stop(); endDone = false; }, C.accent, '#15181f', E(choiceT * 4));
+    } else choices.forEach((ch, i) => { const k = E((choiceT - i * .09) * 5); button(c, ch.t, mx, chTop + i * (chH + chGap) + chH / 2, CW - 4, chH, () => { J.burst(mx, chTop + i * (chH + chGap), { n: 8, color: [C.accent, C.gold], spd: [40, 140] }); go(ch.to, ch.add); }, i === 0 ? C.btn : C.btn, '#fff', k); });
+  }
+}
+const E = t => t <= 0 ? 0 : t >= 1 ? 1 : J.ease.outBack(t);
+window.__qa.info = () => ({ st, node: nid, shown: Math.floor(shown), len: txt.length, choices: choices.map(c => c.to).join(','), vars: JSON.stringify(vars), endings: endings.length + '/' + totalEndings });
+J.loop({ update, draw, hud });
+</script>
+</body>
+</html>

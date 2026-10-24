@@ -1,0 +1,73 @@
+{
+  "id": "poster-bold",
+  "name": "Poster Bold",
+  "signature": "Full-bleed yellow, enormous black type, hard white cards, red buttons.",
+  "mood": ["loud", "urgent", "street-level", "confident"],
+  "bestFor": ["tire shops", "towing", "junk removal", "car washes", "food trucks", "gyms", "flea markets"],
+  "fonts": "archivo",
+  "colors": {
+    "bg": "#FFD60A",
+    "surface": "#FFFFFF",
+    "ink": "#0A0A0A",
+    "muted": "#2B2B2B",
+    "accent": "#D90429",
+    "onAccent": "#FFFFFF"
+  },
+  "contrast": {
+    "ink/bg": 14.02,
+    "ink/surface": 19.79,
+    "muted/bg": 10.02,
+    "muted/surface": 14.15,
+    "onAccent/accent": 5.25,
+    "accent/bg": 3.71,
+    "accent/surface": 5.25,
+    "accentAsText": false,
+    "note": "Yellow page, black text. Red is a fill color only (buttons, badges), never text on the page. White labels on red pass AA."
+  },
+  "radius": {"sm": 0, "md": 4, "lg": 4, "button": 4},
+  "shadow": {"card": "6px 6px 0 #0A0A0A", "pop": "10px 10px 0 #0A0A0A"},
+  "space": {"scale": [4, 8, 12, 16, 24, 32, 48, 72, 104], "sectionY": 80, "gutter": 16, "maxWidth": 1160},
+  "type": {
+    "scaleRatio": 1.333,
+    "basePx": 18,
+    "bodyLeading": 1.5,
+    "h1": "clamp(3.25rem,17vw,10rem)",
+    "h2": "clamp(2.25rem,9vw,5rem)",
+    "h3": "1.5rem",
+    "headingCase": "uppercase",
+    "headingWeight": 900,
+    "headingLeading": 0.88,
+    "headingTracking": "-0.02em",
+    "eyebrow": "0.875rem, weight 800, uppercase, 0.1em tracking, ink on a white label"
+  },
+  "motion": {
+    "rule": "Slam-in: blocks scale from 0.92 to full size in 450ms with a hard 60ms stagger, and a service ticker keeps scrolling between sections.",
+    "reveal": "scale",
+    "staggerMs": 60,
+    "durationMs": 450,
+    "ease": "cubic-bezier(.2,.9,.2,1)",
+    "use": ["data-reveal", "data-stagger", "marquee", "data-magnetic on the call button"],
+    "avoid": ["slow fades", "data-parallax"]
+  },
+  "hero": {
+    "treatment": "type-poster",
+    "layout": "Headline fills the screen width in near-black on yellow with leading below 0.9. A white photo card with a hard offset shadow tilts -2deg in the corner. One red call button, full width on mobile.",
+    "photo": "Real photo; shown in a bordered card, never as a full background."
+  },
+  "background": "Solid yellow. White cards with a 6px hard offset ink shadow. Black 4px rules between sections. No gradients, no textures.",
+  "button": {
+    "shape": "Rectangle, 4px radius, 56px tall, full width on mobile.",
+    "fill": "Accent fill, white label, 3px ink border, hard 4px offset shadow.",
+    "label": "Uppercase, weight 800, 0.04em tracking.",
+    "hover": "Press moves the button 2px down-right with data-press.",
+    "minHeightPx": 48
+  },
+  "banned": [
+    "gradients",
+    "thin or light font weights",
+    "pastels",
+    "rounded corners above 4px",
+    "body text below 17px",
+    "soft blurry shadows"
+  ]
+}

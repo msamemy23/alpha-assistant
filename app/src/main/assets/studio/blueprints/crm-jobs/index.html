@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en" data-kind="app" data-app="{{slug}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{business}} Job Board</title>
+<meta name="description" content="{{business}} job board: customers, jobs on a drag-and-drop board, follow-up reminders and totals. Saved on this device, works offline.">
+<meta name="theme-color" content="#101010">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="appkit.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript><p class="noscript">{{business}} Job Board needs JavaScript turned on.</p></noscript>
+
+<!--
+  Job Board (blueprint crm-jobs). app.js builds the app shell (appkit AK.app) and copies these <template> blocks into the page.
+  - Text inside templates is safe to rewrite. Keep every data-f="..." (app.js fills those) and data-act="..." (buttons that do things).
+  - <i data-icon="name"></i> becomes an appkit icon (names: AK.icons in appkit.js). <i data-st="new|scheduled|progress|waiting|done"></i> becomes a status circle.
+  - The business facts below feed the header and printed job sheets until the owner types their own in Settings.
+-->
+
+<!-- section:facts -->
+<div id="facts" hidden data-business="{{business}}" data-phone="{{phone}}" data-email="{{email}}" data-address="{{address}}" data-year="{{year}}"></div>
+<!-- /section:facts -->
+
+<!-- section:view-board -->
+<template id="view-board">
+  <header class="page-head board-head">
+    <div class="head-main">
+      <p class="eyebrow" data-f="date">Today</p>
+      <h1>Board</h1>
+    </div>
+    <div class="seg view-seg" role="radiogroup" aria-label="Show jobs as" data-f="view">
+      <label><input type="radio" name="view" value="board"><span><i data-icon="grid"></i>Board</span></label>
+      <label><input type="radio" name="view" value="list"><span><i data-icon="list"></i>List</span></label>
+    </div>
+    <p class="sub head-sub" data-f="sub">Every job, from new to done.</p>
+  </header>
+
+  <div class="welcome card" data-f="welcome" hidden>
+    <svg class="illus welcome-art" viewBox="0 0 240 150" aria-hidden="true">
+      <circle class="il-a" cx="120" cy="80" r="68"/>
+      <rect class="il-s" x="20" y="30" width="60" height="98" rx="9"/>
+      <rect class="il-s" x="90" y="22" width="60" height="106" rx="9"/>
+      <rect class="il-s" x="160" y="34" width="60" height="94" rx="9"/>
+      <path class="il-l" d="M31 44h28M101 36h24M171 48h26"/>
+      <rect class="il-s" x="29" y="56" width="42" height="22" rx="5"/>
+      <rect class="il-s" x="29" y="86" width="42" height="22" rx="5"/>
+      <rect class="il-x" x="99" y="52" width="42" height="24" rx="5" transform="rotate(-7 120 64)"/>
+      <rect class="il-s" x="99" y="88" width="42" height="22" rx="5"/>
+      <rect class="il-s" x="169" y="62" width="42" height="22" rx="5"/>
+      <circle class="il-x" cx="207" cy="106" r="13"/>
+      <path class="il-k" d="M201 106l4 4 8-8"/>
+    </svg>
+    <div class="welcome-copy">
+      <h2>Every job on one calm board</h2>
+      <p class="muted">Add a card for each job and move it along as the work happens. Customers, follow-ups and totals fill in on their own.</p>
+      <ol class="welcome-steps">
+        <li><i data-st="new"></i><span><strong>Add a job</strong> with the customer, price and due date.</span></li>
+        <li><i data-st="progress"></i><span><strong>Hold and drag</strong> a card to move it, or tap its circle.</span></li>
+        <li><i data-st="done"></i><span><strong>Follow up</strong> after the work, so nobody slips away.</span></li>
+      </ol>
+      <div class="btns">
+        <button type="button" class="btn primary" data-act="new-job"><i data-icon="plus"></i>Add your first job</button>
+        <button type="button" class="btn soft" data-act="load-sample"><i data-icon="zap"></i>Try it with sample data</button>
+      </div>
+      <p class="small muted">Everything stays on this device. Back it up any time in Settings.</p>
+    </div>
+  </div>
+
+  <div class="note sample-note" data-f="samplenote" hidden><i data-icon="info"></i><div><strong>This is sample data.</strong> Try anything. Clear it when you are ready to start for real.</div><button type="button" class="btn sm ghost" data-act="clear-sample">Clear</button></div>
+
+  <div class="board-tools" data-f="tools">
+    <div class="search"><input type="search" id="jobSearch" data-f="search" placeholder="Search jobs, customers, phone" aria-label="Search jobs" autocomplete="off"></div>
+    <div class="chips" data-single role="group" aria-label="Filter jobs" data-f="chips"></div>
+  </div>
+  <nav class="colnav hide-desk" aria-label="Jump to a column" data-f="colnav"></nav>
+  <div class="board-out" data-f="out"></div>
+</template>
+<!-- /section:view-board -->
+
+<!-- section:view-today -->
+<template id="view-today">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow" data-f="date"></p>
+      <h1>Today</h1>
+      <p class="sub" data-f="sub"></p>
+    </div>
+  </header>
+  <div class="stats">
+    <button type="button" class="stat accent" data-act="jump" data-to="fu-sec"><span class="label"><i data-icon="bell"></i>Follow-ups due</span><span class="value" data-f="s-fu">0</span><span class="meta" data-f="s-fu-m"></span></button>
+    <button type="button" class="stat" data-act="go" data-to="/board"><span class="label"><i data-icon="calendar"></i>Jobs this week</span><span class="value" data-f="s-week">0</span><span class="meta" data-f="s-week-m"></span></button>
+    <div class="stat"><span class="label"><i data-icon="dollar"></i>Open value</span><span class="value" data-f="s-open">0</span><span class="meta" data-f="s-open-m"></span></div>
+    <div class="stat"><span class="label"><i data-icon="check-circle"></i>Done this month</span><span class="value" data-f="s-done">0</span><span class="meta" data-f="s-done-m"></span></div>
+  </div>
+  <div class="note sample-note" data-f="samplenote" hidden><i data-icon="info"></i><div><strong>This is sample data.</strong> The names and amounts are made up so you can try things.</div><button type="button" class="btn sm ghost" data-act="clear-sample">Clear</button></div>
+  <div class="today-grid">
+    <section class="section" id="fu-sec">
+      <div class="sec-head"><h2>Follow-ups</h2><button type="button" class="btn ghost sm" data-act="new-followup"><i data-icon="plus"></i>Add</button></div>
+      <div data-f="fu"></div>
+      <div class="soon" data-f="soonwrap" hidden>
+        <h3 class="mini-head">Coming up this week</h3>
+        <ul class="list" data-f="soon"></ul>
+      </div>
+    </section>
+    <div class="stack today-side">
+      <section class="section">
+        <div class="sec-head"><h2>Jobs due</h2><button type="button" class="btn ghost sm" data-act="go" data-to="/board">Board<i data-icon="chevron-right"></i></button></div>
+        <div data-f="due"></div>
+      </section>
+      <section class="section" data-f="weeksec" hidden>
+        <div class="sec-head"><h2>Later this week</h2></div>
+        <ul class="list job-list" data-f="week"></ul>
+      </section>
+    </div>
+  </div>
+</template>
+<!-- /section:view-today -->
+
+<!-- section:view-customers -->
+<template id="view-customers">
+  <header class="page-head">
+    <div>
+      <h1>Customers</h1>
+      <p class="sub" data-f="sub"></p>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn sm" data-act="import-customers"><i data-icon="upload"></i>Import</button>
+      <button type="button" class="btn sm" data-act="export-customers"><i data-icon="download"></i>Export</button>
+    </div>
+  </header>
+  <div class="toolbar cust-tools">
+    <div class="search"><input type="search" id="custSearch" data-f="search" placeholder="Search name, phone, email, tag" aria-label="Search customers" autocomplete="off"></div>
+    <select class="sort-sel" data-f="sort" aria-label="Sort customers">
+      <option value="name">A to Z</option>
+      <option value="recent">Newest</option>
+      <option value="open">Open work</option>
+      <option value="fu">Follow-up</option>
+    </select>
+  </div>
+  <div class="chips" data-single role="group" aria-label="Filter customers" data-f="chips"></div>
+  <div data-f="out"></div>
+</template>
+<!-- /section:view-customers -->
+
+<!-- section:view-customer -->
+<template id="view-customer">
+  <header class="page-head cust-head">
+    <div class="who">
+      <span class="who-av" data-f="avatar"></span>
+      <div class="who-text">
+        <p class="eyebrow">Customer</p>
+        <h1 data-f="name"></h1>
+        <p class="sub" data-f="since"></p>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn sm" data-act="edit-customer" data-f="edit"><i data-icon="edit"></i>Edit</button>
+      <button type="button" class="btn sm primary" data-act="new-job-for" data-f="newjob"><i data-icon="plus"></i>New job</button>
+    </div>
+  </header>
+  <div class="tag-row" data-f="tags"></div>
+  <div class="contact-bar" data-f="contact"></div>
+  <div class="stats">
+    <div class="stat accent"><span class="label">Open work</span><span class="value" data-f="s-open"></span><span class="meta" data-f="s-open-m"></span></div>
+    <div class="stat"><span class="label">Done, all time</span><span class="value" data-f="s-done"></span><span class="meta" data-f="s-done-m"></span></div>
+  </div>
+  <div class="cust-grid">
+    <section class="section">
+      <div class="sec-head"><h2>Follow-ups</h2><button type="button" class="btn ghost sm" data-act="new-followup-for" data-f="addfu"><i data-icon="plus"></i>Add</button></div>
+      <div data-f="fu"></div>
+    </section>
+    <section class="section">
+      <div class="sec-head"><h2>Jobs</h2><span class="muted small" data-f="jobcount"></span></div>
+      <div data-f="jobs"></div>
+    </section>
+    <section class="section">
+      <div class="sec-head"><h2>Notes</h2><button type="button" class="btn ghost sm" data-act="edit-customer"><i data-icon="edit"></i>Edit</button></div>
+      <div class="card notes-card" data-f="notes"></div>
+    </section>
+  </div>
+  <div class="danger-row"><button type="button" class="btn ghost sm danger-text" data-act="delete-customer" data-f="del"><i data-icon="trash"></i>Delete this customer</button></div>
+</template>
+<!-- /section:view-customer -->
+
+<!-- section:view-settings -->
+<template id="view-settings">
+  <header class="page-head">
+    <div>
+      <h1>Settings</h1>
+      <p class="sub">Your details, the job checklist, backups and spreadsheets.</p>
+    </div>
+  </header>
+  <div class="settings-grid">
+    <section class="card">
+      <div class="card-head"><h2>Business details</h2></div>
+      <p class="muted small card-lead">Printed at the top of every job sheet.</p>
+      <form class="form" data-f="bizform" novalidate>
+        <div class="field"><label for="s-biz">Business name</label><input id="s-biz" name="business" maxlength="80" autocomplete="organization"></div>
+        <div class="cols" style="--min:180px">
+          <div class="field"><label for="s-phone">Phone</label><input id="s-phone" name="phone" type="tel" autocomplete="tel"></div>
+          <div class="field"><label for="s-email">Email</label><input id="s-email" name="email" type="email" autocomplete="email"></div>
+        </div>
+        <div class="field"><label for="s-addr">Address</label><input id="s-addr" name="address" maxlength="160" autocomplete="street-address"></div>
+        <div class="btns end"><button type="submit" class="btn primary">Save details</button></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Board and money</h2></div>
+      <form class="form" data-f="prefform" novalidate>
+        <div class="cols" style="--min:160px">
+          <div class="field"><label for="s-cur">Currency</label>
+            <select id="s-cur" name="currency">
+              <option value="">Automatic</option><option value="USD">US dollar</option><option value="CAD">Canadian dollar</option><option value="EUR">Euro</option><option value="GBP">British pound</option><option value="AUD">Australian dollar</option><option value="NZD">New Zealand dollar</option><option value="MXN">Mexican peso</option><option value="INR">Indian rupee</option><option value="ZAR">South African rand</option>
+            </select></div>
+          <div class="field"><label for="s-week">Week starts on</label>
+            <select id="s-week" name="weekStart"><option value="">Automatic</option><option value="0">Sunday</option><option value="1">Monday</option></select></div>
+        </div>
+        <div class="field"><label for="s-done">Done column shows</label>
+          <select id="s-done" name="doneDays"><option value="7">Jobs done in the last 7 days</option><option value="14">Jobs done in the last 14 days</option><option value="30">Jobs done in the last 30 days</option><option value="90">Jobs done in the last 90 days</option><option value="0">Every done job</option></select>
+          <p class="help">Older done jobs stay in the List view and in exports.</p></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Job checklist</h2><span class="muted small" data-f="stepcount"></span></div>
+      <p class="muted small card-lead">Every new job starts with these steps. Drag the handle to reorder.</p>
+      <ul class="list steps-list" data-f="steps"></ul>
+      <form class="row add-step" data-f="stepform" novalidate>
+        <input name="text" maxlength="80" placeholder="Add a step" aria-label="New checklist step">
+        <button type="submit" class="btn soft"><i data-icon="plus"></i>Add</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Backup</h2></div>
+      <p class="muted small card-lead" data-f="storage"></p>
+      <ul class="list">
+        <li><button type="button" class="item" data-act="backup"><span class="lead"><i data-icon="download"></i></span><span class="body"><span class="title">Back up everything</span><span class="sub">Saves one file you can restore later</span></span></button></li>
+        <li><button type="button" class="item" data-act="copy-backup"><span class="lead"><i data-icon="copy"></i></span><span class="body"><span class="title">Copy the backup</span><span class="sub">Paste it into a note or an email to yourself</span></span></button></li>
+        <li><button type="button" class="item" data-act="restore"><span class="lead"><i data-icon="upload"></i></span><span class="body"><span class="title">Restore from a file</span><span class="sub">Replaces what is here now</span></span></button></li>
+        <li><button type="button" class="item" data-act="restore-paste"><span class="lead"><i data-icon="clipboard"></i></span><span class="body"><span class="title">Paste a backup</span><span class="sub">For a backup you copied as text</span></span></button></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Spreadsheets (CSV)</h2></div>
+      <p class="muted small card-lead">Open these in Excel, Google Sheets or Numbers, or bring in a customer list from another app.</p>
+      <ul class="list">
+        <li><button type="button" class="item" data-act="export-customers"><span class="lead"><i data-icon="users"></i></span><span class="body"><span class="title">Export customers</span><span class="sub">Name, phone, email, tags, totals</span></span></button></li>
+        <li><button type="button" class="item" data-act="export-jobs"><span class="lead"><i data-icon="clipboard"></i></span><span class="body"><span class="title">Export jobs</span><span class="sub">Every job with status, price and dates</span></span></button></li>
+        <li><button type="button" class="item" data-act="import-customers"><span class="lead"><i data-icon="upload"></i></span><span class="body"><span class="title">Import customers</span><span class="sub">Columns like Name, Phone, Email, Tags, Notes</span></span></button></li>
+        <li><button type="button" class="item" data-act="import-jobs"><span class="lead"><i data-icon="upload"></i></span><span class="body"><span class="title">Import jobs</span><span class="sub">Columns like Title, Customer, Status, Price, Due</span></span></button></li>
+        <li><button type="button" class="item" data-act="paste-csv"><span class="lead"><i data-icon="clipboard"></i></span><span class="body"><span class="title">Paste CSV text</span><span class="sub">When choosing a file does not work</span></span></button></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Sample data</h2></div>
+      <p class="muted small card-lead" data-f="sampletext">Load a few made-up customers and jobs to see how everything works. They are clearly marked as samples.</p>
+      <div class="btns">
+        <button type="button" class="btn soft" data-act="load-sample" data-f="loadsample"><i data-icon="zap"></i>Load sample data</button>
+        <button type="button" class="btn" data-act="clear-sample" data-f="clearsample"><i data-icon="x"></i>Clear sample data</button>
+      </div>
+      <div class="danger-zone">
+        <p class="label">Start over</p>
+        <p class="muted small">Removes every customer, job and follow-up from this device. Your details and checklist stay.</p>
+        <button type="button" class="btn danger" data-act="erase"><i data-icon="trash"></i>Erase everything</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="section">
+    <div class="sec-head"><h2>Help</h2></div>
+    <div class="accs" data-single>
+      <details class="acc"><summary>How do I move a job?</summary><p>On the Board, hold a card for a moment and drag it to another column. Or tap the circle on the card and pick where it goes. On a computer, drag with the mouse, or select a card and press Shift with the arrow keys.</p></details>
+      <details class="acc"><summary>Where is my data saved?</summary><p>Only on this device, inside this app. Nothing is sent anywhere. Back up now and then, and restore the file on another phone or computer to move everything over.</p></details>
+      <details class="acc"><summary>How do follow-ups work?</summary><p>A follow-up is a reminder to get back to a customer on a date. It shows on Today when it is due, in red once it is late. Call or text in one tap, then tap Done, or tap Later to move it.</p></details>
+      <details class="acc"><summary>I deleted something by mistake</summary><p>Tap Undo in the message at the bottom of the screen right after. Undo also works for moves and edits.</p></details>
+      <details class="acc"><summary>Shortcuts on a computer</summary><p>Press N to add a job and / to jump to search.</p></details>
+    </div>
+  </section>
+  <p class="foot muted small">{{business}} Job Board · {{year}}</p>
+</template>
+<!-- /section:view-settings -->
+
+<!-- section:sheet-job -->
+<template id="sheet-job">
+  <form class="form job-form" novalidate>
+    <fieldset class="field">
+      <legend>Status</legend>
+      <div class="status-pick" role="radiogroup" aria-label="Status">
+        <label><input type="radio" name="status" value="new"><span><i data-st="new"></i>New</span></label>
+        <label><input type="radio" name="status" value="scheduled"><span><i data-st="scheduled"></i>Scheduled</span></label>
+        <label><input type="radio" name="status" value="progress"><span><i data-st="progress"></i>In progress</span></label>
+        <label><input type="radio" name="status" value="waiting"><span><i data-st="waiting"></i>Waiting</span></label>
+        <label><input type="radio" name="status" value="done"><span><i data-st="done"></i>Done</span></label>
+      </div>
+    </fieldset>
+    <div class="field"><label for="j-title">What needs doing</label><input id="j-title" name="title" required maxlength="140" autocomplete="off" placeholder="A short name for the job"></div>
+    <div class="field"><label for="j-cust">Customer</label><select id="j-cust" name="customerId" data-f="cust"></select></div>
+    <fieldset class="new-cust" data-f="newcust" hidden disabled>
+      <legend class="sr-only">New customer</legend>
+      <div class="cols" style="--min:170px">
+        <div class="field"><label for="j-ncname">New customer name</label><input id="j-ncname" name="ncName" maxlength="80" autocomplete="off"></div>
+        <div class="field"><label for="j-ncphone">Their phone</label><input id="j-ncphone" name="ncPhone" type="tel" autocomplete="off"></div>
+      </div>
+    </fieldset>
+    <div class="cols" style="--min:150px">
+      <div class="field"><label for="j-price">Price</label><div class="affix"><span data-f="cur">$</span><input id="j-price" name="price" data-money inputmode="decimal" placeholder="0.00" autocomplete="off"></div></div>
+      <div class="field"><label for="j-due">Due date</label><input id="j-due" name="due" type="date"></div>
+    </div>
+    <div class="quick-dates" data-for="j-due" role="group" aria-label="Quick due dates">
+      <button type="button" class="chip" data-days="0">Today</button><button type="button" class="chip" data-days="1">Tomorrow</button><button type="button" class="chip" data-days="7">In a week</button><button type="button" class="chip" data-days="">No date</button>
+    </div>
+    <div class="field">
+      <span class="label">Checklist <span class="muted small" data-f="ckcount"></span></span>
+      <div class="progress" data-f="ckbar"></div>
+      <ul class="checklist" data-f="cklist"></ul>
+      <div class="row ck-add"><input data-f="ckin" maxlength="80" placeholder="Add a step" aria-label="New checklist step"><button type="button" class="btn soft sm" data-f="ckbtn"><i data-icon="plus"></i>Add</button></div>
+    </div>
+    <div class="field"><label for="j-notes">Notes</label><textarea id="j-notes" name="notes" maxlength="4000" placeholder="Anything the next person should know"></textarea></div>
+  </form>
+  <div class="sheet-tools" data-f="tools" hidden>
+    <p class="meta-line small muted" data-f="meta"></p>
+    <div class="btns">
+      <button type="button" class="btn sm" data-f="fu"><i data-icon="bell"></i>Follow up</button>
+      <button type="button" class="btn sm" data-f="print"><i data-icon="printer"></i>Print job sheet</button>
+      <a class="btn sm" data-f="call" hidden><i data-icon="phone"></i>Call</a>
+      <a class="btn sm" data-f="text" hidden><i data-icon="message"></i>Text</a>
+      <button type="button" class="btn sm" data-f="open"><i data-icon="user"></i>Customer page</button>
+    </div>
+  </div>
+</template>
+<!-- /section:sheet-job -->
+
+<!-- section:sheet-customer -->
+<template id="sheet-customer">
+  <form class="form" novalidate>
+    <div class="field"><label for="c-name">Name</label><input id="c-name" name="name" required maxlength="80" autocomplete="off" placeholder="Person or company"></div>
+    <div class="cols" style="--min:180px">
+      <div class="field"><label for="c-phone">Phone</label><input id="c-phone" name="phone" type="tel" autocomplete="off"></div>
+      <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="off"></div>
+    </div>
+    <div class="field">
+      <span class="label">Tags</span>
+      <div class="tag-pick" role="group" aria-label="Tags" data-f="tags"></div>
+      <div class="row tag-add"><input data-f="tagin" maxlength="24" placeholder="New tag" aria-label="New tag"><button type="button" class="btn soft sm" data-f="tagbtn"><i data-icon="tag"></i>Add tag</button></div>
+      <p class="help">Tags let you filter, for example Regular, Fleet or Quote sent.</p>
+    </div>
+    <div class="field"><label for="c-notes">Notes</label><textarea id="c-notes" name="notes" maxlength="4000" placeholder="Anything worth remembering about them"></textarea></div>
+  </form>
+</template>
+<!-- /section:sheet-customer -->
+
+<!-- section:sheet-followup -->
+<template id="sheet-followup">
+  <form class="form" novalidate>
+    <div class="field"><label for="f-cust">Customer</label><select id="f-cust" name="customerId" required data-f="cust"></select></div>
+    <div class="field"><label for="f-note">What to follow up on</label><input id="f-note" name="note" maxlength="140" autocomplete="off" placeholder="For example: ask how it is going"></div>
+    <div class="field"><label for="f-date">When</label><input id="f-date" name="date" type="date" required></div>
+    <div class="quick-dates" data-for="f-date" role="group" aria-label="Quick dates">
+      <button type="button" class="chip" data-days="0">Today</button><button type="button" class="chip" data-days="1">Tomorrow</button><button type="button" class="chip" data-days="3">In 3 days</button><button type="button" class="chip" data-days="7">Next week</button><button type="button" class="chip" data-days="30">In a month</button>
+    </div>
+    <div class="field" data-f="jobfield"><label for="f-job">About a job (optional)</label><select id="f-job" name="jobId" data-f="job"></select></div>
+  </form>
+</template>
+<!-- /section:sheet-followup -->
+
+<!-- section:doc-job -->
+<template id="doc-job">
+  <article class="doc job-doc">
+    <header class="doc-head">
+      <div>
+        <h2 data-f="biz">{{business}}</h2>
+        <p class="muted" data-f="addr">{{address}}</p>
+        <p class="muted" data-f="contact"><span data-f="phone">{{phone}}</span> <span data-f="email">{{email}}</span></p>
+      </div>
+      <div class="right">
+        <p class="eyebrow">Job sheet</p>
+        <p class="doc-no" data-f="no"></p>
+        <p class="muted" data-f="printed"></p>
+      </div>
+    </header>
+    <dl class="doc-meta">
+      <div><dt>Customer</dt><dd data-f="cust"></dd></div>
+      <div><dt>Status</dt><dd data-f="status"></dd></div>
+      <div><dt>Due</dt><dd data-f="due"></dd></div>
+      <div><dt>Price</dt><dd data-f="price"></dd></div>
+    </dl>
+    <h3 class="doc-title" data-f="title"></h3>
+    <div data-f="steps"></div>
+    <div class="doc-notes" data-f="noteswrap"><p class="eyebrow">Notes</p><p data-f="notes"></p></div>
+    <div class="doc-sign"><div><p class="sign-space"></p><p class="line">Customer signature</p></div><div><p class="sign-space"></p><p class="line">Date</p></div></div>
+    <p class="doc-foot" data-f="foot">Thank you for choosing {{business}}.</p>
+  </article>
+</template>
+<!-- /section:doc-job -->
+
+<script src="appkit.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>

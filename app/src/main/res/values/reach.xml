@@ -1,0 +1,19 @@
+<resources>
+    <string name="shortcut_ask_short">Ask</string>
+    <string name="shortcut_ask_long">Ask Alpha something</string>
+    <string name="shortcut_talk_short">Talk</string>
+    <string name="shortcut_talk_long">Talk with Alpha</string>
+    <string name="shortcut_away_short">Away mode</string>
+    <string name="shortcut_away_long">Turn Away mode off, or set it up</string>
+    <string name="tile_label">Ask Alpha</string>
+    <string name="widget_label">Alpha</string>
+    <string name="widget_description">See what Alpha is working on, and ask, talk or turn Away mode on or off.</string>
+    <string name="widget_title">Alpha</string>
+    <string name="widget_idle">Idle</string>
+    <string name="widget_ask">Ask</string>
+    <string name="widget_talk">Talk</string>
+    <string name="widget_away_off">Away: off</string>
+    <string name="widget_ask_description">Ask Alpha something</string>
+    <string name="widget_talk_description">Talk with Alpha</string>
+    <string name="widget_away_description">Turn Away mode on or off</string>
+</resources>

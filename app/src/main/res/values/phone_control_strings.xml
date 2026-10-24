@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="phone_control_label">Alpha: use my apps</string>
+    <string name="phone_control_description">Lets Alpha use your apps for you when you ask: open them, read the screen, tap, type and scroll. It only acts when a bot is working on something you asked for, never types passwords, PINs, card numbers or codes, asks you before paying or erasing anything, and records nothing. You can pause it any time in Alpha, Settings, What Alpha can do.</string>
+    <string name="phone_control_summary">Use your apps when you ask</string>
+</resources>
