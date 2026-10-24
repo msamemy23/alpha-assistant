@@ -6,6 +6,13 @@ Alpha Assistant is a native Kotlin/Jetpack Compose app. You chat with bots (each
 
 > **Status: public beta (0.20).** It is built and tested every day on a Samsung Galaxy S24, but it is young software that taps and types on your behalf. Read [Safety](#safety) before you give it real accounts, and expect rough edges. Bug reports are very welcome.
 
+<p align="center">
+  <img src="docs/screenshots/bots.png" width="23%" alt="Your bots, Brainstorm, Away mode, Library">
+  <img src="docs/screenshots/chat.png" width="23%" alt="A bot's chat: connect ChatGPT or use another AI">
+  <img src="docs/screenshots/ai-provider.png" width="23%" alt="Choose the AI: ChatGPT plan, OpenAI key, or another service">
+  <img src="docs/screenshots/settings.png" width="23%" alt="Settings with the daily AI usage meter">
+</p>
+
 ## What it can do
 
 - **Bots with their own chats.** Make as many as you like (a researcher, an inbox helper, a coder). Each remembers what you like, keeps its own files, and texts you back like a person: short answers, no menus.
@@ -79,6 +86,15 @@ The instrumentation tests (`androidTest`) are for an isolated emulator or test p
 ## Contributing
 
 Bug reports, ideas and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md). Safety fixes are the most valuable contribution there is.
+
+Where help is wanted:
+
+- **Try it on your phone and tell us what breaks.** A first-run report on a different phone model is worth a lot.
+- **Other AI services:** how well does your favourite model call tools in Alpha? Reports and fixes for provider quirks (`ChatCompletionsAi.kt`).
+- **A hard daily limit** on tokens for pay-as-you-go keys (today there is a meter, a per-job cap and a warning, but no daily stop).
+- **F-Droid and a Google-free build:** Google sign-in uses Play Services, which F-Droid does not allow.
+- **Splitting `Controller.kt`** (about 4,000 lines) into smaller pieces, with the tests staying green.
+- **Translations** and an iPhone version.
 
 ## Licence
 
