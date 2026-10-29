@@ -138,7 +138,7 @@ object Skills {
             Write a short, friendly message signed ${Profile.signature} unless told otherwise.
             Use phone_action text (or email) to open the phone's app with the message filled in. The owner taps Send; never claim it was sent.
         """.trimIndent())
-    )+ReachSkills.all
+    )+StartSkills.all+ReachSkills.all
     private val idPattern=Regex("[a-z][a-z0-9_]{1,39}")
     fun all(user:List<UserSkill>)=builtIn.map {it.summary().put("source","built-in")}+user.map {
         obj("id" to it.id,"title" to it.title,"purpose" to it.purpose,"source" to "taught by you")

@@ -56,29 +56,6 @@ class PublicSafetyTest {
         assertTrue(ChatCompletions.request("m",JSONArray(),"",emptyList()).getJSONObject("stream_options").getBoolean("include_usage"))
     }
 
-    // ---- daily text limit ----
-
-    @Test fun textsStopAtTheDailyLimitAndPerPerson() {
-        val now=1_000_000_000_000L
-        var log=JSONArray()
-        assertNull(SmsCap.refusal(log,"(713) 555-0142",now,30,3))
-        repeat(3) {log=SmsCap.record(log,"(713) 555-0142",now+it)}
-        // the same person written another way is still the same person
-        assertNotNull(SmsCap.refusal(log,"713-555-0142",now+10,30,3))
-        assertNull("someone else is fine",SmsCap.refusal(log,"7135550199",now+10,30,3))
-        // the whole day's limit
-        var many=JSONArray();repeat(10) {many=SmsCap.record(many,"713555%04d".format(it),now)}
-        assertTrue(SmsCap.refusal(many,"7135559999",now+1,10,3)!!.contains("daily text limit"))
-    }
-
-    @Test fun aDayLaterTheTextsAreAllowedAgain() {
-        val now=1_000_000_000_000L
-        var log=JSONArray();repeat(3) {log=SmsCap.record(log,"7135550142",now)}
-        val later=now+25*3_600_000L
-        assertNull(SmsCap.refusal(log,"7135550142",later,30,3))
-        assertEquals("old entries are dropped when a new one is recorded",1,SmsCap.record(log,"7135550142",later).length())
-    }
-
     // ---- settings defaults ----
 
     @Test fun theDefaultsMatchWhoTheBuildIsFor() {

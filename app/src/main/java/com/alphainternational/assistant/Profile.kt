@@ -43,6 +43,10 @@ object Profile {
     /** What the document tool is told about letterhead (the shop name, address and phone at the top of a PDF). */
     val letterheadHelp:String get()=if(generic) "letterhead is not set up in this copy: leave it false." else "letterhead=true adds the $shopName name, address and phone at the top."
 
+    /** The bot that helps someone start and run a business (Start mode). It is made the first time the person taps "Start a business". */
+    fun founderBot():Bot=Bot("Founder","Helps you start a business and run it: finds the idea that fits you, checks the numbers, sets it up and keeps you moving every week.",
+        "Speak plainly and briefly, like a friend who has run a business. Read business_profile before anything else and keep it up to date with business_update. Never promise income. Never send, charge, buy, file or publish without the person's OK.")
+
     /** The bots a new install starts with. */
     fun starterBots():List<Bot> = if(generic) listOf(Bot("Alpha","A friendly, capable assistant for research, writing, planning and everyday questions."))
         else listOf(Bot("Alpha","Assistant for $shopName"),Bot("Personal","Personal assistant, separate from the shop"))

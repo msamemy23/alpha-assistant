@@ -85,7 +85,7 @@ object Updates {
     }
 
     /** [picture] (a screenshot of a page the bot looked at) makes the notification a big-picture one: the headline, the first words and the page. */
-    fun notify(context:Context,id:String,title:String,text:String,workspace:String="",destination:String="tasks",picture:android.graphics.Bitmap?=null):Boolean {
+    fun notify(context:Context,id:String,title:String,text:String,workspace:String="",destination:String="tasks",picture:android.graphics.Bitmap?=null,actions:List<NotificationCompat.Action> = emptyList()):Boolean {
         val manager=context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel("important","Important Alpha updates",NotificationManager.IMPORTANCE_DEFAULT))
         if(!NotificationManagerCompat.from(context).areNotificationsEnabled() ||
@@ -97,6 +97,7 @@ object Updates {
         return try {
             val builder=NotificationCompat.Builder(context,"important").setSmallIcon(R.drawable.ic_alpha)
                 .setContentTitle(title.take(100)).setContentText(text.take(180)).setAutoCancel(true).setContentIntent(pending)
+            actions.forEach {builder.addAction(it)}
             if(picture!=null) builder.setLargeIcon(picture).setStyle(NotificationCompat.BigPictureStyle().bigPicture(picture).bigLargeIcon(null as android.graphics.Bitmap?).setSummaryText(text.take(300)))
             else builder.setStyle(NotificationCompat.BigTextStyle().bigText(text.take(1500)))
             manager.notify(id.hashCode(),builder.build())

@@ -35,6 +35,15 @@ object SkillMatch {
         "talent_scout" to r("\\b(hire|hiring|job post|job description|recruit|candidates?)\\b"),
         "social_media" to r("social media|content calendar|week of posts"),
         "learn_topic" to r("help me learn|teach me|quiz me|lesson plan"),
+        // Start mode: from "I want to make money" to a business with its first customer.
+        "start_numbers" to r("\\b(startup|start-?up|starting) costs?\\b|\\bhow much (will|would|does|do) it cost to (start|open|launch)\\b|\\bbreak-?even\\b|\\bprofit margins?\\b|\\bunit economics\\b|\\bwhat should i charge\\b"),
+        "start_fit" to r("\\b(start|starting|open|launch|begin|create)\\b[^.]{0,30}\\b(a|my|my own|new)\\b[^.]{0,15}\\b(business|company|side hustle|hustle)\\b|\\bmake money\\b|\\bbusiness ideas?\\b|\\bbe my own boss\\b|\\bside hustle\\b|\\bwhat (business|kind of business)\\b"),
+        "start_name" to r("\\b(business|company|brand|shop|store) names?\\b|\\bname (for )?my (business|company|shop|store|brand)\\b|\\bcome up with a name\\b|\\bdomain names?\\b"),
+        "start_plan" to r("\\bbusiness plan\\b|\\bone-?page plan\\b|\\bplan for my (business|company|shop|store)\\b"),
+        "start_legal" to r("\\b(llc|sole proprietor(ship)?|incorporat\\w*|register my (business|company)|business licen[sc]e|business permit|\\bein\\b|\\bdba\\b|doing business as|set up the legal)\\b"),
+        "start_site_test" to r("\\b(landing page|website|site) for my (business|company|shop|store|idea)\\b|\\btest my (idea|business)\\b|\\bvalidate (my|the) (idea|business)\\b|\\bpayment link\\b|\\bwaiting list\\b|\\bwaitlist\\b"),
+        "start_customers" to r("\\b(first|get|find|land) (my )?(first )?(three |3 |ten |10 |some )?(customers|clients)\\b|\\bget (more )?customers\\b|\\bfind (more )?clients\\b"),
+        "founder_brief" to r("\\bfounder brief\\b|\\bweekly (brief|review|update|check-?in) (on|for|of) my (business|company)\\b|\\bhow is my business (doing|going)\\b|\\bwhere are we with my business\\b"),
         "customer_message" to r("\\b(text|message|e-?mail)\\b[^.]{0,30}\\b(customer|client)\\b[^.]{0,40}\\b(ready|done|back|appointment|update)\\b")
     )
 

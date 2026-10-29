@@ -19,19 +19,27 @@ data class AiModel(val slug:String,val name:String,val listed:Boolean,val effort
  */
 data class AiSettings(val model:String=ModelPlan.AUTO,val effort:String=ModelPlan.AUTO,val quick:String="",val everyday:String="",val hard:String="",
     val routines:String="quick",val escalate:Boolean=true,val label:Boolean=false,val webSearch:Boolean=true,val readOnlyApps:Boolean=true,
-    val texting:String="phone",val approvals:String=DEFAULT_APPROVALS,val learn:Boolean=true,val smsDaily:Int=DEFAULT_SMS_DAILY) {
+    val texting:String="phone",val approvals:String=DEFAULT_APPROVALS,val learn:Boolean=true,val smsDaily:Int=DEFAULT_SMS_DAILY,
+    val guard:Map<String,String> = emptyMap(),val emailDaily:Int=DEFAULT_EMAIL_DAILY,val dailyTokens:Int=DEFAULT_DAILY_TOKENS) {
     fun json()=obj("model" to model,"effort" to effort,"quick" to quick,"everyday" to everyday,"hard" to hard,"routines" to routines,
-        "escalate" to escalate,"label" to label,"web_search" to webSearch,"read_only_apps" to readOnlyApps,"texting" to texting,"approvals" to approvals,"learn" to learn,"sms_daily" to smsDaily)
+        "escalate" to escalate,"label" to label,"web_search" to webSearch,"read_only_apps" to readOnlyApps,"texting" to texting,"approvals" to approvals,"learn" to learn,"sms_daily" to smsDaily,
+        "guard" to JSONObject(guard),"email_daily" to emailDaily,"daily_tokens" to dailyTokens)
     companion object {
         fun parse(j:JSONObject?)=if(j==null) AiSettings() else AiSettings(j.optString("model",ModelPlan.AUTO),j.optString("effort",ModelPlan.AUTO),
             j.optString("quick"),j.optString("everyday"),j.optString("hard"),j.optString("routines","quick"),j.optBoolean("escalate",true),
             j.optBoolean("label",false),j.optBoolean("web_search",true),j.optBoolean("read_only_apps",true),
             j.optString("texting","phone").takeIf {it in setOf("phone","google_web","ask")}?:"phone",
             j.optString("approvals",DEFAULT_APPROVALS).takeIf {it in setOf("bots","important","all")}?:DEFAULT_APPROVALS,j.optBoolean("learn",true),
-            j.optInt("sms_daily",DEFAULT_SMS_DAILY).takeIf {it>0}?:DEFAULT_SMS_DAILY)
+            j.optInt("sms_daily",DEFAULT_SMS_DAILY).takeIf {it>0}?:DEFAULT_SMS_DAILY,
+            j.optJSONObject("guard")?.let {g->g.keys().asSequence().associateWith {k->g.optString(k)}.filterValues {v->v==Guard.ASK || v==Guard.GO}}.orEmpty(),
+            j.optInt("email_daily",DEFAULT_EMAIL_DAILY).takeIf {it>0}?:DEFAULT_EMAIL_DAILY,
+            j.optInt("daily_tokens",DEFAULT_DAILY_TOKENS).takeIf {it>=0}?:DEFAULT_DAILY_TOKENS)
         /** A fresh public install asks before sending, paying and deleting; the owner's own build keeps the choice they made (bots just get on with it). */
         val DEFAULT_APPROVALS:String get()=if(Profile.generic) "important" else "bots"
         val DEFAULT_SMS_DAILY:Int get()=if(Profile.generic) 30 else 500
+        val DEFAULT_EMAIL_DAILY:Int get()=if(Profile.generic) 50 else 300
+        /** The most tokens (read plus written) a pay-as-you-go AI service may use in a day before the bots stop; 0 means no stop. */
+        val DEFAULT_DAILY_TOKENS:Int get()=if(Profile.generic) 30_000_000 else 0
     }
 }
 

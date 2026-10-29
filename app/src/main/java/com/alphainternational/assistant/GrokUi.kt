@@ -148,7 +148,7 @@ private fun stamp(time:Long):String {
  * idea of Alpha; the "front door" with a big Ask box on top was drift and is gone (2026-10-11).
  */
 @Composable fun HomeScreen(c:Controller,open:(String)->Unit,newBot:()->Unit,marketplace:()->Unit,openTeam:()->Unit,settings:()->Unit,library:()->Unit={},away:()->Unit={},
-    activity:MainActivity?=null,openActivity:(String)->Unit={},goals:()->Unit={},brainstorm:()->Unit={}) {
+    activity:MainActivity?=null,openActivity:(String)->Unit={},goals:()->Unit={},brainstorm:()->Unit={},business:()->Unit={},startBusiness:()->Unit={}) {
     var searching by rememberSaveable {mutableStateOf(false)}
     var query by rememberSaveable {mutableStateOf("")}
     val spaceOf=remember(c.tasks) {c.tasks.associate {it.id to it.workspace}}
@@ -169,6 +169,14 @@ private fun stamp(time:Long):String {
             if(searching) OutlinedTextField(query,{query=it},placeholder={Text("Search bots")},singleLine=true,shape=RoundedCornerShape(24.dp),
                 modifier=Modifier.fillMaxWidth().padding(top=14.dp))
             Spacer(Modifier.height(18.dp))
+            // Guard: while the pause switch is on, say so here, with the way out.
+            val guardNow=c.guardVersion
+            if(remember(guardNow) {c.actionsPaused()}) {
+                Row(Modifier.fillMaxWidth().padding(bottom=14.dp).clip(RoundedCornerShape(16.dp)).background(Panel).padding(start=16.dp,end=6.dp,top=4.dp,bottom=4.dp),verticalAlignment=Alignment.CenterVertically) {
+                    Text("Paused: bots won't send, post, change or tap anything.",style=Type.note.copy(color=Ink),modifier=Modifier.weight(1f))
+                    TextButton(onClick={c.setActionsPaused(false)}) {Text("Resume",color=Ink)}
+                }
+            }
         }
         // Teamwork: the group chat with every bot, listed with the bots like a group text.
         if(query.isBlank() || Words.TEAM_CHAT.contains(query,true)) item(key="teamwork") {
@@ -244,6 +252,8 @@ private fun stamp(time:Long):String {
             }
             AwayCard(c,away)
             GoalsCard(c,goals)
+            if(c.business.exists) HomeRow(Icons.Outlined.Flag,"My business",c.business.let {b->val (d,a)=b.progress();(b.name.ifBlank {"Your business"})+(if(a>0) " · $d of $a steps done" else "")},business)
+            else HomeRow(Icons.Outlined.RocketLaunch,"Start a business","From \"I want to make money\" to your first customer",startBusiness)
             HomeRow(Icons.Outlined.PhotoLibrary,"Library","Everything your bots made: websites, documents, pictures, videos",library)
             HomeRow(Icons.Outlined.Storefront,"Marketplace","Connect ChatGPT, Gmail, Calendar and more",marketplace)
             Text("Alpha Assistant "+BuildConfig.VERSION_NAME+" · runs on this phone",style=Type.tiny,modifier=Modifier.padding(top=24.dp))

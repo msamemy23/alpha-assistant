@@ -16,6 +16,7 @@ Alpha Assistant is a native Kotlin/Jetpack Compose app. You chat with bots (each
 ## What it can do
 
 - **Bots with their own chats.** Make as many as you like (a researcher, an inbox helper, a coder). Each remembers what you like, keeps its own files, and texts you back like a person: short answers, no menus.
+- **Start a business.** Tap "Start a business" and the Founder bot takes you from "I want to make money" to your first customers: it finds the business that fits your skills, money and time (with honest odds, never a promise of income), checks the real numbers, helps you pick a name, writes a one-page plan, explains the legal setup and prepares every answer (you do the ID checks, signatures and payments), builds a simple site, and sends a short weekly founder brief. "My business" on Home keeps the steps and your choices.
 - **Teamwork.** Bots can ask each other for help and work a bigger job together.
 - **Use any app on the phone** (optional, off until you turn on the accessibility service): open an app, read the screen, tap, type, scroll. It learns the steps for an app and reuses them, so the second time is faster.
 - **A real browser** the bots can drive, even when you have left the app: search, read pages, fill forms, take page screenshots.
@@ -56,8 +57,12 @@ An agent that can act for you needs hard limits. These are in the code and cover
 - It **asks first** (a card in the chat) before paying or buying, erasing for good, changing security settings, or sending or posting something you did not ask for. A fresh install also asks before sending, deleting and writing through connected apps; you can loosen that in Settings → Bots ask before.
 - Pressing **Enter** in messaging, mail and social apps counts as sending, and **Delete / Remove / Empty trash** buttons wait for your OK.
 - A text or email to someone you never mentioned asks first, because that is exactly what an instruction hidden in a web page or email would try.
-- **Text limit:** at most 30 texts a day (you can change it), and no more than 3 to one person.
-- **Job limit:** on pay-as-you-go services one job stops using tools after about 3 million tokens and answers with what it has.
+- **Your limits (Settings, Assistant):** three dials (texts and emails to people, clicks and forms on websites, changes in connected apps) each set to "ask me first" or "go ahead". Paying, erasing and security changes always ask.
+- **One ledger of everything sent:** at most 30 texts and 50 emails a day by default (you can change both), no more than 3 to one person a day, the same message never goes to the same person twice in 30 days, and nobody on the **do-not-contact list** is ever written to. A customer who texts STOP (or BAJA, PARAR) is added automatically.
+- **Pause switch:** one tap stops every bot from sending, posting, changing or tapping anything until you resume. Reading and drafting still work.
+- **Approve or deny from the notification.** On a locked phone Android asks for your unlock first.
+- **What bots did:** every send, post, saved file and change is listed, with Undo for the ones that can be put back (a routine, rule or skill a bot made).
+- **Cost limits:** on pay-as-you-go services one job stops using tools after about 3 million tokens and answers with what it has, and all bots stop for the day past a daily token limit you set (30 million by default).
 - Things read from the web, email, files or the screen are treated as **untrusted**: once a bot has read something from outside, changes that outlast the job (a new routine, standing rules, a saved skill), risky clicks and database changes ask first, because a web page or email could have planted them.
 - Publishing a website, making a new bot, and anything that moves money always ask.
 

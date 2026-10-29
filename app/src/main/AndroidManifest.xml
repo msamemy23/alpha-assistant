@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <!-- Phone data the bots can read when the owner allows it (asked only the first time a bot needs it): the calendar and the contacts. Alarms and timers go through the Clock app. -->
     <uses-permission android:name="android.permission.READ_CALENDAR"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
@@ -55,7 +56,10 @@
             </intent-filter>
         </activity>
         <service android:name=".CallService" android:exported="false" android:foregroundServiceType="microphone|mediaPlayback"/>
-        <service android:name=".TaskService" android:exported="false" android:foregroundServiceType="dataSync"/>
+        <!-- Bots keep working while the screen is off. "dataSync" services are cut off by Android after 6 hours in a day, which a business that works around the clock would hit. -->
+        <service android:name=".TaskService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Runs the user's AI assistant jobs (research, messages, documents) while the screen is off"/>
+        </service>
         <!-- Phone control: bots use the owner's other apps (read the screen, tap, type, scroll). Works only after the owner switches it on in Android's Accessibility settings. -->
         <service android:name=".PhoneControlService" android:exported="true" android:label="@string/phone_control_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -71,6 +75,8 @@
         <receiver android:name=".TelnyxReceiver" android:exported="false"/>
         <!-- The button on a "Alpha noticed something" notification, and swiping it away. -->
         <receiver android:name=".ProactiveReceiver" android:exported="false"/>
+        <!-- The Approve and Deny buttons on a "needs your OK" notification, and the pause switch. -->
+        <receiver android:name=".GuardReceiver" android:exported="false"/>
         <!-- Front doors: the home-screen widget, its Away button, and the Quick Settings tile "Ask Alpha". -->
         <receiver android:name=".AlphaWidget" android:exported="true" android:label="@string/widget_label">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter>

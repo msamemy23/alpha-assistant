@@ -47,7 +47,7 @@ private data class Confirm(val title:String,val text:String,val action:String,va
     fun name(slug:String)=c.modelCatalog.firstOrNull {it.slug==slug}?.name?:slug.ifBlank {"Picked automatically"}
     val (dq,de,dh)=ModelPlan.defaults(c.modelCatalog,c.selectedModel)
     androidx.activity.compose.BackHandler(enabled=page.isNotEmpty()) {page=""}
-    val title=when(page) {"assistant"->"Assistant";"powers"->"What Alpha can do";"logins"->"Logins";"voice"->"Voice";"notifications"->"Notifications";"privacy"->"Privacy & data";"provider"->"AI provider";"backup"->"Backup";"about"->"About";else->"Settings"}
+    val title=when(page) {"assistant"->"Assistant";"powers"->"What Alpha can do";"logins"->"Logins";"voice"->"Voice";"notifications"->"Notifications";"privacy"->"Privacy & data";"provider"->"AI provider";"dnc"->"Do not contact";"log"->"What bots did";"backup"->"Backup";"about"->"About";else->"Settings"}
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(start=4.dp,end=16.dp,top=6.dp,bottom=6.dp),verticalAlignment=Alignment.CenterVertically) {
             IconButton(onClick={if(page.isNotEmpty()) page="" else back()}) {Icon(Icons.AutoMirrored.Outlined.ArrowBack,"Back",tint=Ink)}
@@ -56,7 +56,7 @@ private data class Confirm(val title:String,val text:String,val action:String,va
         HorizontalDivider(color=Line)
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
             when(page) {
-                "assistant"->AssistantPage(c,ai,{picker=it},{confirm=it},editBot,newBot,::name,dq,de,dh,listed.size,more.size)
+                "assistant"->AssistantPage(c,ai,{picker=it},{page=it},{confirm=it},editBot,newBot,::name,dq,de,dh,listed.size,more.size)
                 "powers"->PowersPage(activity,c)
                 "logins"->LoginsPage(c,openSignIn)
                 "voice"->VoicePage(c,{picker=it},{voiceKey=true})
@@ -64,6 +64,8 @@ private data class Confirm(val title:String,val text:String,val action:String,va
                 "privacy"->PrivacyPage(c,{picker=it},{confirm=it})
                 "backup"->BackupPage(backup)
                 "provider"->ProviderPage(c)
+                "dnc"->DoNotContactPage(c)
+                "log"->ActivityPage(c)
                 "about"->AboutPage(c)
                 else-> {
                     val email=c.config("chatgpt").optString("email")
@@ -71,6 +73,7 @@ private data class Confirm(val title:String,val text:String,val action:String,va
                         Row2(Icons.Outlined.AccountCircle,"ChatGPT",email.ifBlank {"Not connected"}) {marketplace()}
                         Row2(Icons.Outlined.Psychology,"AI provider",c.provider.summary()) {page="provider"}
                         Row2(Icons.Outlined.DataUsage,"AI use today",c.usageToday()) {}
+                        if(c.provider.custom) Row2(Icons.Outlined.DataUsage,"Daily AI limit",if(ai.dailyTokens==0) "No limit" else "The bots stop for the day past "+UsageMeter.short(ai.dailyTokens.toLong())+" tokens") {picker="daily_tokens"}
                         if(!c.provider.custom) Row2(Icons.Outlined.DataUsage,"ChatGPT usage",c.planLimitShort().ifBlank {"Check your plan's limits"}) {activity.openExternal("https://chatgpt.com/settings/usage")}
                         if(email.isNotBlank()) Row2(Icons.AutoMirrored.Outlined.Logout,"Sign out of ChatGPT","Your bots, chats and files stay on this phone") {
                             confirm=Confirm("Sign out of ChatGPT?","Your bots can't think until you sign in again. Chats, memories and files stay on this phone.","Sign out") {
@@ -133,6 +136,17 @@ private data class Confirm(val title:String,val text:String,val action:String,va
             val voices=if(vc.optString("provider")=="openai") CloudVoice.openaiVoices else CloudVoice.elevenVoices
             Picker("Which voice",voices.map {(k,v)->Choice(k,v)},vc.optString("voice").ifBlank {voices.keys.first()},{picker=""}) {c.saveConfig("voice_cloud",vc.put("voice",it));picker=""}
         }
+        "guard_messages","guard_web","guard_apps"-> {
+            val area=Guard.Area.values().first {"guard_"+it.key==picker}
+            Picker(area.title,listOf(Choice("","Same as \"Bots ask before\"","Follows the setting above"),Choice(Guard.ASK,"Ask me first","A card and a notification wait for your OK. "+area.note),
+                Choice(Guard.GO,"Go ahead","It does it, within the daily limits. Paying, erasing and security changes still ask.")),
+                if(Guard.overridden(area,ai)) ai.guard.getValue(area.key) else "",{picker=""}) {c.updateAi(Guard.with(ai,area,it));picker=""}
+        }
+        "email_daily"->Picker("Emails per day",SmsCap.choices.plus(listOf(50,300)).distinct().sorted().map {Choice(it.toString(),"$it a day",if(it==10) "The most careful" else "")},
+            ai.emailDaily.toString(),{picker=""}) {c.updateAi(ai.copy(emailDaily=it.toIntOrNull()?:ai.emailDaily));picker=""}
+        "daily_tokens"->Picker("Daily AI limit",listOf(0,5_000_000,15_000_000,30_000_000,100_000_000).map {Choice(it.toString(),if(it==0) "No limit" else UsageMeter.short(it.toLong())+" tokens",
+            if(it==0) "The bots never stop for this reason" else "Past this, the bots stop for the day. Only applies to pay-as-you-go AI services.")},
+            ai.dailyTokens.toString(),{picker=""}) {c.updateAi(ai.copy(dailyTokens=it.toIntOrNull()?:ai.dailyTokens));picker=""}
         "approvals"->Picker("Bots ask before",listOf(Choice("bots","Only making a new bot",if(Profile.generic) "Fastest: everything else just gets done." else "Everything else just gets done. (Your pick.)"),
             Choice("important","Sending, paying, deleting",if(Profile.generic) "Plus making a new bot. Recommended." else "Plus making a new bot."),Choice("all","Anything that changes something","The most careful setting.")),
             ai.approvals,{picker=""}) {c.updateAi(ai.copy(approvals=it));picker=""}
@@ -182,7 +196,7 @@ private data class Confirm(val title:String,val text:String,val action:String,va
 // Assistant
 // ---------------------------------------------------------------------------------------------------------------------------------------------
 
-@Composable private fun AssistantPage(c:Controller,ai:AiSettings,pick:(String)->Unit,ask:(Confirm)->Unit,editBot:(String)->Unit,newBot:()->Unit,
+@Composable private fun AssistantPage(c:Controller,ai:AiSettings,pick:(String)->Unit,page:(String)->Unit,ask:(Confirm)->Unit,editBot:(String)->Unit,newBot:()->Unit,
     name:(String)->String,dq:String,de:String,dh:String,listedCount:Int,moreCount:Int) {
     var advanced by rememberSaveable {mutableStateOf(false)}
     var refreshing by remember {mutableStateOf(false)}
@@ -228,6 +242,17 @@ private data class Confirm(val title:String,val text:String,val action:String,va
             else->"Only making a new bot"
         }) {pick("approvals")}
         Text("Bots never buy, pay or delete anything you didn't ask for, and they never see your passwords.",color=Muted,fontSize=12.sp,modifier=Modifier.padding(horizontal=14.dp,vertical=4.dp))
+    }
+    // Guard: three dials for what bots may do alone, the daily limits, the people nobody may write to, and the list of what the bots did.
+    Section("Your limits")
+    Group {
+        Guard.Area.values().forEach {area->
+            val level=Guard.level(area,ai)
+            Row2(Icons.Outlined.Tune,area.title,(if(Guard.overridden(area,ai)) "" else "Same as above · ")+(if(level==Guard.ASK) "Ask me first" else "Go ahead, within the daily limits")) {pick("guard_"+area.key)}
+        }
+        Row2(Icons.Outlined.Sms,"Emails per day","Bots send at most "+ai.emailDaily+" emails a day, and no more than "+(if(Profile.generic) SmsCap.PER_PERSON_GENERIC else SmsCap.PER_PERSON_OWNER)+" to one person") {pick("email_daily")}
+        Row2(Icons.Outlined.Block,"Do not contact",c.doNotContact().size.let {if(it==0) "Nobody yet. A customer who texts STOP is added automatically." else "$it people. Bots never text or email them."}) {page("dnc")}
+        Row2(Icons.Outlined.History,"What bots did","Every text, email, post and change, with Undo where it can be put back") {page("log")}
     }
     // The model and how hard it thinks: still here, one tap further in.
     Group {
@@ -305,8 +330,13 @@ private enum class PowerState {ON,OFF,FIX}
             if(hearing) null else ({runCatching {activity.startActivity(AwayListener.settingsIntent(activity))}.onFailure {c.showNotice("Open Settings, then Notifications, then Device & app notifications, and turn on Alpha.")}}))
         PowerRow(if(away.on) PowerState.ON else PowerState.OFF,Icons.Outlined.NightsStay,"Away mode",
             if(away.on) (if(away.live) "Answering your texts for you." else "Writing replies, nothing sent without you.") else "Off. Turn it on from Home when you're away.",null)
-        PowerRow(if(background) PowerState.ON else PowerState.FIX,Icons.Outlined.BatteryChargingFull,"Working in other apps",
-            if(background) "Bots keep working while you use other apps." else "Android may slow bots down while you use other apps.",if(background) null else ({activity.allowBackground()}))
+        PowerRow(if(background) PowerState.ON else PowerState.FIX,Icons.Outlined.BatteryChargingFull,"Working with the screen off",
+            if(background) "Bots keep working while the screen is locked or you use other apps. (Tapping inside your other apps needs the screen on and unlocked.)"
+            else "Android may put Alpha to sleep when the screen is off. Tap to allow it to keep working.",if(background) null else ({activity.allowBackground()}))
+        val guardNow=c.guardVersion;val paused=remember(guardNow) {c.actionsPaused()}
+        PowerRow(if(paused) PowerState.OFF else PowerState.ON,Icons.Outlined.PauseCircle,"Bots acting for you",
+            if(paused) "Paused. Nothing is sent, posted, changed or tapped. Tap to let bots act again." else "Bots send, post and change things within your limits. Tap to pause all of it at once.",
+            {c.setActionsPaused(!paused)})
         PowerRow(computerState,Icons.Outlined.Terminal,"Command line (Termux)",computer,{c.setComputerAllowed(!c.computerAllowed());c.showNotice(if(c.computerAllowed()) "Bots can use the command line." else "The command line is off.")})
         if(!BuildConfig.FRIENDS) {
             val phoneOn=PhoneControl.enabled();val phonePaused=c.phonePaused()
@@ -547,5 +577,56 @@ private enum class PowerState {ON,OFF,FIX}
         backup.undoText()?.let {Row2(Icons.Outlined.History,"Undo the last restore",it) {backup.startUndo()}}
         Text("A backup keeps your bots, memories, skills and settings if this phone is lost or reset. Passwords and sign-ins are never put in it.",
             color=Muted,fontSize=12.sp,modifier=Modifier.padding(4.dp))
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+// Guard: the do-not-contact list and the list of what the bots did
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+
+/** The people nobody may text or email: anyone who texted STOP, and anyone the owner adds. */
+@Composable private fun DoNotContactPage(c:Controller) {
+    val version=c.guardVersion
+    val list=remember(version) {c.doNotContact().sorted()}
+    var entry by remember {mutableStateOf("")}
+    Text("Bots never text or email anyone on this list, whatever they are asked. A customer who texts STOP, END, QUIT or UNSUBSCRIBE (or BAJA or PARAR) is added by itself.",
+        color=Muted,fontSize=13.sp,modifier=Modifier.padding(horizontal=4.dp))
+    Group {
+        Row(Modifier.fillMaxWidth().padding(horizontal=10.dp,vertical=6.dp),verticalAlignment=Alignment.CenterVertically) {
+            OutlinedTextField(entry,{entry=it},label={Text("Phone number or email")},singleLine=true,modifier=Modifier.weight(1f))
+            TextButton(enabled=entry.isNotBlank(),onClick={c.addDoNotContact(entry);entry=""}) {Text("Add",color=Ink)}
+        }
+    }
+    if(list.isEmpty()) Text("Nobody is on the list.",color=Muted,fontSize=13.sp,modifier=Modifier.padding(horizontal=4.dp))
+    else Group {
+        list.forEach {key->
+            Row(Modifier.fillMaxWidth().padding(horizontal=14.dp,vertical=2.dp),verticalAlignment=Alignment.CenterVertically) {
+                Text(key,color=Ink,fontSize=15.sp,modifier=Modifier.weight(1f))
+                TextButton(onClick={c.removeDoNotContact(key)}) {Text("Remove",color=Muted)}
+            }
+        }
+    }
+}
+
+/** What the bots did: texts, emails, posts, saved files and changes, newest first, with Undo on the few that can be put back. */
+@Composable private fun ActivityPage(c:Controller) {
+    val entries=c.actionLog()
+    var said by remember {mutableStateOf("")}
+    val format=remember {java.text.SimpleDateFormat("MMM d, h:mm a",java.util.Locale.getDefault())}
+    Text("Everything a bot sent, posted, saved or changed, newest first. A routine, rule or skill a bot made can be undone here. A text that went out or a page that was published cannot be taken back.",
+        color=Muted,fontSize=13.sp,modifier=Modifier.padding(horizontal=4.dp))
+    if(said.isNotBlank()) Text(said,color=Ink,fontSize=13.sp,modifier=Modifier.padding(horizontal=4.dp))
+    if(entries.isEmpty()) Text("Nothing yet.",color=Muted,fontSize=13.sp,modifier=Modifier.padding(horizontal=4.dp))
+    else Group {
+        entries.take(200).forEach {e->
+            Row(Modifier.fillMaxWidth().padding(horizontal=14.dp,vertical=8.dp),verticalAlignment=Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(e.title+(if(e.ok) "" else " (did not work)"),color=Ink,fontSize=14.sp)
+                    Text(ActionLog.line(e.copy(title=""),format.format(java.util.Date(e.at))).trimStart(' ','·'),color=Muted,fontSize=12.sp,maxLines=3)
+                }
+                if(e.canUndo) TextButton(onClick={said=c.undoAction(e.id)}) {Text("Undo",color=Ink)}
+                else if(e.undone) Text("Undone",color=Muted,fontSize=12.sp)
+            }
+        }
     }
 }

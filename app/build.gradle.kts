@@ -15,8 +15,8 @@ android {
         // The launcher shortcuts name the app they open (res/xml/shortcuts.xml), and the friends copy has its own id.
         minSdk = 30
         targetSdk = 35
-        versionCode = 83
-        versionName = "0.20.0" +(if(friendsBuild) "-beta" else "")
+        versionCode = 85
+        versionName = "0.22.0" +(if(friendsBuild) "-beta" else "")
         buildConfigField("boolean", "FRIENDS", friendsBuild.toString())
         // The owner's own business details live only here, and are empty in the friends build so they are not inside that app file at all.
         fun owner(key: String) = "\"" + (if(friendsBuild) "" else (ownerProps.getProperty(key) ?: "").replace("\\", "\\\\").replace("\"", "\\\"")) + "\""

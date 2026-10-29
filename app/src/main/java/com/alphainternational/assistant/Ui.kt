@@ -166,6 +166,7 @@ private data class Field(val key:String,val label:String,val value:String="",val
                 "settings"->SettingsScreen(activity,c,{back()},{name->c.switchWorkspace(name);dialog="bot_edit"},{go("builder")},{go("marketplace")},
                     {url->openSignIn(url,"")},{go(it)})
                 "builder"->BuilderScreen(activity,c,{back()},signIn,{name->c.switchWorkspace(name);route="home/chat"},{dialog="bot_new"},{go("marketplace")})
+                "business"->BusinessScreen(c,{back()}) {text->c.askFounder(text);route="home/chat"}
                 else-> {
                     // A screen another part of the app registered (Backup, Proactive...) gets the usual page bar; anything unknown is Home.
                     val extra=Screens.get(screen)
@@ -173,7 +174,7 @@ private data class Field(val key:String,val label:String,val value:String="",val
                         PageBar(c,extra.title,false) {back()}
                         extra.content(activity,c) {back()}
                     } else HomeScreen(c,{name->c.switchWorkspace(name);route="home/chat"},{route="home/builder"},{go("marketplace")},{route="home/team"},{route="home/settings"},{go("library")},{go("away")},
-                        activity,{name->c.switchWorkspace(name);route="home/chat/activity"},{go("goals")},{go("brainstorm")})
+                        activity,{name->c.switchWorkspace(name);route="home/chat/activity"},{go("goals")},{go("brainstorm")},{go("business")},{c.startBusinessChat();route="home/chat"})
                 }
             }
             // A moment after start on a phone with a lot of history, while the chats and requests are read in the background.
